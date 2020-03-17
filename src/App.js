@@ -1,25 +1,90 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import { db } from './fire';
+import Button from '@material-ui/core/Button';
+import AppBar from '@material-ui/core/AppBar';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core';
+import { Helmet } from 'react-helmet';
+import {
+  BrowserRouter as Router, Route, Switch
+} from 'react-router-dom';
+import Homepage from './components/Homepage';
+import SignUp from './components/SignUp';
+import PageNotFound from './components/PageNotFound';
+
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    marginTop: 'auto',
+    padding: theme.spacing(6),
+  },
+}));
 
 function App() {
+  const classes = useStyles();
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    db.collection("users").get().then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        console.log(doc);
+        setMessage(doc.id);
+      });
+    });
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Helmet titleTemplate="%s | CV19 Assist" />
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar position="relative">
+          <Toolbar>
+            {/* <CameraIcon className={classes.icon} /> */}
+            {/* <CameraIcon /> */}
+            <Typography variant="h6" color="inherit" noWrap>
+              CV19 Assist
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <main>
+          <Switch>
+            <Route exact path="/">
+              <Homepage />
+            </Route>
+            <Route exact path="/contact">
+              <p>Contact Us</p><p>coming soon...</p>
+            </Route>
+            <Route path={["/volunteer", "/need-help"]}>
+              <SignUp />
+            </Route>
+            <Route>
+              <PageNotFound />
+            </Route>
+          </Switch>
+        </main>
+        <footer className={classes.footer}>
+          <Typography variant="body2" color="textSecondary" align="center">
+            {"Copyright © "}
+            {new Date().getFullYear()}
+            {"  "}
+            {message}
+            <a href="https://www.cv19assist.com" target="_blank">
+              CV19Assist.com
+            </a>
+          </Typography>
+        </footer>
+      </div>
+    </Router>
   );
 }
 
