@@ -55,20 +55,6 @@ function NewUser() {
               paragraph
             >
             </Typography>
-            <div className={classes.heroButtons}>
-              {/* <Grid container spacing={2} justify="center">
-                <Grid item>
-                  <Button component={Link} to="/need-help" variant="contained" color="primary">
-                    I need help
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button component={Link} to="/can-help" variant="contained" color="primary">
-                    I can provide help
-                  </Button>
-                </Grid>
-              </Grid> */}
-            </div>
             <StyledFirebaseAuth
               uiConfig={getAuthConfig(handleSuccessfulLogin)}
               firebaseAuth={FirebaseAuth()}

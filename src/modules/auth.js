@@ -13,7 +13,9 @@ export const USER_LOGIN_SUCCEEDED = "USER_LOGIN_SUCCEEDED";
 export const USER_ALREADY_LOGGED_IN = "USER_ALREADY_LOGGED_IN";
 export const USER_NOT_ALREADY_LOGGED_IN = "USER_NOT_ALREADY_LOGGED_IN";
 export const USER_LOGGED_IN = "USER_LOGGED_IN";
-export const CLEAR_SESSION = "CLEAR_SESSION"
+export const CLEAR_SESSION = "CLEAR_SESSION";
+
+export const USER_NEEDS_PROFILE = "USER_NEEDS_PROFILE";
 
 // This is a special case that's dealt in reducers/index so we export it.
 export const USER_LOGOUT = "USER_LOGOUT";
@@ -89,6 +91,8 @@ export const userNotAlreadyLoggedIn = () => ({ type: USER_NOT_ALREADY_LOGGED_IN 
 export const clearSession = () => ({ type: CLEAR_SESSION });
 export const userLoggedIn = (user) => ({ type: USER_LOGGED_IN, user });
 
+export const userNeedsProfile = (user) => ({ type: USER_NEEDS_PROFILE, user });
+
 /***** side effects, only as applicable. e.g. thunks, epics, etc *****/
 export const userCheckEpic = action$ =>
   action$.pipe(
@@ -96,30 +100,22 @@ export const userCheckEpic = action$ =>
     mergeMap(() => {
       let user = firebaseAuth.currentUser;
       if (user) {
-        return of(userLoggedIn(user));
-        // return of(userAlreadyLoggedIn(user));
+        return from(
+          db.collection("users").doc(user.uid).get()
+        );
       } else {
         return of(userNotAlreadyLoggedIn());
       }
+    }),
+    mergeMap(doc => {
+      let user = firebaseAuth.currentUser;
+      if (doc.exists) {
+        console.log("Doc exists.");
+      } else {
+        console.log("Doc doens't exist.");
+      }
+      return [userLoggedIn(user), userNeedsProfile(user)];
     })
-    // mergeMap(async () => {
-    //   let user = firebaseAuth.currentUser;
-    //   if (user) {
-    //     await db.collection("users").doc(user.uid).get().then(doc => {
-    //       if (doc.exists) {
-    //         console.log("Doc exists.")
-    //       } else {
-    //         console.log("Doc doens't exist.")
-    //       }
-    //       return of(userLoggedIn(user));
-    //     });
-
-    //     return of(userLoggedIn(user));
-    //     // return of(userAlreadyLoggedIn(user));
-    //   } else {
-    //     return of(userNotAlreadyLoggedIn());
-    //   }
-    // })
   );
 
 export const logoutEpic = action$ =>
@@ -132,6 +128,6 @@ export const logoutEpic = action$ =>
     catchError(err => {
       alert(`Unexpected error: ${err}`);
       console.error(err);
-      return of({type:CLEAR_SESSION});
+      return of({ type: CLEAR_SESSION });
     })
   );

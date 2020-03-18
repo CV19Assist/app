@@ -18,6 +18,7 @@ import Homepage from './components/Homepage';
 import SignUp from './components/SignUp';
 import PageNotFound from './components/PageNotFound';
 import Profile from './components/Profile';
+import NewUser from './components/NewUser';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -92,6 +93,9 @@ function App(props) {
           <Switch>
             <Route exact path="/">
               <Homepage />
+            </Route>
+            <Route exact path="/new-user">
+              <NewUser />
             </Route>
             <PrivateRoute exact path="/profile">
               <Profile />
