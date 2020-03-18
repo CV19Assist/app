@@ -19,15 +19,14 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function SignUp() {
+function Login() {
   const classes = useStyles();
   const history = useHistory();
   const user = useSelector(state => state.get("user"));
 
   if (user.get("isAuthenticated") === true) {
     return (
-      // <Redirect to="/" />
-      <p>Already logged in, skip this step.</p>
+      <Redirect to="/" />
     );
   }
 
@@ -47,7 +46,7 @@ function SignUp() {
               color="textPrimary"
               gutterBottom
             >
-              Sign Up
+              Login
             </Typography>
             <Typography
               variant="h5"
@@ -81,4 +80,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default Login;

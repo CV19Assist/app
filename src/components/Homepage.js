@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import CameraIcon from '@material-ui/icons/PhotoCamera';
+import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core';
@@ -35,25 +34,39 @@ function Homepage() {
               Welcome to Coronavirus (COVID-19) Pandemic Assistance
             </Typography>
             <Typography
+              id="content-homepage"
               variant="h5"
               align="center"
               color="textSecondary"
               paragraph
             >
-              Curabitur fringilla congue nunc, non dictum eros ornare mollis.
-              Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-              posuere cubilia Curae; Nam quis viverra nunc, a pharetra enim.
+              The spread of COVID19 is having a huge impact on our lives,
+              especially those at high risk. It is more important now than ever
+              for us to come together and support our communities, whether it be
+              material support or emotional support. Our goal is to connect
+              those in need with those that are able to help and spread positive
+              vibes.
             </Typography>
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Button component={Link} to="/need-help" variant="contained" color="primary">
-                    I need help
+                  <Button
+                    component={Link}
+                    to="/volunteer"
+                    variant="contained"
+                    color="primary"
+                  >
+                    I can provide help
                   </Button>
                 </Grid>
                 <Grid item>
-                  <Button component={Link} to="/volunteer" variant="contained" color="primary">
-                    I can provide help
+                  <Button
+                    component={Link}
+                    to="/need-help"
+                    variant="contained"
+                    color="primary"
+                  >
+                    I need help
                   </Button>
                 </Grid>
               </Grid>

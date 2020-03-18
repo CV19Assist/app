@@ -1,10 +1,8 @@
 import { combineEpics } from "redux-observable";
-// import { loginEpic, passwordChangeEpic } from "modules/user";
+import { userCheckEpic, logoutEpic } from "./modules/auth";
 
 export const rootEpic = combineEpics(
-  // Environment Info
-//   loadEnvironmentInfoEpic,
-
   // Authentication
-//   loginEpic,
+  userCheckEpic,
+  logoutEpic,
 );

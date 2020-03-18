@@ -1,16 +1,16 @@
 import Immutable from 'immutable';
-import { combineReducers } from 'redux-immutable';
-import { reducer as userReducer, USER_LOGOUT } from 'modules/user';
-// import Cookies from 'js-cookie';
+import { reducer as userReducer, CLEAR_SESSION } from './modules/auth';
+import { reducer as environmentReducer } from './modules/environment';
 
 const rootReducer = (state, action) => {
-  if (action.type === USER_LOGOUT) {
-    // Cookies.remove("abc");
-    state = Immutable.Map();
+  if (action.type === CLEAR_SESSION) {
+    window.location = "/";
+    // state = Immutable.Map();
   }
   
   // TODO: Change this into a loop.
-  state = myReducer(state, action);
+  state = environmentReducer(state, action);
+  state = userReducer(state, action);
   return state;
 };
 
