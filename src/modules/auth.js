@@ -23,6 +23,7 @@ export const USER_LOGOUT = "USER_LOGOUT";
 const defaultState = Immutable.Map({
   isAuthenticated: false,
   currentUser: null,
+  needProfile: false,
   state: "", // "", checking, loggingIn, loginFailed, loginSuccessful
 });
 
@@ -34,8 +35,13 @@ export function reducer(state = defaultState, action) {
     case INITIALIZE_USER_AUTH:
       return state
         .setIn([...moduleDomainRoot, "state"], "checking")
+        .setIn([...moduleDomainRoot, "needsProfile"], false)
         .setIn([...moduleDomainRoot, "currentUser"], null)
         .setIn([...moduleDomainRoot, "isAuthenticated"], false);
+
+    case USER_NEEDS_PROFILE:
+      return state
+        .setIn([...moduleDomainRoot, "needsProfile"], true);
 
     case USER_LOGGED_IN:
       return state
@@ -91,7 +97,7 @@ export const userNotAlreadyLoggedIn = () => ({ type: USER_NOT_ALREADY_LOGGED_IN 
 export const clearSession = () => ({ type: CLEAR_SESSION });
 export const userLoggedIn = (user) => ({ type: USER_LOGGED_IN, user });
 
-export const userNeedsProfile = (user) => ({ type: USER_NEEDS_PROFILE, user });
+export const userNeedsProfile = () => ({ type: USER_NEEDS_PROFILE });
 
 /***** side effects, only as applicable. e.g. thunks, epics, etc *****/
 export const userCheckEpic = action$ =>
@@ -114,7 +120,7 @@ export const userCheckEpic = action$ =>
       } else {
         console.log("Doc doens't exist.");
       }
-      return [userLoggedIn(user), userNeedsProfile(user)];
+      return [userLoggedIn(user), userNeedsProfile()];
     })
   );
 
