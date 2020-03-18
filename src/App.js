@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import {
-  BrowserRouter as Router, Route, Switch
+  BrowserRouter as Router, Route, Switch, Link
 } from 'react-router-dom';
 import Homepage from './components/Homepage';
 import SignUp from './components/SignUp';
@@ -21,6 +21,10 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
+  },
+  headerLink: {
+    color: theme.palette.primary.contrastText,
+    textDecoration: 'none'
   },
   footer: {
     backgroundColor: theme.palette.background.paper,
@@ -52,8 +56,9 @@ function App() {
             {/* <CameraIcon className={classes.icon} /> */}
             {/* <CameraIcon /> */}
             <Typography variant="h6" color="inherit" noWrap>
-              CV19 Assist
+              <Link to="/" className={classes.headerLink}>CV19 Assist</Link>
             </Typography>
+            {/* <Button color="inherit">Login</Button> */}
           </Toolbar>
         </AppBar>
         <main>
@@ -78,9 +83,7 @@ function App() {
             {new Date().getFullYear()}
             {"  "}
             {message}
-            <a href="https://www.cv19assist.com" target="_blank">
-              CV19Assist.com
-            </a>
+            <a href="https://www.cv19assist.com" target="_blank" rel="noopener noreferrer">CV19Assist.com</a>
           </Typography>
         </footer>
       </div>
