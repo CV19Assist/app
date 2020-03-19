@@ -4,9 +4,22 @@ const bodyParser = require("body-parser");
 const userProfileRoutes = require('./handlers/user');
 const { ValidationError } = require("express-validation");
 const { authenticate } = require("./util/auth");
+const cors = require("cors");
 
 const app = express();
 app.use(bodyParser.json());
+
+var whitelist = ['http://localhost:3000', 'https://cv19assist-dev.web.app/'];
+var corsOptions = {
+  origin: (origin, callback) => {
+    if (whitelist.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  }
+}
+app.use(cors(corsOptions));
 
 // User profile routes.
 app.get("/echo", (req, res) => {

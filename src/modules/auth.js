@@ -1,9 +1,11 @@
 import Immutable from "immutable";
-import { mergeMap, catchError, map } from 'rxjs/operators';
+import { mergeMap, map, catchError } from 'rxjs/operators';
 import { ofType } from 'redux-observable';
 // import { toast } from "react-toastify";
-import { firebaseAuth, db } from '../firebase';
+import { firebaseAuth, firebase, firebaseHelper } from '../firebase';
 import { of, from } from "rxjs";
+import { ajax } from 'rxjs/ajax';
+import API from '../util/api';
 
 /***** Actions *****/
 export const INITIALIZE_USER_AUTH = "INITIALIZE_USER_AUTH";
@@ -103,15 +105,17 @@ export const userNeedsProfile = () => ({ type: USER_NEEDS_PROFILE });
 export const userCheckEpic = action$ =>
   action$.pipe(
     ofType(INITIALIZE_USER_AUTH),
-    mergeMap(() => {
+    mergeMap(async () => {
       let user = firebaseAuth.currentUser;
+      // User is logged in.
       if (user) {
-        return from(
-          db.collection("users").doc(user.uid).get()
-        );
+        return from(API.setFirebaseUser(user));
       } else {
         return of(userNotAlreadyLoggedIn());
       }
+    }),
+    map(() => {
+      return from(API.getAuthenticatedRequestObservable("/user/profile"));
     }),
     mergeMap(doc => {
       let user = firebaseAuth.currentUser;

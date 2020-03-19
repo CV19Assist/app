@@ -142,12 +142,7 @@ function PrivateRoute({ children, ...rest }) {
         user.get("isAuthenticated") ? (
           children
         ) : (
-          <Redirect
-            to={{
-              pathname: "/login",
-              state: { from: location }
-            }}
-          />
+          <Redirect to={{ pathname: "/login", state: { from: location } }} />
         )
       }
     />
