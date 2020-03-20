@@ -6,19 +6,21 @@ class API {
     this.URL = "https://us-central1-cv19assist-dev.cloudfunctions.net/api";
   }
 
-  async setFirebaseUser(firebaseUser) {
+  setFirebaseUserAndGetToken(firebaseUser) {
     this._firebaseUser = firebaseUser;
-    this._token = await firebaseUser.getIdToken();
-    console.log(`Got token ${this._token}`);
+    return firebaseUser.getIdToken();
   }
 
-  getAuthenticatedRequestObservable(url) {
-    console.log(`Token is ${this._token}`);
-    const req = ajax.getJSON({
-      url: url,
-      headers: {
-        Authorization: `Bearer ${this._firebaseUser.IdToken}`
-      }
+  setIdToken(token) {
+    this._idToken = token;
+  }
+
+  getAuthenticatedRequestObservable(url, method, data) {
+    method = method || "get";
+    const req = ajax({
+      url: this.URL + url,
+      headers: { Authorization: `Bearer ${this._idToken}` },
+      body: data, 
     });
     return req;
   }

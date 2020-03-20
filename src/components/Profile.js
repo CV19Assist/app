@@ -15,10 +15,11 @@ const useStyles = makeStyles(theme => ({
 function Profile() {
   const classes = useStyles();
   const user = useSelector(state => state.get("user"));
-  const currentUser = user.get("currentUser");
+  const userProfile = user.get("userProfile");
+  const authUser = user.get("authUser");
   const dispatch = useDispatch();
 
-  if (user.get("isAuthenticated") !== true || (currentUser === null)) {
+  if (user.get("isAuthenticated") !== true || (userProfile === null)) {
     return <p>You are not logged in.</p>;
   }
 
@@ -33,7 +34,7 @@ function Profile() {
             color="textPrimary"
             gutterBottom
           >
-            {currentUser.displayName}
+            {userProfile.displayName}
           </Typography>
           <Typography
             id="content-homepage"
@@ -42,7 +43,7 @@ function Profile() {
             color="textSecondary"
             paragraph
           >
-            {currentUser.providerData[0].providerId}
+            {authUser.providerData[0].providerId}
           </Typography>
 
           <Button

@@ -5,6 +5,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import configureStore from "./configureStore";
+import API from './util/api';
 
 const store = configureStore();
 

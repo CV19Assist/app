@@ -43,19 +43,16 @@ function App(props) {
   const dispatch = useDispatch();
   const environment = useSelector(state => state.get("environment"));
   const user = useSelector(state => state.get("user"));
-  const [firebaseAuthLoaded, setFirebaseAuthLoaded] = useState(false);
 
   useEffect(() => {
     dispatch(getEnvironmentInfo());
     firebase.auth().onAuthStateChanged(user => {
-      if (firebase.auth().currentUser) {
-        dispatch(initializeUserAuth());
-      }
-      setFirebaseAuthLoaded(true);
+      dispatch(initializeUserAuth());
     });
   }, [dispatch]);
 
-  if (!firebaseAuthLoaded) {
+  // Don't render anything until firebase auth is fully initialized.
+  if (user.get("isInitialized") !== true) {
     return (
       <p>Loading...</p>
     );
@@ -83,7 +80,7 @@ function App(props) {
                 component={Link}
                 to="/profile"
               >
-                {user.get("currentUser").displayName}
+                {user.get("userProfile").displayName}
               </Button>
             )}
           </Toolbar>

@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { mergeMap, map, catchError } from 'rxjs/operators';
+import { mergeMap, map, mapTo, catchError } from 'rxjs/operators';
 import { ofType } from 'redux-observable';
 // import { toast } from "react-toastify";
 import { firebaseAuth, firebase, firebaseHelper } from '../firebase';
@@ -9,13 +9,16 @@ import API from '../util/api';
 
 /***** Actions *****/
 export const INITIALIZE_USER_AUTH = "INITIALIZE_USER_AUTH";
-export const USER_LOGIN = "USER_LOGIN";
-const USER_LOGIN_FAILED = "USER_LOGIN_FAILED";
-export const USER_LOGIN_SUCCEEDED = "USER_LOGIN_SUCCEEDED";
+export const FINISHED_INITIALIZING_AUTH = "FINISHED_INITIALIZING_AUTH";
+
 export const USER_ALREADY_LOGGED_IN = "USER_ALREADY_LOGGED_IN";
 export const USER_NOT_ALREADY_LOGGED_IN = "USER_NOT_ALREADY_LOGGED_IN";
-export const USER_LOGGED_IN = "USER_LOGGED_IN";
 export const CLEAR_SESSION = "CLEAR_SESSION";
+
+export const USER_LOGIN = "USER_LOGIN";
+export const USER_LOGIN_SUCCEEDED = "USER_LOGIN_SUCCEEDED";
+const USER_LOGIN_FAILED = "USER_LOGIN_FAILED";
+export const USER_LOGGED_IN = "USER_LOGGED_IN";
 
 export const USER_NEEDS_PROFILE = "USER_NEEDS_PROFILE";
 
@@ -23,8 +26,10 @@ export const USER_NEEDS_PROFILE = "USER_NEEDS_PROFILE";
 export const USER_LOGOUT = "USER_LOGOUT";
 
 const defaultState = Immutable.Map({
+  isInitialized: false,
   isAuthenticated: false,
-  currentUser: null,
+  authUser: null,
+  userProfile: null,
   needProfile: false,
   state: "", // "", checking, loggingIn, loginFailed, loginSuccessful
 });
@@ -36,10 +41,15 @@ export function reducer(state = defaultState, action) {
   switch (action.type) {
     case INITIALIZE_USER_AUTH:
       return state
+        .setIn([...moduleDomainRoot, "isInitialized"], false)
         .setIn([...moduleDomainRoot, "state"], "checking")
         .setIn([...moduleDomainRoot, "needsProfile"], false)
-        .setIn([...moduleDomainRoot, "currentUser"], null)
+        .setIn([...moduleDomainRoot, "authUser"], null)
         .setIn([...moduleDomainRoot, "isAuthenticated"], false);
+
+    case FINISHED_INITIALIZING_AUTH:
+      return state
+        .setIn([...moduleDomainRoot, "isInitialized"], true);
 
     case USER_NEEDS_PROFILE:
       return state
@@ -48,14 +58,9 @@ export function reducer(state = defaultState, action) {
     case USER_LOGGED_IN:
       return state
         .setIn([...moduleDomainRoot, "state"], "loggedIn")
-        .setIn([...moduleDomainRoot, "currentUser"], action.user)
+        .setIn([...moduleDomainRoot, "authUser"], action.firebaseUser)
+        .setIn([...moduleDomainRoot, "userProfile"], action.userProfile)
         .setIn([...moduleDomainRoot, "isAuthenticated"], true);
-
-    // case USER_ALREADY_LOGGED_IN:
-    //   return state
-    //     .setIn([...moduleDomainRoot, "state"], "loggedIn")
-    //     .setIn([...moduleDomainRoot, "currentUser"], action.user)
-    //     .setIn([...moduleDomainRoot, "isAuthenticated"], true);
 
     case USER_NOT_ALREADY_LOGGED_IN:
       return state
@@ -90,6 +95,8 @@ export function reducer(state = defaultState, action) {
 
 /***** Action Creators *****/
 export const initializeUserAuth = () => ({ type: INITIALIZE_USER_AUTH });
+export const finishedInitializingAuth = () => ({ type: FINISHED_INITIALIZING_AUTH });
+
 export const login = (username, password) => ({ type: USER_LOGIN, username, password });
 export const loginSucceeded = payload => ({ type: USER_LOGIN_SUCCEEDED, payload });
 export const loginFailed = errorMessage => ({ type: USER_LOGIN_FAILED, message: errorMessage });
@@ -97,7 +104,8 @@ export const logout = () => ({ type: USER_LOGOUT });
 // export const userAlreadyLoggedIn = (user) => ({ type: USER_ALREADY_LOGGED_IN, user });
 export const userNotAlreadyLoggedIn = () => ({ type: USER_NOT_ALREADY_LOGGED_IN });
 export const clearSession = () => ({ type: CLEAR_SESSION });
-export const userLoggedIn = (user) => ({ type: USER_LOGGED_IN, user });
+
+export const userLoggedIn = (userProfile, firebaseUser) => ({ type: USER_LOGGED_IN, userProfile, firebaseUser });
 
 export const userNeedsProfile = () => ({ type: USER_NEEDS_PROFILE });
 
@@ -105,27 +113,31 @@ export const userNeedsProfile = () => ({ type: USER_NEEDS_PROFILE });
 export const userCheckEpic = action$ =>
   action$.pipe(
     ofType(INITIALIZE_USER_AUTH),
-    mergeMap(async () => {
+    mergeMap(() => {
       let user = firebaseAuth.currentUser;
-      // User is logged in.
+      // If user is logged in then get their profile.
       if (user) {
-        return from(API.setFirebaseUser(user));
+        return from(API.setFirebaseUserAndGetToken(user)).pipe(
+          mergeMap(token => {
+            API.setIdToken(token);
+            return API.getAuthenticatedRequestObservable("/user/profile").pipe(
+              mergeMap(resp => {
+                const userProfile = resp.response;
+                return [userLoggedIn(userProfile, user), userNeedsProfile(), finishedInitializingAuth()];
+              }),
+              catchError(err => {
+                alert(`Unexpected error: ${err}`);
+                console.error(err);
+                // TODO: What to return here?
+                return {};
+              })
+            )
+          })
+        );
       } else {
-        return of(userNotAlreadyLoggedIn());
+        return [userNotAlreadyLoggedIn(), finishedInitializingAuth()];
       }
     }),
-    map(() => {
-      return from(API.getAuthenticatedRequestObservable("/user/profile"));
-    }),
-    mergeMap(doc => {
-      let user = firebaseAuth.currentUser;
-      if (doc.exists) {
-        console.log("Doc exists.");
-      } else {
-        console.log("Doc doens't exist.");
-      }
-      return [userLoggedIn(user), userNeedsProfile()];
-    })
   );
 
 export const logoutEpic = action$ =>
