@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^7.2.1",
     "firebase": "^7.11.0",
     "formik": "^2.1.4",
+    "react-google-maps": "9.4.5",
     "immutable": "^4.0.0-rc.12",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
