@@ -25,8 +25,8 @@ function Homepage() {
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <Typography
-              component="h1"
-              variant="h2"
+              component="h3"
+              variant="h3"
               align="center"
               color="textPrimary"
               gutterBottom

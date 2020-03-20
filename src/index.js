@@ -6,6 +6,9 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import configureStore, { history } from "./configureStore";
 import { ConnectedRouter } from 'connected-react-router/immutable';
+import { config as dotEnvConfig } from "dotenv";
+
+dotEnvConfig();
 
 const store = configureStore();
 

@@ -7,6 +7,8 @@ import Profile from './Profile';
 import NewUser from './NewUser';
 import Maps from './Maps';
 import Volunteer from '../components/Volunteer';
+import ViewAll from '../components/ViewAll';
+import NeedHelp from './RequestHelp';
 
 function AuthenticatedContainer(props) {
   const user = useSelector(state => state.get("user"));
@@ -25,9 +27,10 @@ function AuthenticatedContainer(props) {
           <Switch>
             <Route exact path="/new-user" component={NewUser} />
             <Route exact path="/profile" component={Profile} />
-              <Route path={["/volunteer", "/need-help"]}>
-                {!user.get("isAuthenticated") ? (<Redirect to="/login" />) : ( <Volunteer />)}
-              </Route>
+            <Route exact path="/need-help" component={NeedHelp} />
+            <Route path={["/volunteer", "/need-help"]}>
+              {!user.get("isAuthenticated") ? (<Redirect to="/login" />) : ( <ViewAll />)}
+            </Route>
             <Route exact path="/contact">
               <p>Contact Us</p>
               <p>coming soon...</p>

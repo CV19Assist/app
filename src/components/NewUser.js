@@ -13,7 +13,6 @@ import { Formik, Field } from "formik";
 import * as Yup from "yup";
 import { saveUserProfile } from "../modules/user";
 import {GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow} from "react-google-maps";
-import mapStyles from "./mapStyles";
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -89,7 +88,7 @@ function Location(props) {
       <WrappedMap
         onLocationChange={props.onLocationChange}
         googleMapURL={
-          "https://maps.googleapis.com/maps/api/js?key=AIzaSyC4R6AN7SmujjPUIGKdyao2Kqitzr1kiRg&v=3.exp&libraries=geometry,drawing,places&key=AIzaSyAu_GmjA0S6RlY9DnuOWoYjbZBPrIC0Jag"
+          `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&v=3.exp&libraries=geometry,drawing,places`
         }
         loadingElement={<div style={{ height: "100%" }} />}
         containerElement={<div style={{ height: "100%" }} />}
@@ -105,7 +104,7 @@ function NewUser() {
   const classes = useStyles();
   const user = useSelector(state => state.get("user"));
   const authUser = user.get("authUser");
-  const [userLocation, setUserLocation] = useState({lat: 0, lng: 0});
+  const [userLocation, setUserLocation] = useState(null);
 
   const splitName = authUser.displayName.split(" ");
 
@@ -120,7 +119,9 @@ function NewUser() {
   }
 
   const handleFormSubmit = (values) => {
-    values.location = userLocation;
+    if (userLocation) {
+      values.location = userLocation;
+    }
     dispatch(saveUserProfile(values));
   };
 
@@ -202,7 +203,7 @@ function NewUser() {
               </Grid>
               <Divider className={classes.optionalDivider} />
               <Typography variant="h6" gutterBottom>
-                Optional, but highly recommended &ndash; Location
+                Please click or tap on your location
               </Typography>
               <Typography variant="body2" className={classes.intro}>
                 Location is not required, but highly recommended because it will allow us to
