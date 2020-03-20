@@ -1,27 +1,21 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { Link } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core';
+// import { makeStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../modules/auth';
+import { logout } from '../modules/user';
 
-const useStyles = makeStyles(theme => ({
-}));
+// const useStyles = makeStyles(theme => ({
+// }));
 
 function Profile() {
-  const classes = useStyles();
+  // const classes = useStyles();
   const user = useSelector(state => state.get("user"));
   const userProfile = user.get("userProfile");
   const authUser = user.get("authUser");
   const dispatch = useDispatch();
-
-  if (user.get("isAuthenticated") !== true || (userProfile === null)) {
-    return <p>You are not logged in.</p>;
-  }
 
   return (
     <React.Fragment>
@@ -34,7 +28,7 @@ function Profile() {
             color="textPrimary"
             gutterBottom
           >
-            {userProfile.displayName}
+            {userProfile.get("displayName")}
           </Typography>
           <Typography
             id="content-homepage"

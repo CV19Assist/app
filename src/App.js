@@ -1,25 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import Container from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import { useDispatch, useSelector } from 'react-redux';
-import { BrowserRouter as Router, Route, Redirect, Switch, Link } from 'react-router-dom';
+import { Route, Switch, Link } from 'react-router-dom';
 import { getEnvironmentInfo } from './modules/environment';
-import { initializeUserAuth } from './modules/auth';
+import { initializeUserAuth } from './modules/user';
 import { firebase } from './firebase';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button';
 
 import Homepage from './components/Homepage';
-import SignUp from './components/SignUp';
-import PageNotFound from './components/PageNotFound';
-import Profile from './components/Profile';
-import NewUser from './components/NewUser';
-import Maps from './components/Maps';
+import Login from './components/Login';
+import Logout from './components/Logout';
+import AuthenticatedContainer from './components/AuthenticatedContainer';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,12 +36,15 @@ const useStyles = makeStyles(theme => ({
     marginTop: 'auto',
     padding: theme.spacing(6),
   },
+  appBar: {
+    marginBottom: theme.spacing(2)
+  },
 }));
 
 function App(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const environment = useSelector(state => state.get("environment"));
+  const environment = useSelector(state => state.get("environment") );
   const user = useSelector(state => state.get("user"));
 
   useEffect(() => {
@@ -60,12 +62,13 @@ function App(props) {
   }
 
   return (
-    <Router>
+    <React.Fragment>
+
       <Helmet titleTemplate="%s | CV19 Assist" />
       <CssBaseline />
 
       <div className={classes.root}>
-        <AppBar position="relative">
+        <AppBar position="relative" className={classes.appBar}>
           <Toolbar>
             <Typography variant="h6" color="inherit" noWrap>
               <Link to="/" className={classes.headerLink}>
@@ -73,7 +76,7 @@ function App(props) {
               </Link>
             </Typography>
             <div className={classes.grow} />
-            {user.get("isAuthenticated") === true && (
+            {user.get("isAuthenticated") === true && user.get("userProfile") !== null && (
               <Button
                 startIcon={<AccountCircle />}
                 edge="end"
@@ -81,38 +84,26 @@ function App(props) {
                 component={Link}
                 to="/profile"
               >
-                {user.get("userProfile").displayName}
+                {user.get("userProfile").get("displayName")}
               </Button>
             )}
           </Toolbar>
         </AppBar>
 
-        <main>
-          <Switch>
-            <Route exact path="/">
-              <Homepage />
-            </Route>
-            <Route exact path="/new-user">
-              <NewUser />
-            </Route>
-            <PrivateRoute exact path="/profile">
-              <Profile />
-            </PrivateRoute>
-            <Route exact path="/contact">
-              <p>Contact Us</p>
-              <p>coming soon...</p>
-            </Route>
-            <Route path={["/volunteer", "/need-help"]}>
-              <SignUp />
-            </Route>
-			<Route exact path="/maps">
-              <Maps />
-            </Route>
-            <Route>
-              <PageNotFound />
-            </Route>
-          </Switch>
-        </main>
+        <Container>
+          <main>
+            <Switch>
+              <Route exact path="/" component={Homepage} />
+              <Route exact path="/login" component={Login} />
+              <Route exact path="/logout" component={Logout} />
+              <Route exact path="/contact">
+                <p>Contact Us</p>
+                <p>coming soon...</p>
+              </Route>
+              <Route component={AuthenticatedContainer} />
+            </Switch>
+          </main>
+        </Container>
 
         <footer className={classes.footer}>
           <Typography variant="body2" color="textSecondary" align="center">
@@ -129,24 +120,7 @@ function App(props) {
           </Typography>
         </footer>
       </div>
-    </Router>
-  );
-}
-
-function PrivateRoute({ children, ...rest }) {
-  const user = useSelector(state => state.get("user"));
-
-  return (
-    <Route
-      {...rest}
-      render={({ location }) =>
-        user.get("isAuthenticated") ? (
-          children
-        ) : (
-          <Redirect to={{ pathname: "/login", state: { from: location } }} />
-        )
-      }
-    />
+    </React.Fragment>
   );
 }
 

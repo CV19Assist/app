@@ -11,8 +11,15 @@ const defaultState = Immutable.Map({
   abbreviation: "",  // Abbreviation of the environment: local-dev, dev, stage, prod
 });
 
+const moduleDomainRoot = ["user"];
+
 /***** Reducers *****/
 export function reducer(state = defaultState, action) {
+  // If the module state hasn't been initialized yet then do that first.
+  if (!state.getIn(moduleDomainRoot)) {
+    state = state.setIn(moduleDomainRoot, defaultState);
+  }
+
   switch (action.type) {
     case ENVIRONMENT_GET_INFO:
         return state

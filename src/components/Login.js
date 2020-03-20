@@ -4,8 +4,7 @@ import { makeStyles } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import { FirebaseAuth, getAuthConfig } from "../firebase_auth";
-import { useDispatch, useSelector } from "react-redux";
-import { userLoggedIn } from "../modules/auth";
+import { useSelector } from "react-redux";
 import { useHistory } from "react-router";
 import { Redirect } from "react-router-dom";
 

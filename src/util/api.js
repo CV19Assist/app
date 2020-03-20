@@ -1,5 +1,5 @@
 // Defines the common API.
-import { ajax, AjaxRequest } from 'rxjs/ajax';
+import { ajax } from 'rxjs/ajax';
 
 class API {
   constructor() {
@@ -15,14 +15,28 @@ class API {
     this._idToken = token;
   }
 
-  getAuthenticatedRequestObservable(url, method, data) {
+  _getAuthenticatedRequestObservable(url, method, data, headers) {
     method = method || "get";
+    headers = headers || {};
+    headers.Authorization = `Bearer ${this._idToken}`
+
     const req = ajax({
       url: this.URL + url,
-      headers: { Authorization: `Bearer ${this._idToken}` },
+      method: method,
+      headers: headers,
       body: data, 
     });
     return req;
+  }
+
+  getAuthenticatedJSONRequestObservable(url, method, data) {
+    return this._getAuthenticatedRequestObservable(url, method, data, {
+      "Content-Type": "application/json"
+    });
+  }
+
+  getAuthenticatedRequestObservable(url, method, data) {
+    return this._getAuthenticatedRequestObservable(url, method, data);
   }
 }
 

@@ -1,18 +1,21 @@
 import { compose, createStore, applyMiddleware } from "redux";
 import { createEpicMiddleware } from "redux-observable";
-import rootReducer from "./reducers";
 import { rootEpic } from "./epics";
 import Immutable from "immutable";
+import { routerMiddleware } from 'connected-react-router/immutable';
+import createRootReducer from './reducers';
+import { createBrowserHistory } from 'history';
 
 const epicMiddleware = createEpicMiddleware();
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+export const history = createBrowserHistory();
 
 /*
- * Notes about the state structure. Helios tries to stick to the entities/ui store structure as
- * briefly described in the redux documentation at
+ * Notes about the state structure. Stick to the entities/ui store structure as described in
+ * the redux documentation at
  * https://redux.js.org/recipes/structuringreducers/basicreducerstructure.
  *
- * Initialization on the specific screens and functionality is left to the specific reducers.
+ * Initialization for the specific screens and functionality is left to the specific reducers.
  */
 const initialState = Immutable.Map({
   environment: Immutable.Map(),
@@ -23,12 +26,16 @@ const initialState = Immutable.Map({
 
 export default function configureStore() {
   const store = createStore(
-    rootReducer,
+    createRootReducer(history),
     initialState,
-    composeEnhancers(applyMiddleware(epicMiddleware))
+    composeEnhancers(
+      applyMiddleware(
+        routerMiddleware(history),
+        epicMiddleware
+      )
+    )
   );
 
   epicMiddleware.run(rootEpic);
-
   return store;
 }

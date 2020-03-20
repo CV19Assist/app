@@ -9,7 +9,7 @@ const cors = require("cors");
 const app = express();
 app.use(bodyParser.json());
 
-var whitelist = ['http://localhost:3000', 'https://cv19assist-dev.web.app/'];
+var whitelist = ['http://localhost:3000', 'https://cv19assist-dev.web.app'];
 var corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1) {
