@@ -19,6 +19,7 @@ import SignUp from './components/SignUp';
 import PageNotFound from './components/PageNotFound';
 import Profile from './components/Profile';
 import NewUser from './components/NewUser';
+import Maps from './components/Maps';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -106,6 +107,9 @@ function App(props) {
             </Route>
             <Route path={["/volunteer", "/need-help"]}>
               <SignUp />
+            </Route>
+			<Route exact path="/maps">
+              <Maps />
             </Route>
             <Route>
               <PageNotFound />
