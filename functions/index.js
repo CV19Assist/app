@@ -1,11 +1,13 @@
 const functions = require("firebase-functions");
 const express = require("express");
+const { ValidationError } = require("express-validation");
 const bodyParser = require("body-parser");
+const cors = require("cors");
+
 const userProfileRoutes = require('./handlers/user');
 const needsRoutes = require('./handlers/needs');
-const { ValidationError } = require("express-validation");
+
 const { authenticate } = require("./util/auth");
-const cors = require("cors");
 
 const app = express();
 app.use(bodyParser.json());
