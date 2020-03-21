@@ -56,18 +56,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const requestValidationSchema = Yup.object().shape({
-  custName: Yup.string().min(2, "Too Short").required("Required"),
-  contactInfo: Yup.string().min(2, "Too Short").required("Required"),
-  needGroup: Yup.array().required("Please select at least one support need."),
+  // custName: Yup.string().min(2, "Too Short").required("Required"),
+  // contactInfo: Yup.string().min(2, "Too Short").required("Required"),
+  // needGroup: Yup.array().required("Please select at least one support need."),
   otherComments: Yup.string(),
 });
 
 const needOptions = [
-  "Food/Meal Delivery",
-  "Health Questions",
-  "Housing/Utilities",
-  "Mental Health/Emotional Support",
-  "Limited, Immediate Financial Needs"
+  {key: "food", description: "Food/Meal Delivery"},
+  {key: "health-question", description: "Health Questions"},
+  {key: "housing-utilities", description: "Housing/Utilities"},
+  {key: "emotional-support", description: "Mental Health/Emotional Support"},
+  {key: "financial-needs", description: "Limited, Immediate Financial Needs"}
 ];
 
 const immediacyOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -103,11 +103,11 @@ function NeedHelp() {
             validationSchema={requestValidationSchema}
             onSubmit={handleFormSubmit}
             initialValues={{
-              checkFood: "",
-              checkHealth: "",
-              checkHousing: "",
-              checkEmotional: "",
-              checkFinancial: "",
+              // checkFood: "",
+              // checkHealth: "",
+              // checkHousing: "",
+              // checkEmotional: "",
+              // checkFinancial: "",
               radioNum: "",
               contactInfo: "",
               custName: "",
@@ -127,11 +127,12 @@ function NeedHelp() {
                               as={FormControlLabel}
                               control={
                                 <Checkbox
-                                  onChange={formik.handleChange}
+                                  // onChange={formik.handleChange}
                                   name={`needGroup.${index}`}
+                                  value={option.key}
                                 />
                               }
-                              label={option}
+                              label={option.description}
                             />
                           ))}
                           {
