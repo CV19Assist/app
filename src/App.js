@@ -21,6 +21,7 @@ import Login from './components/Login';
 import Logout from './components/Logout';
 import RequestHelp from './components/RequestHelp';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
+import { version } from '../package.json';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -119,7 +120,7 @@ function App(props) {
           <Typography variant="body2" color="textSecondary" align="center">
             {"Copyright © "}
             {new Date().getFullYear()}
-            {` ${environment.get("abbreviation")} `}
+            {` ${environment.get("abbreviation")} ${version} `}
             <a
               href="https://www.cv19assist.com"
               target="_blank"

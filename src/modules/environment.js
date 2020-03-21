@@ -24,7 +24,7 @@ export function reducer(state = defaultState, action) {
     case ENVIRONMENT_GET_INFO:
         return state
             .setIn(["environment", "state"], "loaded")
-            .setIn(["environment", "abbreviation"], "dev")
+            .setIn(["environment", "abbreviation"], process.env.NODE_ENV)
             .setIn(["environment", "failure"], Immutable.Map());
 
     // case ENVIRONMENT_GET_INFO_FAILED:

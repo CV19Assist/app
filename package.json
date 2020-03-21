@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "cv19assist",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -31,7 +31,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "analyze": "source-map-explorer 'build/static/js/*.js'"
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "firebase-hosting-deploy": "firebase deploy --only functions",
+    "firebase-functions-deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": "react-app"

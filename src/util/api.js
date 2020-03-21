@@ -3,7 +3,7 @@ import { ajax } from 'rxjs/ajax';
 
 class API {
   constructor() {
-    this.URL = "https://us-central1-cv19assist-dev.cloudfunctions.net/api";
+    this.URL = process.env.REACT_APP_API_URL;
   }
 
   setFirebaseUserAndGetToken(firebaseUser) {

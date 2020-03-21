@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "cv19assist-dev"
+    "default": "cv19assist-dev",
+    "production": "cv19assist-bfa5f"
   }
 }
