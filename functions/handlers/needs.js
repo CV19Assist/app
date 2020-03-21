@@ -1,14 +1,22 @@
 const routes = require("express").Router();
 const { validate, Joi } = require("express-validation");
+const { GeoFirestore } = require("geofirestore");
+
 const { db, admin } = require("../util/admin");
 const { authenticate } = require("../util/auth");
+
+// Create a GeoFirestore reference
+const geofirestore = new GeoFirestore(db);
+
+// Create a GeoCollection reference
+const geocollection = geofirestore.collection("needs");
 
 const needValidation = {
   body: Joi.object({
     subjects: Joi.array().items(Joi.string()),
     urgency: Joi.number().required(),
     title: Joi.string().required(),
-    location: Joi.object().keys({
+    coordinates: Joi.object().keys({
       _latitude: Joi.number()
         .greater(-90)
         .less(90),
@@ -22,6 +30,40 @@ const needValidation = {
   })
 };
 
+routes.get("/", authenticate, async (req, res) => {
+  let { location, distance, units } = req.query;
+
+  if (!units) {
+    units = "mi";
+  }
+
+  if (units === "mi") {
+    distance = distance * 1.6;
+  }
+
+  // Create a GeoQuery based on a location
+  const query = geocollection.near({
+    center: new admin.firestore.GeoPoint(
+      parseFloat(location.split(",")[0]),
+      parseFloat(location.split(",")[1])
+    ),
+    radius: parseFloat(distance)
+  });
+
+  try {
+    // Get query (as Promise)
+    const value = await query.get();
+    // All GeoDocument returned by GeoQuery, like the GeoDocument added above
+    console.log(value.docs);
+
+    const nearNeeds = value.docs.map(doc => ({ ...doc.data(), ...doc }));
+    return res.status(200).send(nearNeeds);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).end();
+  }
+});
+
 routes.post("/", authenticate, validate(needValidation), async (req, res) => {
   let loc = req.body.location || null;
   if (loc) {
@@ -33,17 +75,15 @@ routes.post("/", authenticate, validate(needValidation), async (req, res) => {
     subjects: req.body.subjects,
     urgency: req.body.urgency,
     title: req.body.title,
-    location: loc,
+    coordinates: loc,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     details: req.body.details
   };
 
   try {
-    await db
-      .collection("needs")
-      .doc(req.user.uid)
-      .set(newNeed);
+    // Add a GeoDocument to a GeoCollection
+    await geocollection.add(newNeed);
     return res.status(200).end();
   } catch (err) {
     console.log(err);
