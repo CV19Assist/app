@@ -1,10 +1,13 @@
 const functions = require("firebase-functions");
 const express = require("express");
-const bodyParser = require("body-parser");
-const userProfileRoutes = require('./handlers/user');
 const { ValidationError } = require("express-validation");
-const { authenticate } = require("./util/auth");
+const bodyParser = require("body-parser");
 const cors = require("cors");
+
+const userProfileRoutes = require('./handlers/user');
+const needsRoutes = require('./handlers/needs');
+
+const { authenticate } = require("./util/auth");
 
 const app = express();
 app.use(bodyParser.json());
@@ -32,6 +35,7 @@ app.get("/auth-echo", authenticate, (req, res) => {
   });
 });
 app.use("/user", userProfileRoutes);
+app.use("/needs", needsRoutes);
  
 // Special handling for express-validation errors.
 app.use((err, req, res, next) => {
