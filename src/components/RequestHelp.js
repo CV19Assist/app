@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
@@ -11,21 +11,23 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { makeStyles, RadioGroup, FormControl, FormGroup } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import { Formik, Field } from "formik";
+import { Formik, Field, FieldArray } from "formik";
+import Location from "./ClickableMap";
+import * as Yup from "yup";
 
 const useStyles = makeStyles(theme => ({
-  heroContent: {
-    background: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    marginTop: theme.spacing(4)
+  header: {
+    marginBottom: theme.spacing(4),
   },
   buttons: {
     display: 'flex',
     justifyContent: 'flex-end',
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(3)
+  },
+  paper: {
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(1)
   },
   optionalDivider: {
     marginTop: theme.spacing(4),
@@ -34,236 +36,266 @@ const useStyles = makeStyles(theme => ({
   intro: {
     marginBottom: theme.spacing(2),
   },
+  errorText: {
+    color: 'red',
+    fontWeight: 'bold',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(1)
+  },
   radio: {
     marginLeft: theme.spacing(1),
   },
+  buttons: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(3)
+  },
 }));
+
+const requestValidationSchema = Yup.object().shape({
+  custName: Yup.string().min(2, "Too Short").required("Required"),
+  contactInfo: Yup.string().min(2, "Too Short").required("Required"),
+  needGroup: Yup.array().required("Please select at least one support need."),
+  otherComments: Yup.string(),
+});
+
+const needOptions = [
+  "Food/Meal Delivery",
+  "Health Questions",
+  "Housing/Utilities",
+  "Mental Health/Emotional Support",
+  "Limited, Immediate Financial Needs"
+];
+
+const immediacyOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 function NeedHelp() {
   const classes = useStyles();
+  const [userLocation, setUserLocation] = useState(null);
+
+  const handleLocationChange = (location) => {
+    setUserLocation(location);
+  }
+
+  const handleFormSubmit = (values) => {
+    console.log(values);
+  }
 
   return (
-    <React.Fragment>
-      <main>
-        <div className={classes.heroContent}>
-          <Container maxWidth="md">
-            <Typography
-              component="h1"
-              variant="h2"
-              align="center"
-              color="textPrimary"
-              gutterBottom
-            >
-              Request Help
-            </Typography>
-            <Formik
-              initialValues={{
-                checkFood: "",
-                checkHealth: "",
-                checkHousing: "",
-                checkEmotional: "",
-                checkFinancial: "",
-                radioNum: "",
-                contactInfo: "",
-                custName: "",
-                otherComments: "",
-              }}
-            >
-              {formik => (
-                <form onSubmit={formik.handleSubmit}>
-                  <Container>
-                    <Grid container spacing={3}>
-                      <FormGroup>
-                        <Field as={FormControlLabel}
-                          control={<Checkbox onChange={formik.handleChange} name="checkFood" />}
-                          label="&nbsp; Food/Meal Delivery"
-                        />
-                        <Field as={FormControlLabel}
-                          control={<Checkbox onChange={formik.handleChange} name="checkHealth" />}
-                          label="&nbsp; Health Questions"
-                        />
-                        <Field as={FormControlLabel}
-                          control={<Checkbox onChange={formik.handleChange} name="checkHousing" />}
-                          label="&nbsp; Housing/Utilities"
-                        />
-                        <Field as={FormControlLabel}
-                          control={<Checkbox onChange={formik.handleChange} name="checkEmotional" />}
-                          label="&nbsp; Mental Health/Emotional Support"
-                        />
-                        <Field as={FormControlLabel}
-                          control={<Checkbox onChange={formik.handleChange} name="checkFinancial" />}
-                          label="&nbsp; Limited, Immediate Financial Needs"
-                        />
-                      </FormGroup>
-                    </Grid>
-                    <Divider className={classes.optionalDivider} />
-                    <Typography variant="h5" gutterBottom>
-                      Immediacy of Need
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      A short explanation.
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs>
-                        <Typography variant="body2" align="right" gutterBottom>
-                          Very High
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={9.5}>
-                        <FormControl component="fieldset">
-                          <Field as={RadioGroup}
-                            name="radioNum"
-                            row
+    <Container maxWidth="md">
+      <Paper className={classes.paper}>
+      <div className={classes.heroContent}>
+        <Container maxWidth="md">
+          <Typography
+            component="h1"
+            variant="h4"
+            align="center"
+            color="textPrimary"
+            className={classes.header}
+            gutterBottom
+          >
+            Request Help
+          </Typography>
+          <Formik
+            validationSchema={requestValidationSchema}
+            onSubmit={handleFormSubmit}
+            initialValues={{
+              checkFood: "",
+              checkHealth: "",
+              checkHousing: "",
+              checkEmotional: "",
+              checkFinancial: "",
+              radioNum: "",
+              contactInfo: "",
+              custName: "",
+              otherComments: ""
+            }}
+          >
+            {formik => (
+              <form onSubmit={formik.handleSubmit}>
+                <Container>
+                  <Grid container spacing={3}>
+                    <FormGroup>
+                      <FieldArray name="needGroup" render={errors => (
+                        <React.Fragment>
+                          {needOptions.map((option, index) => (
+                            <Field
+                              key={index}
+                              as={FormControlLabel}
+                              control={
+                                <Checkbox
+                                  onChange={formik.handleChange}
+                                  name={`needGroup.${index}`}
+                                />
+                              }
+                              label={option}
+                            />
+                          ))}
+                          {
+                            errors.needGroup === "string" &&
+                            (
+                              <Typography variant="body2" className={classes.errorText}>
+                                Please select at least one need.
+                              </Typography>
+                            )
+                          }
+                        </React.Fragment>
+                        )
+                      } />
+
+                      {/* TODO: Implement this functionality */}
+                      {/* <Field
+                        as={FormControlLabel}
+                        control={
+                          <Checkbox
                             onChange={formik.handleChange}
-                          >
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="1"
-                              control={<Radio />}
-                              label="1"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="2"
-                              control={<Radio />}
-                              label="2"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="3"
-                              control={<Radio />}
-                              label="3"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="4"
-                              control={<Radio />}
-                              label="4"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="5"
-                              control={<Radio />}
-                              label="5"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="6"
-                              control={<Radio />}
-                              label="6"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="7"
-                              control={<Radio />}
-                              label="7"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="8"
-                              control={<Radio />}
-                              label="8"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="9"
-                              control={<Radio />}
-                              label="9"
-                              labelPlacement="top"
-                            />
-                            <FormControlLabel
-                              className={classes.radio}
-                              value="10"
-                              control={<Radio />}
-                              label="10"
-                              labelPlacement="top"
-                            />
-                          </Field>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="body2" gutterBottom>
-                          Very Low
-                        </Typography>
-                      </Grid>
+                            name="checkOther"
+                          />
+                        }
+                        label="&nbsp; Limited, Immediate Financial Needs"
+                      /> */}
+                    </FormGroup>
+                  </Grid>
+                  <Divider className={classes.optionalDivider} />
+                  <Typography variant="h5" gutterBottom>
+                    Immediacy of Need
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    A short explanation.
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs>
+                      <Typography variant="body2" align="right" gutterBottom>
+                        Very High
+                      </Typography>
                     </Grid>
-                    <Divider className={classes.optionalDivider} />
-                    <Typography variant="h5" gutterBottom>
-                      Location
+                    <Grid item xs={10}>
+                      <FormControl component="fieldset">
+                        <Field
+                          as={RadioGroup}
+                          name="radioNum"
+                          row
+                          onChange={formik.handleChange}
+                        >
+                          {immediacyOptions.map((option, index) => (
+                            <FormControlLabel
+                              key={index}
+                              className={classes.radio}
+                              value={option}
+                              control={<Radio />}
+                              label={option}
+                              labelPlacement="top"
+                            />
+                          ))}
+                        </Field>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs>
+                      <Typography variant="body2" gutterBottom>
+                        Very Low
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                  <Divider className={classes.optionalDivider} />
+                  <Typography variant="h5" gutterBottom>
+                    Your Location
+                  </Typography>
+                  <Typography variant="body2" className={classes.intro}>
+                    Location is not required, but highly recommended because it will allow us to
+                    match more efficiently.  You can click on the map to set your location.
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Card>
+                        <Location onLocationChange={handleLocationChange} />
+                      </Card>
+                      {/* TODO: Add support for detection */}
+                      {/* <div className={classes.buttons}>
+                        <Button variant="contained" color="primary">
+                          Detect Location
+                        </Button>
+                      </div> */}
+                    </Grid>
+                  </Grid>
+                  <Divider className={classes.optionalDivider} />
+                  <Typography variant="h5" gutterBottom>
+                    Contact Information
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                      <Field
+                        as={TextField}
+                        name="contactInfo"
+                        type="text"
+                        label="Phone number, email address or both"
+                        variant="outlined"
+                        fullWidth
+                        error={
+                          formik.touched.contactInfo &&
+                          !!formik.errors.contactInfo
+                        }
+                        helperText={formik.errors.contactInfo}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                      <Field
+                        as={TextField}
+                        name="custName"
+                        type="text"
+                        label="Name"
+                        variant="outlined"
+                        fullWidth
+                        error={
+                          formik.touched.custName && !!formik.errors.custName
+                        }
+                        helperText={formik.errors.custName}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Divider className={classes.optionalDivider} />
+                  <Typography variant="h5" gutterBottom>
+                    Other helpful comments
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Field
+                        as={TextField}
+                        name="otherComments"
+                        multiline
+                        placeholder="Please provide any additional information which might be helpful."
+                        fullWidth
+                        rows="4"
+                        variant="outlined"
+                      />
+                    </Grid>
+                  </Grid>
+                  {!formik.isValid && (
+                    <Typography variant="body2" className={classes.errorText}>
+                      Please fix the errors above.
                     </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <Card>
-                          <Paper variant="outlined">Replace with Map</Paper>
-                        </Card>
-                        <div className={classes.buttons}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                          >
-                            Detect Location
+                  )}
+                  <div className={classes.buttons}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                    >
+                      Submit Request
                     </Button>
-                        </div>
-                      </Grid>
-                    </Grid>
-                    <Divider className={classes.optionalDivider} />
-                    <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <Field as={TextField}
-                          name="contactInfo"
-                          type="text"
-                          label="Contact Information"
-                          variant="outlined"
-                          fullWidth
-                          error={formik.touched.contactInfo && !!formik.errors.contactInfo}
-                          helperText={formik.errors.contactInfo}
-                        />
-                      </Grid>
-                    </Grid>
-                    <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <Field as={TextField}
-                          name="custName"
-                          type="text"
-                          label="Name"
-                          variant="outlined"
-                          fullWidth
-                          error={formik.touched.custName && !!formik.errors.custName}
-                          helperText={formik.errors.custName}
-                        />
-                      </Grid>
-                    </Grid>
-                    <Divider className={classes.optionalDivider} />
-                    <Typography variant="h5" gutterBottom>
-                      Other helpful comments
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={9}>
-                        <Field as={TextField}
-                          name="otherComments"
-                          multiline
-                          fullWidth
-                          rows="4"
-                          variant="outlined"
-                        />
-                      </Grid>
-                    </Grid>
-                  </Container>
-                </form>
-              )}
-            </Formik>
-          </Container>
-        </div>
-      </main>
-    </React.Fragment>
+                  </div>
+                </Container>
+              </form>
+            )}
+          </Formik>
+        </Container>
+      </div>
+      </Paper>
+    </Container>
   );
 }
 

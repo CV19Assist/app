@@ -19,6 +19,8 @@ export const SAVE_USER_PROFILE = "SAVE_USER_PROFILE";
 export const SAVE_USER_PROFILE_SUCCEEDED = "SAVE_USER_PROFILE_SUCCEEDED";
 export const SAVE_USER_PROFILE_FAILED = "SAVE_USER_PROFILE_FAILED";
 
+export const CACHE_LAUNCH_URL = "CACHE_LAUNCH_URL";
+
 // This is a special case that's dealt in reducers/index so we export it.
 export const USER_LOGOUT = "USER_LOGOUT";
 
@@ -27,6 +29,7 @@ const defaultState = Immutable.Map({
   isAuthenticated: false,
   authUser: null,
   userProfile: null,
+  launchURL: null,
   state: "", // "", checking, loggingIn, loginFailed, loginSuccessful
 });
 
@@ -67,6 +70,10 @@ export function reducer(state = defaultState, action) {
         .setIn([...moduleDomainRoot, "state"], "")
         .setIn([...moduleDomainRoot, "isAuthenticated"], false);
 
+    case CACHE_LAUNCH_URL:
+      return state
+        .setIn([...moduleDomainRoot, "launchURL"], action.url);
+
     default:
       return state;
   }
@@ -86,9 +93,11 @@ export const saveUserProfile = (profileData) => ({ type: SAVE_USER_PROFILE, prof
 export const saveUserProfileSucceeded = (userProfile) => ({ type: SAVE_USER_PROFILE_SUCCEEDED, userProfile });
 export const saveUserProfileFailed = (error) => ({ type: SAVE_USER_PROFILE_FAILED, error });
 
+export const cacheLaunchURL = (url) => ({ type: CACHE_LAUNCH_URL, url });
+
 
 /***** side effects, only as applicable. e.g. thunks, epics, etc *****/
-export const userCheckEpic = action$ =>
+export const userCheckEpic = (action$, state$) =>
   action$.pipe(
     ofType(INITIALIZE_USER_AUTH),
     mergeMap(() => {
@@ -101,7 +110,8 @@ export const userCheckEpic = action$ =>
             return API.getAuthenticatedRequestObservable("/user/profile").pipe(
               mergeMap(resp => {
                 const userProfile = resp.response;
-                return [userLoggedIn(userProfile, firebaseUser), push("/"), finishedInitializingAuth()];
+                const redirectPath = state$.value.getIn(["user", "launchURL"]) || "/";
+                return [userLoggedIn(userProfile, firebaseUser), push(redirectPath), finishedInitializingAuth()];
               }),
               catchError(err => {
                 // User needs profile.

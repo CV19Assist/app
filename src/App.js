@@ -5,12 +5,13 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import { useDispatch, useSelector } from 'react-redux';
-import { Route, Switch, Link } from 'react-router-dom';
+import { Route, Switch, Link, useLocation } from 'react-router-dom';
 import { getEnvironmentInfo } from './modules/environment';
-import { initializeUserAuth } from './modules/user';
+import { initializeUserAuth, cacheLaunchURL } from './modules/user';
 import { firebase } from './firebase';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button';
@@ -18,6 +19,7 @@ import Button from '@material-ui/core/Button';
 import Homepage from './components/Homepage';
 import Login from './components/Login';
 import Logout from './components/Logout';
+import RequestHelp from './components/RequestHelp';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
 
 const useStyles = makeStyles(theme => ({
@@ -34,7 +36,8 @@ const useStyles = makeStyles(theme => ({
   footer: {
     backgroundColor: theme.palette.background.paper,
     marginTop: 'auto',
-    padding: theme.spacing(6),
+    // marginTop: theme.spacing(2),
+    padding: theme.spacing(2),
   },
   appBar: {
     marginBottom: theme.spacing(2)
@@ -44,11 +47,13 @@ const useStyles = makeStyles(theme => ({
 function App(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const location = useLocation();
   const environment = useSelector(state => state.get("environment") );
   const user = useSelector(state => state.get("user"));
 
   useEffect(() => {
     dispatch(getEnvironmentInfo());
+    dispatch(cacheLaunchURL(location.pathname));
     firebase.auth().onAuthStateChanged(user => {
       dispatch(initializeUserAuth());
     });
@@ -57,13 +62,17 @@ function App(props) {
   // Don't render anything until firebase auth is fully initialized.
   if (user.get("isInitialized") !== true) {
     return (
-      <p>Loading...</p>
+      <React.Fragment>
+        <CircularProgress />
+        <Typography variant="h6" noWrap>
+            Loading...
+        </Typography>
+      </React.Fragment>
     );
   }
 
   return (
     <React.Fragment>
-
       <Helmet titleTemplate="%s | CV19 Assist" />
       <CssBaseline />
 
@@ -96,6 +105,7 @@ function App(props) {
               <Route exact path="/" component={Homepage} />
               <Route exact path="/login" component={Login} />
               <Route exact path="/logout" component={Logout} />
+              <Route exact path="/request-help" component={RequestHelp} />
               <Route exact path="/contact">
                 <p>Contact Us</p>
                 <p>coming soon...</p>

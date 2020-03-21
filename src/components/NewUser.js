@@ -5,14 +5,17 @@ import Paper from "@material-ui/core/Paper";
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
 import { makeStyles } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid"
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import { Formik, Field } from "formik";
 import * as Yup from "yup";
 import { saveUserProfile } from "../modules/user";
-import {GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow} from "react-google-maps";
+import Location from "./ClickableMap";
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -27,6 +30,14 @@ const useStyles = makeStyles(theme => ({
   optionalDivider: {
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4),
+  },
+  errorText: {
+    color: 'red',
+    fontWeight: 'bold',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(1)
   },
   paper: {
     paddingTop: theme.spacing(3),
@@ -50,55 +61,6 @@ const userProfileSchema = Yup.object().shape({
 });
 
 
-function Map(props) {
-  const [showMarker, setShowMarker] = useState(false);
-  const [markerLocation, setMarkerLocation] = useState({lat: 0, lng: 0});
-
-  const handleLocationClick = (args) => {
-    setShowMarker(true);
-    const newLoc = {lat: args.latLng.lat(), lng: args.latLng.lng()};
-    setMarkerLocation(newLoc);
-    props.onLocationChange({ _latitude: newLoc.lat, _longitude: newLoc.lng });
-  }
-
-  return (
-    <GoogleMap
-      defaultZoom={10}
-      defaultCenter={{ lat: 43, lng: -89.4 }}
-      onClick={handleLocationClick}
-      // defaultOptions={{ styles: mapStyles }}
-    >
-      (showMarker && (
-        <Marker
-          position={{
-            lat: markerLocation.lat,
-            lng: markerLocation.lng
-          }}
-        />
-      ))
-    </GoogleMap>
-  );
-}
-
-const WrappedMap = withScriptjs(withGoogleMap(Map));
-
-function Location(props) {
-  return (
-    <div style={{ height: "50vh" }}>
-      <WrappedMap
-        onLocationChange={props.onLocationChange}
-        googleMapURL={
-          `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&v=3.exp&libraries=geometry,drawing,places`
-        }
-        loadingElement={<div style={{ height: "100%" }} />}
-        containerElement={<div style={{ height: "100%" }} />}
-        mapElement={<div style={{ height: "100%" }} />}
-      />
-    </div>
-  );
-}
-
-
 function NewUser() {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -110,8 +72,29 @@ function NewUser() {
 
   if (user.get("userProfile")) {
     return (
-      <p>You already have a profile.</p>
-    )
+      <Container>
+        <Card style={{ minWidth: 275 }}>
+          <CardContent>
+            <Typography variant="h5" component="h2">
+              Profile Exists
+            </Typography>
+            <Typography variant="body2" color="textSecondary" component="p">
+              You are already signed up so you do not have to sign up again.
+            </Typography>
+          </CardContent>
+          <CardActions>
+            <Button
+              component={Link}
+              to="/profile"
+              size="small"
+              color="primary"
+            >
+              View Profile
+            </Button>
+          </CardActions>
+        </Card>
+      </Container>
+    );
   }
 
   const handleLocationChange = (location) => {
@@ -272,6 +255,11 @@ function NewUser() {
                   />
                 </Grid>
               </Grid>
+              {!formik.isValid && (
+                <Typography variant="body2" className={classes.errorText}>
+                  Please fix the errors above.
+                </Typography>
+              )}
               <div className={classes.buttons}>
                 <Button
                   type="submit"
