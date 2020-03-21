@@ -31,7 +31,7 @@ function Homepage() {
               color="textPrimary"
               gutterBottom
             >
-              Welcome to Coronavirus (COVID-19) Pandemic Assistance
+              Welcome to Coronavirus (COVID-19) Pandemic Assistance System
             </Typography>
             <Typography
               id="content-homepage"

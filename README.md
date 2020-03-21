@@ -1,4 +1,20 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# COVID-19 Assist app
+
+## Firebase Deployment Notes
+
+* View Environments: `firebase use`
+* Select proejct: `firebase use project_id_or_alias` Either `default` for dev, or `production` for production.
+
+To deploy, make sure that you select the right environment.  Then run one of the following.
+
+```
+# For single component
+firebase deploy --only functions
+firebase deploy --only hosting
+
+# For multiple components
+firebase deploy --only functions,hosting
+```
 
 ## Available Scripts
 
