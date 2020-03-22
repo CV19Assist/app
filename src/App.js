@@ -22,6 +22,8 @@ import Logout from './components/Logout';
 import RequestHelp from './components/RequestHelp';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
 import { version } from '../package.json';
+import Maps from './components/Maps';
+import Geolocation from './components/Geolocation';
 
 const useStyles = makeStyles(theme => ({
   root: {
