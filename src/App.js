@@ -20,6 +20,8 @@ import PageNotFound from './components/PageNotFound';
 import Profile from './components/Profile';
 import NewUser from './components/NewUser';
 import Maps from './components/Maps';
+import Geolocation from './components/Geolocation';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -108,8 +110,11 @@ function App(props) {
             <Route path={["/volunteer", "/need-help"]}>
               <SignUp />
             </Route>
-			<Route exact path="/maps">
+			      <Route exact path="/maps">
               <Maps />
+            </Route>
+            <Route exact path="/geolocation">
+              <Geolocation />
             </Route>
             <Route>
               <PageNotFound />
