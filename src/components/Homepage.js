@@ -25,13 +25,13 @@ function Homepage() {
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <Typography
-              component="h3"
-              variant="h3"
+              component="h4"
+              variant="h4"
               align="center"
               color="textPrimary"
               gutterBottom
             >
-              Welcome to Coronavirus (COVID-19) Pandemic Assistance System
+              Welcome to the Community Driven<br /> Coronavirus (COVID-19) Pandemic Assistance System
             </Typography>
             <Typography
               id="content-homepage"

@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const express = require("express");
+const v1routes = express.Router();
 const { ValidationError } = require("express-validation");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -18,13 +19,15 @@ var corsOptions = {
     if (whitelist.indexOf(origin) !== -1) {
       return callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      console.log(origin);
+      return callback(new Error('Cross-Origin Resource Sharing (CORS) for this origin is not allowed.'));
     }
   }
 }
 app.use(cors(corsOptions));
 
-// User profile routes.
+// TODO: Add a new middelware to validate the Environment header.
+
 app.get("/echo", (req, res) => {
   return res.json({ working: "yes", at: new Date().toUTCString() });
 });
@@ -34,15 +37,21 @@ app.get("/auth-echo", authenticate, (req, res) => {
     working: "yes", at: new Date().toUTCString()
   });
 });
-app.use("/user", userProfileRoutes);
-app.use("/needs", needsRoutes);
+
+v1routes.use("/user", userProfileRoutes);
+v1routes.use("/needs", needsRoutes);
+
+app.use("/v1", v1routes);
+
  
 // Special handling for express-validation errors.
+// NOTE: This must be the last middleware!
 app.use((err, req, res, next) => {
+  console.log(err);
   if (err instanceof ValidationError) {
-    return res.status(err.statusCode).json(err)
+    return res.status(err.statusCode).json(err);
   }
-  return res.status(500).json(err);
+  return res.status(500).json({number: err.number, name: err.name, message: err.message});
 });
 
 exports.api = functions.https.onRequest(app);

@@ -2,6 +2,13 @@ const { db, admin } = require('../util/admin');
 const routes = require("express").Router();
 const { validate, Joi } = require("express-validation");
 const { authenticate } = require("../util/auth");
+const { GeoFirestore } = require("geofirestore");
+
+// Create a GeoFirestore reference
+const geofirestore = new GeoFirestore(db);
+
+// Create a GeoCollection reference
+const geocollection = geofirestore.collection("userProfiles");
 
 const userProfileValidation = {
   body: Joi.object({
@@ -47,11 +54,11 @@ routes.post(
       zip: req.body.zip || null,
       phone: req.body.phone,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      location: loc
+      coordinates: loc
     };
 
     try {
-      await db.collection("userProfiles").doc(req.user.uid).set(newProfile);
+      await geocollection.doc(req.user.uid).set(newProfile);
       return res.status(200).end();
     }
     catch(err) {
@@ -68,7 +75,8 @@ routes.get("/profile", authenticate, async (req, res) => {
     if (!profile.exists) {
       return res.status(404).json({error: `profile with id '${req.user.uid}' not found`});
     }
-    return res.status(200).json(profile.data());
+    console.log(profile.data())
+    return res.status(200).json({...profile.data().d});
   }
   catch(err) {
     console.log(err);

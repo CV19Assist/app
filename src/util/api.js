@@ -31,7 +31,8 @@ class API {
 
   getAuthenticatedJSONRequestObservable(url, method, data) {
     return this._getAuthenticatedRequestObservable(url, method, data, {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Environment": process.env.NODE_ENV
     });
   }
 
