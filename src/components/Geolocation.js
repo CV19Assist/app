@@ -3,7 +3,7 @@ import PlacesAutocomplete, {
     geocodeByAddress,
     getLatLng
 } from "react-places-autocomplete";
-import Button from 'react-bootstrap/Button';
+
 
 export default function Geolocation() {
 
@@ -52,9 +52,9 @@ export default function Geolocation() {
             >
             {({getInputProps, suggestions, getSuggestionItemProps, loading}) => 
                 <div>
-                    <Button variant="outline-primary"
+                    <button
                     onClick={detectLocation}
-                    >Detect</Button>{' '}
+                    >DETECT</button>
                     <p>Latitude: {coordinates.lat}</p>
                     <p>Longitude: {coordinates.lng}</p>
 

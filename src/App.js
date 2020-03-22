@@ -21,7 +21,7 @@ import Profile from './components/Profile';
 import NewUser from './components/NewUser';
 import Maps from './components/Maps';
 import Geolocation from './components/Geolocation';
-import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const useStyles = makeStyles(theme => ({
   root: {
