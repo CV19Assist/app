@@ -2,13 +2,25 @@ userProfiles = [
     {
         firstName: "Farhan",
         lastName: "Ahmad",
-        streetAddress1: "",
-        streetAddress2: "",
+        address1: "",
+        address2: "",
         phone: "",
         city: "",
         state: "",
-        zip: "",
+        zipcode: "",
         email: "",
-        createdAt: timestamp
-    }
+        createdAt: timestamp,
+        location: Firebase.GeoPoint
+    },
+];
+
+
+requests = [
+    {
+        // ...
+    }    
 ]
+
+// Endpoints:
+//   * POST /request
+//   * 

@@ -11,11 +11,11 @@ const userProfileValidation = {
     email: Joi.string()
       .email()
       .required(),
-    street1: Joi.string(),
-    street2: Joi.string(),
-    city: Joi.string(),
-    state: Joi.string(),
-    zip: Joi.string(),
+    address1: Joi.string().allow(""),
+    address2: Joi.string().allow(""),
+    city: Joi.string().allow(""),
+    state: Joi.string().allow(""),
+    zipcode: Joi.string().allow(""),
     phone: Joi.string().required(),
     location: Joi.object().keys({
       _latitude: Joi.number().greater(-90).less(90),
@@ -40,8 +40,8 @@ routes.post(
       lastName: req.body.lastName,
       displayName: req.body.displayName,
       email: req.body.email,
-      street1: req.body.street1 || null,
-      street2: req.body.street2 || null,
+      address1: req.body.address1 || null,
+      address2: req.body.address2 || null,
       city: req.body.city || null,
       state: req.body.state || null,
       zip: req.body.zip || null,

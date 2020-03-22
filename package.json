@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "cv19assist",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,8 +8,10 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "connected-react-router": "^6.8.0",
     "firebase": "^7.11.0",
     "formik": "^2.1.4",
+    "history": "^4.10.1",
     "immutable": "^4.0.0-rc.12",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
@@ -29,7 +31,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "firebase-hosting-deploy": "firebase deploy --only functions",
+    "firebase-functions-deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -45,5 +50,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "source-map-explorer": "^2.4.0"
   }
 }
