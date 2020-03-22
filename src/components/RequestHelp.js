@@ -268,7 +268,8 @@ function NeedHelp() {
                           as={TextField}
                           name="contactInfo"
                           type="text"
-                          label="Phone number, email address or both"
+                          label="Phone or email"
+                          placeholder="Phone number, email address or both"
                           variant="outlined"
                           fullWidth
                           error={

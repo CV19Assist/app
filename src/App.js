@@ -109,6 +109,7 @@ function App(props) {
               <Route exact path="/login" component={Login} />
               <Route exact path="/logout" component={Logout} />
               <Route exact path="/request" component={RequestHelp} />
+              <Route exact path="/geo" component={Geolocation} />
               <Route exact path="/contact">
                 <p>Contact Us</p>
                 <p>coming soon...</p>

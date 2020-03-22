@@ -1,5 +1,7 @@
 import { reducer as userReducer } from './modules/user';
 import { reducer as environmentReducer } from './modules/environment';
+import { reducer as needsSearchReducer } from './modules/needsSearch';
+import { reducer as needsReducer } from './modules/needs';
 import { connectRouter } from 'connected-react-router/immutable';
 import { combineReducers } from "redux-immutable";
 import Immutable from "immutable";
@@ -20,6 +22,8 @@ const createRootReducer = history => {
     // TODO: Change this into a loop.
     state = environmentReducer(state, action);
     state = userReducer(state, action);
+    state = needsSearchReducer(state, action);
+    state = needsReducer(state, action);
     state = oldSlicedReducers(state, action);
     return state;
   };
