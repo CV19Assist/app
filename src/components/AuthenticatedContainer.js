@@ -5,8 +5,9 @@ import { Route, Redirect, Switch } from 'react-router-dom';
 import PageNotFound from './PageNotFound';
 import Profile from './Profile';
 import NewUser from './NewUser';
-import Maps from './Maps';
-import Volunteer from '../components/Volunteer';
+// import Maps from './Maps';
+// import Volunteer from '../components/Volunteer';
+import SearchResults from '../components/SearchResults';
 import ViewAll from '../components/ViewAll';
 import NeedHelp from './RequestHelp';
 
@@ -28,14 +29,12 @@ function AuthenticatedContainer(props) {
             <Route exact path="/new-user" component={NewUser} />
             <Route exact path="/profile" component={Profile} />
             <Route exact path="/need-help" component={NeedHelp} />
-            <Route path={["/volunteer", "/need-help"]}>
-              {!user.get("isAuthenticated") ? (<Redirect to="/login" />) : ( <ViewAll />)}
-            </Route>
+            <Route path="/volunteer" component={SearchResults} />
             <Route exact path="/contact">
               <p>Contact Us</p>
               <p>coming soon...</p>
             </Route>
-            <Route exact path="/maps" component={Maps} />
+            {/* <Route exact path="/maps" component={Maps} /> */}
 
             {/* TODO: Need to figure out how to allow anonymous user to access this. */}
             <Route component={PageNotFound} />

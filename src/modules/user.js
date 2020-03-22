@@ -48,6 +48,7 @@ export function reducer(state = defaultState, action) {
         .setIn([...moduleDomainRoot, "isInitialized"], false)
         .setIn([...moduleDomainRoot, "state"], "checking")
         .setIn([...moduleDomainRoot, "authUser"], null)
+        .setIn([...moduleDomainRoot, "userProfile"], null)
         .setIn([...moduleDomainRoot, "isAuthenticated"], false);
 
     case FINISHED_INITIALIZING_AUTH:
