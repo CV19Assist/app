@@ -24,6 +24,7 @@ import AuthenticatedContainer from './components/AuthenticatedContainer';
 import { version } from '../package.json';
 import Maps from './components/Maps';
 import Geolocation from './components/Geolocation';
+import MyTasks from './components/MyTasks';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -110,6 +111,7 @@ function App(props) {
               <Route exact path="/logout" component={Logout} />
               <Route exact path="/request" component={RequestHelp} />
               <Route exact path="/geo" component={Geolocation} />
+              <Route exact path="/myTasks" component={MyTasks} />
               <Route exact path="/contact">
                 <p>Contact Us</p>
                 <p>coming soon...</p>
