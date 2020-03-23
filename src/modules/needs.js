@@ -1,8 +1,6 @@
 import Immutable from "immutable";
 import { mergeMap, catchError } from 'rxjs/operators';
 import { ofType } from 'redux-observable';
-import { firebaseAuth } from '../firebase';
-import { of, from } from "rxjs";
 import API from '../util/api';
 import { push } from 'connected-react-router/immutable';
 import moment from 'moment';
@@ -22,6 +20,10 @@ const SUBMIT_FOR_ASSIGNMENT_FAILED = "SUBMIT_FOR_ASSIGNMENT_FAILED";
 const LOAD_NEED_DETAILS = "LOAD_NEED_DETAILS";
 const LOAD_NEED_DETAILS_SUCCEEDED = "LOAD_NEED_DETAILS_SUCCEEDED";
 const LOAD_NEED_DETAILS_FAILED = "LOAD_NEED_DETAILS_FAILED";
+
+// const LOAD_NEED_CONTACT_INFO = "LOAD_NEED_CONTACT_INFO";
+// const LOAD_NEED_CONTACT_INFO_FAILED = "LOAD_NEED_CONTACT_INFO_FAILED";
+// const LOAD_NEED_CONTACT_INFO_SUCCEEDED = "LOAD_NEED_CONTACT_INFO_SUCCEEDED";
 
 const RELEASE_NEED_ASSIGNMENT = "RELEASE_NEED_ASSIGNMENT";
 const RELEASE_NEED_ASSIGNMENT_SUCCEEDED = "RELEASE_NEED_ASSIGNMENT_SUCCEEDED";
@@ -43,7 +45,11 @@ const defaultState = Immutable.Map({
   }),
   details: Immutable.Map({
     id: null,
-    status: ""
+    status: "",
+    contactDetails: Immutable.Map({
+      info: null,
+      status: ""  // loading, loaded, failed
+    })
   })
 });
 
@@ -51,6 +57,7 @@ const moduleRootUIStateKey = ["ui", "needs"];
 const taskRequestKey = ["ui", "needs", "request"];
 const needSubmissionKey = ["ui", "needs", "submit"];
 const needDetailsKey = ["ui", "needs", "details"];
+// const contactInfoKey = ["ui", "needs", "details", "contactDetails"];
 
 /***** Reducers *****/
 export function reducer(state = defaultState, action) {
@@ -85,6 +92,7 @@ export function reducer(state = defaultState, action) {
 
     case LOAD_NEED_DETAILS:
       return state
+        .setIn([...needDetailsKey, "contactDetails"], Immutable.Map({}))
         .setIn([...needDetailsKey, "id"], action.id)
         .setIn([...needDetailsKey, "status"], "loading");
 
@@ -123,6 +131,10 @@ const loadNeedDetailsFailed = (error) => ({ type: LOAD_NEED_DETAILS_FAILED, erro
 export const releaseNeedAssignment = (id) => ({ type: RELEASE_NEED_ASSIGNMENT, id });
 const releaseNeedAssignmentSucceeded = () => ({ type: RELEASE_NEED_ASSIGNMENT_SUCCEEDED });
 const releaseNeedAssignmentFailed = (error) => ({ type: RELEASE_NEED_ASSIGNMENT_FAILED, error });
+
+// export const loadNeedContactInfo = (id) => ({ type: LOAD_NEED_CONTACT_INFO, id });
+// const loadNeedContactInfoFailed = (error) => ({ type: LOAD_NEED_CONTACT_INFO_FAILED, error });
+// const loadNeedContactInfoSucceeded = (contactInfo) => ({ type: LOAD_NEED_CONTACT_INFO_SUCCEEDED, contactInfo });
 
 export const completeNeedAssignment = (id) => ({ type: COMPLETE_NEED_ASSIGNMENT, id });
 const completeNeedAssignmentSucceeded = () => ({ type: COMPLETE_NEED_ASSIGNMENT_SUCCEEDED });

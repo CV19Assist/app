@@ -26,11 +26,11 @@ import RequestHelp from './components/RequestHelp';
 import RequestSuccessful from './components/RequestSuccessful';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
 import { version } from '../package.json';
-import Maps from './components/Maps';
-import Geolocation from './components/Geolocation';
-import MyTasks from './components/MyTasks';
+// import Maps from './components/Maps';
+// import Geolocation from './components/Geolocation';
+// import MyTasks from './components/MyTasks';
 import NeedHelp from './components/RequestHelp';
-import NeedDetails from './components/NeedDetails';
+import NeedDetails from './pages/NeedDetailsPage';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -154,8 +154,8 @@ function App(props) {
               <Route exact path="/needs/:id" component={NeedDetails} />
 
               {/* TODO: Remove temporary routes */}
-              <Route exact path="/geo" component={Geolocation} />
-              <Route exact path="/myTasks" component={MyTasks} />
+              {/* <Route exact path="/geo" component={Geolocation} />
+              <Route exact path="/myTasks" component={MyTasks} /> */}
 
               <Route exact path="/contact">
                 <p>Contact Us</p>

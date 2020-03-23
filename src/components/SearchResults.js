@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { Link } from 'react-router-dom';
-import { makeStyles, ExpansionPanelDetails } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -11,18 +10,8 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import CardContent from '@material-ui/core/CardContent';
 import CardActions from "@material-ui/core/CardActions";
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Slider from '@material-ui/core/Slider';
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AnnouncementOutlinedIcon from '@material-ui/icons/AnnouncementOutlined';
-import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Alert from '@material-ui/lab/Alert';
@@ -83,6 +72,9 @@ const useStyles = makeStyles(theme => ({
   divider: {
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(3)
+  },
+  grabButton: {
+    marginRight: theme.spacing(3)
   }
 }));
 
@@ -104,7 +96,7 @@ function SearchResults() {
   const dispatch = useDispatch();
   const user = useSelector(state => state.get("user"));
   const ui = useSelector(state => state.getIn(["ui", "search"]));
-  const searchStatus = ui.get("state")
+  const searchStatus = ui.get("state");
   const results = ui.get("results");
   const message = ui.get("message");
   const [showAddressPicker, setShowAddressPicker] = useState(false);
@@ -112,7 +104,7 @@ function SearchResults() {
   const userLocation = user.getIn(["userProfile", "coordinates"]);
   const [currentPlaceLatLng, setCurrentPlaceLatLng] = React.useState({
     lat: userLocation.get("_latitude"),
-    lng: userLocation.get("_longitude"),
+    lng: userLocation.get("_longitude")
   });
   const [currentPlaceLabel, setCurrentPlaceLabel] = React.useState("");
   const [distance, setDistance] = React.useState(defaultDistance);
@@ -126,16 +118,16 @@ function SearchResults() {
       units: "mi"
     };
     dispatch(loadSearchResults(filter));
-  }, [])
+  }, []);
 
   // const handlePlaceSelect2 = (address) => {
   //   console.log(`ui select ${address}`);
   // }
 
-  const handlePlaceChange = (address) => {
+  const handlePlaceChange = address => {
     setCurrentPlaceLabel(address);
     // console.log(`change: ${address}`);
-  }
+  };
   const handlePlaceSelect = (event, selection) => {
     // console.log(event);
     // console.log(selection);
@@ -143,10 +135,10 @@ function SearchResults() {
       .then(results => getLatLng(results[0]))
       .then(latLng => {
         setCurrentPlaceLatLng(latLng);
-        console.log('Success', latLng)
+        console.log("Success", latLng);
       })
-      .catch(error => console.error('Error', error));
-  }
+      .catch(error => console.error("Error", error));
+  };
 
   const handleTriggerSearchResults = () => {
     const filter = {
@@ -156,9 +148,25 @@ function SearchResults() {
       units: "mi"
     };
     dispatch(loadSearchResults(filter));
+  };
+
+  const getNeedUrl = (id) => {
+    let href = window.location.href;
+    let path = `${href.substr(0, href.indexOf("/", href.indexOf("://")+3))}/needs/${id}`;
+    // console.log(path);
+    return path;
   }
 
-  const handleGrabNeed = (need) => {
+  const handleCopyNeedLink = (id) => {
+    const el = document.createElement('textarea');
+    document.body.appendChild(el);
+    el.value = getNeedUrl(id);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  };
+
+  const handleGrabNeed = need => {
     dispatch(requestNeedAssignment(need));
     // console.log(need);
   };
@@ -168,12 +176,12 @@ function SearchResults() {
       <Paper className={classes.filterPaper}>
         <Typography variant="h6">Search Criteria</Typography>
         {!showAddressPicker && (
-        <Typography id="continuous-slider" gutterBottom>
-          Using your default location.
-          <Button onClick={() => setShowAddressPicker(true)}>
-            Select new location
-          </Button>
-        </Typography>
+          <Typography id="continuous-slider" gutterBottom>
+            Using your default location.
+            <Button onClick={() => setShowAddressPicker(true)}>
+              Select new location
+            </Button>
+          </Typography>
         )}
         {showAddressPicker && (
           <PlacesAutocomplete
@@ -234,7 +242,7 @@ function SearchResults() {
         >
           Search
         </Button>
-        {message && message != "" && (
+        {message && message !== "" && (
           <Alert severity="info" className={classes.alertMessage}>
             {message}
           </Alert>
@@ -289,6 +297,17 @@ function SearchResults() {
                     REQUESTOR
                   </Typography>
                   <Typography variant="h6">{result.name}</Typography>
+
+                  {result.otherDetails && (
+                    <React.Fragment>
+                      <Typography variant="caption" gutterBottom>
+                        OTHER DETAILS
+                      </Typography>
+                      <Typography variant="h6" gutterBottom>
+                        {result.otherDetails}
+                      </Typography>
+                    </React.Fragment>
+                  )}
                 </CardContent>
                 <CardActions>
                   <div className={classes.indent}>
@@ -296,9 +315,33 @@ function SearchResults() {
                       color="primary"
                       variant="contained"
                       onClick={() => handleGrabNeed(result)}
+                      className={classes.grabButton}
                     >
                       GRAB
                     </Button>
+                    {navigator.share ? (
+                      <Button
+                        color="primary"
+                        variant="outlined"
+                        onClick={() => {
+                          navigator.share({
+                            title: 'CV19 Assist Need Link',
+                            text: 'CV19 Assist Need Link',
+                            url: getNeedUrl(result.id),
+                          })
+                        }}
+                      >
+                        SHARE
+                      </Button>
+                    ) : (
+                      <Button
+                        color="primary"
+                        variant="outlined"
+                        onClick={() => handleCopyNeedLink(result.id)}
+                      >
+                        COPY LINK FOR SHARING
+                      </Button>
+                    )}
                   </div>
                 </CardActions>
               </Grid>

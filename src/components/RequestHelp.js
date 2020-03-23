@@ -10,14 +10,14 @@ import Checkbox from "@material-ui/core/Checkbox";
 import Radio from '@material-ui/core/Radio';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { makeStyles, FormControl, FormGroup } from "@material-ui/core";
+import { makeStyles, FormGroup } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import { Formik, Field, FieldArray } from "formik";
 import Location from "./ClickableMap";
 import * as Yup from "yup";
 import { submitNeed } from "../modules/needs";
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -54,12 +54,6 @@ const useStyles = makeStyles(theme => ({
   radio: {
     marginLeft: theme.spacing(1),
   },
-  buttons: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(3)
-  },
 }));
 
 const requestValidationSchema = Yup.object().shape({
@@ -80,7 +74,7 @@ const needOptions = [
 ];
 
 // const immediacyOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const immediacyOptions = [1, 5, 10];
+// const immediacyOptions = [1, 5, 10];
 
 function NeedHelp() {
   const classes = useStyles();
@@ -106,7 +100,7 @@ function NeedHelp() {
     let selected = values.needGroup.filter(el => {
       return (el != null) && (typeof(el) !== "undefined");
     });
-    if (selected.length == 0) {
+    if (selected.length === 0) {
       alert("Please select at least one need.");
       return;
     }

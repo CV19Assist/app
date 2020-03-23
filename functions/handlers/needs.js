@@ -188,9 +188,9 @@ routes.get("/", authenticate, validate(searchParams), async (req, res) => {
     const results = value.docs.map(doc => {
       const mapped = { ...doc.data(), ...doc };
       
-      // Remove the contact info and coordinates from the search results.
-      delete mapped.coordinates;
-      delete mapped.contactInfo;
+      // // Remove the contact info and coordinates from the search results.
+      // delete mapped.coordinates;
+      // delete mapped.contactInfo;
 
       return mapped;
     });
@@ -218,17 +218,17 @@ routes.get("/:id", checkIfUserLoggedIn, async (req, res) => {
 
   let docData = docRef.data();
 
-  // Delete contact and other private info if not the owner.
-  console.log(req.user);
-  console.log(docData.owner);
-  if (
-    !req.user ||
-    !docData.owner ||
-    req.user.uid !== docData.owner.userProfileId
-  ) {
-    delete docData.coordinates;
-    delete docData.contactInfo;
-  }
+  // // Delete contact and other private info if not the owner.
+  // console.log(req.user);
+  // console.log(docData.owner);
+  // if (
+  //   !req.user ||
+  //   !docData.owner ||
+  //   req.user.uid !== docData.owner.userProfileId
+  // ) {
+  //   delete docData.coordinates;
+  //   delete docData.contactInfo;
+  // }
 
   return res.status(200).json(docData);
 });
@@ -284,6 +284,60 @@ routes.post("/:id/release", authenticate, async (req, res) => {
 
   return res.status(200).end();
 });
+
+// // ========== Need contact info
+// // Returns the contact info for the given need.
+// routes.post("/:id/contact-info", authenticate, async (req, res) => {
+//   // Find the document and ensure that it's not already assigned.
+//   let needDocRef = needsGeocollection.doc(req.params.id);
+//   let needDoc;
+//   try {
+//     needDoc = await needDocRef.get();
+//     if (!needDoc.exists) {
+//       return res.status(404).json({error: `could not find need with id '${req.params.id}'`});
+//     }
+//   } catch(err) {
+//     console.log(err);
+//     return res.status(500).json(err);
+//   }
+
+//   needData = needDoc.data();
+
+//   // Confirm that the user was actually assigned.
+//   if (!needData.owner) {
+//     return res.status(403).json({message:"No one is assigned to this need, please assign someone first."});
+//   }
+
+//   if (needData.owner.userProfileId !== req.user.uid) {
+//     return res.status(403).json({message:"Sorry, this need is not assigned to you."});
+//   }
+
+//   if (needData.status === 20) {
+//     return res.status(403).json({message:"This need was already fulfilled."});
+//   }
+
+//   // Finally, complete the need.
+//   const userSummary = await getUserProfileSummary(req.user.uid);
+//   try {
+//     await needDocRef.update({
+//       status: 20,   // Completed
+//       lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+//     });
+
+//     const historyEntry = {
+//       action: 20,  // Completed
+//       takenAt: admin.firestore.FieldValue.serverTimestamp(),
+//       ...userSummary
+//     };
+//     needDocRef['_document'].collection("history").add(historyEntry);
+//   }
+//   catch(err) {
+//     console.log(err);
+//     return res.status(500).json(err);
+//   }
+
+//   return res.status(200).end();
+// });
 
 // ========== Complete
 // Complete the given need

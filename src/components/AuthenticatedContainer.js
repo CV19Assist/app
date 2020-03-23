@@ -9,7 +9,7 @@ import NewUser from './NewUser';
 // import Volunteer from '../components/Volunteer';
 import SearchResults from '../components/SearchResults';
 import TaskRequestDialog from '../components/TaskRequestDialog';
-import ViewAll from '../components/ViewAll';
+// import ViewAll from '../components/ViewAll';
 
 function AuthenticatedContainer(props) {
   const user = useSelector(state => state.get("user"));
@@ -32,10 +32,6 @@ function AuthenticatedContainer(props) {
         <Route exact path="/new-user" component={NewUser} />
         <Route exact path="/profile" component={Profile} />
         <Route path="/volunteer" component={SearchResults} />
-        <Route exact path="/contact">
-          <p>Contact Us</p>
-          <p>coming soon...</p>
-        </Route>
         {/* <Route exact path="/maps" component={Maps} /> */}
 
         {/* TODO: Need to figure out how to allow anonymous user to access this. */}
