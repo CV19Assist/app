@@ -219,7 +219,7 @@ routes.get("/:id", checkIfUserLoggedIn, async (req, res) => {
   let docData = docRef.data();
 
   // Delete contact and other private info if not the owner.
-  console.log(req.user.uid);
+  console.log(req.user);
   console.log(docData.owner);
   if (
     !req.user ||

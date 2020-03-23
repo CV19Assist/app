@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, ExpansionPanelDetails } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -16,11 +16,15 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Slider from '@material-ui/core/Slider';
 import IconButton from '@material-ui/core/IconButton';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import AnnouncementOutlinedIcon from '@material-ui/icons/AnnouncementOutlined';
 import ShoppingCartOutlinedIcon from '@material-ui/icons/ShoppingCartOutlined';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import Alert from '@material-ui/lab/Alert';
 import { useDispatch, useSelector } from "react-redux";
 import PlacesAutocomplete, {
@@ -71,14 +75,22 @@ const useStyles = makeStyles(theme => ({
   distance: {
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3)
+  },
+  addressExpansionPanel: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3)
+  },
+  divider: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3)
   }
 }));
 
 const markValues = [
   { value: 1, label: '1 mi', },
-  { value: 2, label: '2 mi', },
-  { value: 5, label: '5 mi', },
-  { value: 20, label: '20 mi', },
+  // { value: 2, label: '2 mi', },
+  // { value: 5, label: '5 mi', },
+  // { value: 20, label: '20 mi', },
   { value: 30, label: '30 mi', },
   // { value: 50, label: '50 mi', },
   // { value: 90, label: '90 mi', },
@@ -91,8 +103,10 @@ function SearchResults() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useSelector(state => state.get("user"));
-  const results = useSelector(state => state.getIn(["ui", "search", "results"]));
-  const message = useSelector(state => state.getIn(["ui", "search", "message"]));
+  const ui = useSelector(state => state.getIn(["ui", "search"]));
+  const searchStatus = ui.get("state")
+  const results = ui.get("results");
+  const message = ui.get("message");
   const [showAddressPicker, setShowAddressPicker] = useState(false);
 
   const userLocation = user.getIn(["userProfile", "coordinates"]);
@@ -154,10 +168,12 @@ function SearchResults() {
       <Paper className={classes.filterPaper}>
         <Typography variant="h6">Search Criteria</Typography>
         {!showAddressPicker && (
-          <Typography id="continuous-slider" gutterBottom>
-            From: your default location.
-            <Button onClick={() => setShowAddressPicker(true)}>Select new location</Button>
-          </Typography>
+        <Typography id="continuous-slider" gutterBottom>
+          Using your default location.
+          <Button onClick={() => setShowAddressPicker(true)}>
+            Select new location
+          </Button>
+        </Typography>
         )}
         {showAddressPicker && (
           <PlacesAutocomplete
@@ -192,6 +208,7 @@ function SearchResults() {
             )}
           </PlacesAutocomplete>
         )}
+        <Divider className={classes.divider} />
 
         <Typography id="continuous-slider" gutterBottom>
           Distance (in miles)
@@ -199,13 +216,17 @@ function SearchResults() {
         <div className={classes.distance}>
           <Slider
             defaultValue={defaultDistance}
+            valueLabelDisplay="on"
+            // valueLabelFormat={x => `${x} mi`}
             marks={markValues}
             onChange={(event, value) => setDistance(value)}
-            step={null}
+            // step={null}
             min={1}
             max={30}
           />
         </div>
+
+        <Divider className={classes.divider} />
         <Button
           variant="contained"
           color="primary"
@@ -220,7 +241,15 @@ function SearchResults() {
         )}
       </Paper>
 
-      {!results && (
+      {searchStatus === "loading" && (
+        <Card className={classes.cards}>
+          <CardContent>
+            <LinearProgress />
+          </CardContent>
+        </Card>
+      )}
+
+      {!results && searchStatus !== "loading" && (
         <Card className={classes.cards}>
           <CardContent>
             <Typography>No results.</Typography>
@@ -231,7 +260,9 @@ function SearchResults() {
       {results !== null && results.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
-            <Typography>No requests found. You can try expanding the search area.</Typography>
+            <Typography>
+              No requests found. You can try expanding the search area.
+            </Typography>
           </CardContent>
         </Card>
       )}
@@ -275,7 +306,8 @@ function SearchResults() {
                 <Grid container direction="column">
                   <Grid item xs>
                     {result.immediacy === 1 && (
-                      <AnnouncementOutlinedIcon title="Urgent"
+                      <AnnouncementOutlinedIcon
+                        title="Urgent"
                         className={classes.icons}
                         color="error"
                       />

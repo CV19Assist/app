@@ -29,6 +29,7 @@ import { version } from '../package.json';
 import Maps from './components/Maps';
 import Geolocation from './components/Geolocation';
 import MyTasks from './components/MyTasks';
+import NeedHelp from './components/RequestHelp';
 import NeedDetails from './components/NeedDetails';
 
 const useStyles = makeStyles(theme => ({
@@ -144,6 +145,7 @@ function App(props) {
               <Route exact path="/login" component={Login} />
               <Route exact path="/logout" component={Logout} />
               <Route exact path="/request" component={RequestHelp} />
+              <Route exact path="/need-help" component={NeedHelp} />
               <Route
                 exact
                 path="/request-successful"

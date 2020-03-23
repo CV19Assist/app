@@ -41,7 +41,7 @@ function TaskRequestDialog() {
     <Dialog open={dialogOpen}>
       {dialogOpen && (
         <React.Fragment>
-          <DialogTitle>Request</DialogTitle>
+          {/* <DialogTitle>Request</DialogTitle> */}
           <DialogContent dividers>
             <Typography gutterBottom>
               Title: {need.shortDescription}

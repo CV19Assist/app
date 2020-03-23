@@ -11,9 +11,6 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'center',
     color: theme.palette.text.secondary,
   },
-  smallText:{
-    fontSize: "14px",
-  },
   container: {
     padding: theme.spacing(3)
   }
@@ -47,7 +44,7 @@ export default function NeedDetails() {
     body = (<Alert severity="error" className={classes.alertMessage}>
       {ui.get("error").message}
     </Alert>);
-  } else if (status === "loaded") {
+  } else if (status === "loaded" && (need !== null)) {
     body = (
       <Grid container spacing={3} className={classes.container}>
         <Grid item xs={8}>
@@ -81,21 +78,24 @@ export default function NeedDetails() {
             Contact
           </Typography>
           <Typography variant="h6" align="right">
+            {!need.get("contactInfo") && (
+              <p>For privacy reasons, contact info is only shown to the person fulfilling.</p>
+            )}
             {need.get("contactInfo")}
           </Typography>
         </Grid>
 
         <Grid item xs={10}>
           {need.get("otherDetails") && (
-            <Typography align="left">
-              {need.get("otherDetails")}
-            </Typography>
+            <Typography align="left">{need.get("otherDetails")}</Typography>
           )}
 
           <Typography variant="h6" align="right">
-            Requests: {need.get("needs").map(item => (
+            Requests:{" "}
+            {need.get("needs").map(item => (
               <React.Fragment key={item}>
-                {item}<br />
+                {item}
+                <br />
               </React.Fragment>
             ))}
           </Typography>
@@ -122,21 +122,34 @@ export default function NeedDetails() {
           </Grid> */}
         </Grid>
 
-        {need.get("status") !== 20 && (
-          <React.Fragment>
-            <Grid item xs={8} />
-            <Grid item xs={2}>
-              <Button fullWidth variant="contained" onClick={handleRelease}>
-                RELEASE
-              </Button>
-            </Grid>
-            <Grid item xs={2}>
-              <Button fullWidth variant="contained" color="primary" onClick={handleCompletion}>
-                COMPLETE
-              </Button>
-            </Grid>
-          </React.Fragment>
-        )}
+        {need.get("status") !== 20 &&
+          (user.get("isAuthenticated") === true) &&
+          (
+            user.getIn(["userProfile", "id"]) ===
+            need.getIn(["owner", "userProfileId"])
+          ) &&
+          (
+            <React.Fragment>
+              {user.getIn(["userProfile", "id"])}
+              {need.getIn(["owner", "userProfileId"])}
+              <Grid item xs={8} />
+              <Grid item xs={2}>
+                <Button fullWidth variant="contained" onClick={handleRelease}>
+                  RELEASE
+                </Button>
+              </Grid>
+              <Grid item xs={2}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={handleCompletion}
+                >
+                  COMPLETE
+                </Button>
+              </Grid>
+            </React.Fragment>
+          )}
       </Grid>
     );
   }
