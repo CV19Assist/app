@@ -24,7 +24,7 @@ const userProfileValidation = {
     state: Joi.string().allow(""),
     zipcode: Joi.string().allow(""),
     phone: Joi.string().required(),
-    location: Joi.object().keys({
+    coordinates: Joi.object().required().keys({
       _latitude: Joi.number().greater(-90).less(90),
       _longitude: Joi.number().greater(-180).less(180),
     })
@@ -38,10 +38,8 @@ routes.post(
   authenticate,
   validate(userProfileValidation),
   async (req, res) => {
-    let loc = req.body.location || null;
-    if (loc) {
-      loc = new admin.firestore.GeoPoint(loc._latitude, loc._longitude);
-    }
+    let loc = req.body.coordinates;
+    loc = new admin.firestore.GeoPoint(loc._latitude, loc._longitude);
     const newProfile = {
       firstName: req.body.firstName,
       lastName: req.body.lastName,

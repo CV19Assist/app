@@ -102,9 +102,12 @@ function NewUser() {
   }
 
   const handleFormSubmit = (values) => {
-    if (userLocation) {
-      values.location = userLocation;
+    if (!userLocation) {
+      alert("Please select a location above.");
+      return;
     }
+
+    values.coordinates = userLocation;
     dispatch(saveUserProfile(values));
   };
 
@@ -189,8 +192,8 @@ function NewUser() {
                 Please click or tap on your location
               </Typography>
               <Typography variant="body2" className={classes.intro}>
-                Location is not required, but highly recommended because it will allow us to
-                match more efficiently.  You can click on the map to set your location.
+                We do not need a precise location, but we do require a location so we can find matches
+                more efficiently.
               </Typography>
               <Card>
                 <Location onLocationChange={handleLocationChange} />

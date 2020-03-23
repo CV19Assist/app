@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
 function TaskRequestDialog() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const ui = useSelector(state => state.getIn(["ui", "taskRequest"]));
+  const ui = useSelector(state => state.getIn(["ui", "needs", "request"]));
   const need = ui.get("requestedNeed");
   const dialogOpen = ui.get("dialogOpen");
 

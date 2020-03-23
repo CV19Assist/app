@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -15,16 +15,21 @@ import { initializeUserAuth, cacheLaunchURL } from './modules/user';
 import { firebase } from './firebase';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
+// Pages
 import Homepage from './components/Homepage';
 import Login from './components/Login';
 import Logout from './components/Logout';
 import RequestHelp from './components/RequestHelp';
+import RequestSuccessful from './components/RequestSuccessful';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
 import { version } from '../package.json';
 import Maps from './components/Maps';
 import Geolocation from './components/Geolocation';
 import MyTasks from './components/MyTasks';
+import NeedDetails from './components/NeedDetails';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -54,6 +59,12 @@ function App(props) {
   const location = useLocation();
   const environment = useSelector(state => state.get("environment") );
   const user = useSelector(state => state.get("user"));
+
+  const [ profileMenuAnchor, setProfileMenuAnchor ] = useState(null);
+
+  const handleProfileMenuClick = () => {
+    setProfileMenuAnchor(null);
+  }
 
   useEffect(() => {
     dispatch(getEnvironmentInfo());
@@ -89,17 +100,40 @@ function App(props) {
               </Link>
             </Typography>
             <div className={classes.grow} />
-            {user.get("isAuthenticated") === true && user.get("userProfile") !== null && (
-              <Button
-                startIcon={<AccountCircle />}
-                edge="end"
-                color="inherit"
-                component={Link}
-                to="/profile"
-              >
-                {user.get("userProfile").get("displayName")}
-              </Button>
-            )}
+            {user.get("isAuthenticated") === true &&
+              user.get("userProfile") !== null && (
+                <React.Fragment>
+                  <Button
+                    startIcon={<AccountCircle />}
+                    edge="end"
+                    color="inherit"
+                    onClick={event => setProfileMenuAnchor(event.currentTarget)}
+                  >
+                    {user.get("userProfile").get("displayName")}
+                  </Button>
+                  <Menu
+                    open={Boolean(profileMenuAnchor)}
+                    anchorEl={profileMenuAnchor}
+                    onClose={handleProfileMenuClick}
+                  >
+                    <MenuItem
+                      component={Link}
+                      to="/profile"
+                      onClick={handleProfileMenuClick}
+                    >
+                      Profile
+                    </MenuItem>
+                    {/* <MenuItem component={Link} to="/tasks" onClick={handleProfileMenuClick}>My Tasks</MenuItem> */}
+                    <MenuItem
+                      component={Link}
+                      to="/logout"
+                      onClick={handleProfileMenuClick}
+                    >
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </React.Fragment>
+              )}
           </Toolbar>
         </AppBar>
 
@@ -110,8 +144,17 @@ function App(props) {
               <Route exact path="/login" component={Login} />
               <Route exact path="/logout" component={Logout} />
               <Route exact path="/request" component={RequestHelp} />
+              <Route
+                exact
+                path="/request-successful"
+                component={RequestSuccessful}
+              />
+              <Route exact path="/needs/:id" component={NeedDetails} />
+
+              {/* TODO: Remove temporary routes */}
               <Route exact path="/geo" component={Geolocation} />
               <Route exact path="/myTasks" component={MyTasks} />
+
               <Route exact path="/contact">
                 <p>Contact Us</p>
                 <p>coming soon...</p>

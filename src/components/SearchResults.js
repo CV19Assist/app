@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core';
@@ -67,6 +67,10 @@ const useStyles = makeStyles(theme => ({
   },
   alertMessage: {
     marginTop: theme.spacing(3)
+  },
+  distance: {
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3)
   }
 }));
 
@@ -89,8 +93,9 @@ function SearchResults() {
   const user = useSelector(state => state.get("user"));
   const results = useSelector(state => state.getIn(["ui", "search", "results"]));
   const message = useSelector(state => state.getIn(["ui", "search", "message"]));
+  const [showAddressPicker, setShowAddressPicker] = useState(false);
 
-  const userLocation = user.getIn(["userProfile", "coordinates"])
+  const userLocation = user.getIn(["userProfile", "coordinates"]);
   const [currentPlaceLatLng, setCurrentPlaceLatLng] = React.useState({
     lat: userLocation.get("_latitude"),
     lng: userLocation.get("_longitude"),
@@ -141,55 +146,66 @@ function SearchResults() {
 
   const handleGrabNeed = (need) => {
     dispatch(requestNeedAssignment(need));
-    console.log(need);
+    // console.log(need);
   };
 
   return (
     <Container maxWidth="md">
       <Paper className={classes.filterPaper}>
         <Typography variant="h6">Search Criteria</Typography>
-        <PlacesAutocomplete
-          value={currentPlaceLabel}
-          onChange={handlePlaceChange}
-          // onSelect={handlePlaceSelect2}
-        >
-          {({
-            getInputProps,
-            suggestions,
-            getSuggestionItemProps,
-            loading
-          }) => (
-            <React.Fragment>
-              {/* {console.log(suggestions)} */}
-              <Autocomplete
-                onChange={handlePlaceSelect}
-                options={suggestions}
-                getOptionLabel={sug => sug.description}
-                noOptionsText="No matches"
-                renderInput={params => (
-                  <TextField
-                    {...getInputProps({
-                      ...params,
-                      label: "Address",
-                      className: classes.searchInput
-                    })}
-                  />
-                )}
-              />
-            </React.Fragment>
-          )}
-        </PlacesAutocomplete>
+        {!showAddressPicker && (
+          <Typography id="continuous-slider" gutterBottom>
+            From: your default location.
+            <Button onClick={() => setShowAddressPicker(true)}>Select new location</Button>
+          </Typography>
+        )}
+        {showAddressPicker && (
+          <PlacesAutocomplete
+            value={currentPlaceLabel}
+            onChange={handlePlaceChange}
+            // onSelect={handlePlaceSelect2}
+          >
+            {({
+              getInputProps,
+              suggestions,
+              getSuggestionItemProps,
+              loading
+            }) => (
+              <React.Fragment>
+                {/* {console.log(suggestions)} */}
+                <Autocomplete
+                  onChange={handlePlaceSelect}
+                  options={suggestions}
+                  getOptionLabel={sug => sug.description}
+                  noOptionsText="No matches"
+                  renderInput={params => (
+                    <TextField
+                      {...getInputProps({
+                        ...params,
+                        label: "Address",
+                        className: classes.searchInput
+                      })}
+                    />
+                  )}
+                />
+              </React.Fragment>
+            )}
+          </PlacesAutocomplete>
+        )}
 
         <Typography id="continuous-slider" gutterBottom>
           Distance (in miles)
         </Typography>
-        <Slider
-          defaultValue={defaultDistance}
-          marks={markValues}
-          step={null}
-          min={1}
-          max={30}
-        />
+        <div className={classes.distance}>
+          <Slider
+            defaultValue={defaultDistance}
+            marks={markValues}
+            onChange={(event, value) => setDistance(value)}
+            step={null}
+            min={1}
+            max={30}
+          />
+        </div>
         <Button
           variant="contained"
           color="primary"
@@ -215,7 +231,7 @@ function SearchResults() {
       {results !== null && results.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
-            <Typography>No requests found.</Typography>
+            <Typography>No requests found. You can try expanding the search area.</Typography>
           </CardContent>
         </Card>
       )}
