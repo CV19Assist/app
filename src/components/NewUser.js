@@ -205,7 +205,7 @@ function NewUser() {
                 </Typography>
                 <Typography variant="body2" className={classes.intro}>
                   A rough location is needed to allow us to efficiently and
-                  quickly find a match for your need. You can either click on
+                  quickly find a match. You can either click on
                   the "Detect Location" button below the map or click on the map to specify
                   the location.
                 </Typography>
