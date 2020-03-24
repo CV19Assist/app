@@ -3,6 +3,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import Card from '@material-ui/core/Card';
@@ -22,6 +23,7 @@ import PlacesAutocomplete, {
 } from "react-places-autocomplete";
 import { loadSearchResults } from "../modules/needsSearch";
 import { requestNeedAssignment } from "../modules/needs";
+import { spacing } from '@material-ui/system';
 
 
 const useStyles = makeStyles(theme => ({
@@ -75,7 +77,17 @@ const useStyles = makeStyles(theme => ({
   },
   grabButton: {
     marginRight: theme.spacing(3)
-  }
+  },
+  TaskTitle:{
+    color: '#F4B7B4',
+  },
+  TaskContainer:{
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2)
+  },
+  DetailsButton:{
+    paddingTop: theme.spacing(1)
+  },
 }));
 
 const markValues = [
@@ -278,87 +290,50 @@ function SearchResults() {
       {results &&
         results.map(result => (
           <Card key={result.id} className={classes.cards}>
+            
+            <Container maxWidth="lg" className={classes.TaskContainer} >
             <Grid container>
-              <Grid item xs={3} className={classes.center}>
-                <Typography variant="h4">
-                  {(result.distance * 0.62137).toFixed(2)} miles
-                </Typography>
-              </Grid>
-              <Divider orientation="vertical" flexItem />
-              <Grid item xs>
-                <CardContent>
-                  <Typography variant="caption" gutterBottom>
-                    ADDED {result.createdAt.format("llll")}
-                  </Typography>
-                  <Typography variant="h5" gutterBottom>
-                    {result.shortDescription}
-                  </Typography>
-                  <Typography variant="caption" gutterBottom>
-                    REQUESTOR
-                  </Typography>
-                  <Typography variant="h6">{result.name}</Typography>
 
-                  {result.otherDetails && (
-                    <React.Fragment>
-                      <Typography variant="caption" gutterBottom>
-                        OTHER DETAILS
-                      </Typography>
-                      <Typography variant="h6" gutterBottom>
-                        {result.otherDetails}
-                      </Typography>
-                    </React.Fragment>
-                  )}
-                </CardContent>
-                <CardActions>
-                  <div className={classes.indent}>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      onClick={() => handleGrabNeed(result)}
-                      className={classes.grabButton}
-                    >
-                      GRAB
-                    </Button>
-                    {navigator.share ? (
-                      <Button
-                        color="primary"
-                        variant="outlined"
-                        onClick={() => {
-                          navigator.share({
-                            title: 'CV19 Assist Need Link',
-                            text: 'CV19 Assist Need Link',
-                            url: getNeedUrl(result.id),
-                          })
-                        }}
-                      >
-                        SHARE
-                      </Button>
-                    ) : (
-                      <Button
-                        color="primary"
-                        variant="outlined"
-                        onClick={() => handleCopyNeedLink(result.id)}
-                      >
-                        COPY LINK FOR SHARING
-                      </Button>
-                    )}
-                  </div>
-                </CardActions>
-              </Grid>
-              <Grid item xs={1}>
-                <Grid container direction="column">
-                  <Grid item xs>
-                    {result.immediacy === 1 && (
-                      <AnnouncementOutlinedIcon
-                        title="Urgent"
-                        className={classes.icons}
-                        color="error"
-                      />
-                    )}
+                  <Grid item xs={9}>
+                    <Typography variant="caption" gutterBottom>
+                        ADDED {result.createdAt.format("llll")}
+                    </Typography>
+                    <Typography variant="h5" className={classes.TaskTitle} gutterBottom>
+                      {result.shortDescription}
+                    </Typography>
                   </Grid>
-                </Grid>
-              </Grid>
+
+                  <Grid item xs={3}>
+                    <img align="right" src='/taskIcon.png' width="50px" height="50px"></img>
+                   </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="caption" gutterBottom>
+                      REQUESTOR
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Typography variant="h6">
+                      {result.name}
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={6}>
+                    <Typography align="right" variant="h5" className={classes.TaskTitle}>
+                      {(result.distance * 0.62137).toFixed(2)} miles
+                    </Typography>
+                   </Grid>
+
+                   <Grid className={classes.DetailsButton} align="right" item xs={12} justify="center"
+  alignContent="center">
+                      <Button size="large" variant="contained" color="primary">
+                        DETAILS
+                      </Button>
+                   </Grid>
+               
             </Grid>
+            </Container>
           </Card>
         ))}
 
