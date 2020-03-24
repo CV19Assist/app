@@ -1,20 +1,28 @@
 {
-  "name": "app",
-  "version": "0.1.0",
+  "name": "cv19assist",
+  "version": "0.1.4",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.46",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "connected-react-router": "^6.8.0",
     "firebase": "^7.11.0",
     "formik": "^2.1.4",
+    "formik-material-ui": "^2.0.0-beta.1",
+    "history": "^4.10.1",
     "immutable": "^4.0.0-rc.12",
+    "moment": "^2.24.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-firebaseui": "^4.1.0",
+    "react-geolocated": "^3.0.1",
+    "react-google-maps": "9.4.5",
     "react-helmet": "^5.2.1",
+    "react-places-autocomplete": "^7.2.1",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
@@ -27,7 +35,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "firebase-hosting-deploy": "firebase deploy --only functions",
+    "firebase-functions-deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -43,5 +54,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "source-map-explorer": "^2.4.0"
   }
 }

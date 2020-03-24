@@ -1,17 +1,34 @@
-import Immutable from 'immutable';
-import { reducer as userReducer, CLEAR_SESSION } from './modules/auth';
+import { reducer as userReducer } from './modules/user';
 import { reducer as environmentReducer } from './modules/environment';
+import { reducer as needsSearchReducer } from './modules/needsSearch';
+import { reducer as needsReducer } from './modules/needs';
+import { connectRouter } from 'connected-react-router/immutable';
+import { combineReducers } from "redux-immutable";
+import Immutable from "immutable";
 
-const rootReducer = (state, action) => {
-  if (action.type === CLEAR_SESSION) {
-    window.location = "/";
-    // state = Immutable.Map();
-  }
-  
-  // TODO: Change this into a loop.
-  state = environmentReducer(state, action);
-  state = userReducer(state, action);
-  return state;
+const createRootReducer = history => {
+  const oldSlicedReducers = combineReducers({
+    router: connectRouter(history),
+
+    environment: (state = Immutable.Map()) => state,
+    user: (state = Immutable.Map()) => state,
+
+    // combineReducers expects same state shape every time so force simple functions.
+    entities: (state = Immutable.Map()) => state,
+    ui: (state = Immutable.Map()) => state
+  });
+
+  const rootReducer = (state, action) => {
+    // TODO: Change this into a loop.
+    state = environmentReducer(state, action);
+    state = userReducer(state, action);
+    state = needsSearchReducer(state, action);
+    state = needsReducer(state, action);
+    state = oldSlicedReducers(state, action);
+    return state;
+  };
+
+  return rootReducer;
 };
 
-export default rootReducer;
+export default createRootReducer;
