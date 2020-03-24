@@ -13,7 +13,7 @@ const { authenticate } = require("./util/auth");
 const app = express();
 app.use(bodyParser.json());
 
-var whitelist = ['http://localhost:3000', 'https://cv19assist-dev.web.app'];
+var whitelist = ['http://localhost:3000', 'https://cv19assist-dev.web.app', 'https://app.cv19assist.com'];
 var corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1) {
