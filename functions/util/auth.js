@@ -30,9 +30,12 @@ exports.checkIfUserLoggedIn = async (req, res, next) => {
   try {
     const decodedIdToken = await admin.auth().verifyIdToken(idToken);
     req.user = decodedIdToken;
-  } catch(e) {}
-  next();
-  return;
+    next();
+    return;
+  } catch(e) {
+    next();
+    return;
+  }
 };
 
 // Given a UID, this returns the basic user profile properties which can be saved in records

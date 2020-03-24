@@ -33,6 +33,9 @@ const COMPLETE_NEED_ASSIGNMENT = "COMPLETE_NEED_ASSIGNMENT";
 const COMPLETE_NEED_ASSIGNMENT_SUCCEEDED = "COMPLETE_NEED_ASSIGNMENT_SUCCEEDED";
 const COMPLETE_NEED_ASSIGNMENT_FAILED = "COMPLETE_NEED_ASSIGNMENT_FAILED";
 
+const LOAD_MY_TASKS = "LOAD_MY_TASKS";
+const LOAD_MY_TASKS_FAILED = "LOAD_MY_TASKS_FAILED";
+const LOAD_MY_TASKS_SUCCEEDED = "LOAD_MY_TASKS_SUCCEEDED";
 
 const defaultState = Immutable.Map({
   submit: Immutable.Map({
@@ -50,6 +53,11 @@ const defaultState = Immutable.Map({
       info: null,
       status: ""  // loading, loaded, failed
     })
+  }),
+  myTasks: Immutable.Map({
+    status: "",
+    error: null,
+    tasks: Immutable.Set(),
   })
 });
 
@@ -57,6 +65,7 @@ const moduleRootUIStateKey = ["ui", "needs"];
 const taskRequestKey = ["ui", "needs", "request"];
 const needSubmissionKey = ["ui", "needs", "submit"];
 const needDetailsKey = ["ui", "needs", "details"];
+const myTasksKey = ["ui", "needs", "myTasks"];
 // const contactInfoKey = ["ui", "needs", "details", "contactDetails"];
 
 /***** Reducers *****/
@@ -107,6 +116,21 @@ export function reducer(state = defaultState, action) {
         .setIn([...needDetailsKey, "need"], Immutable.fromJS(action.need))
         .setIn([...needDetailsKey, "status"], "loaded");
 
+    case LOAD_MY_TASKS:
+      return state
+        .setIn([...myTasksKey, "tasks"], Immutable.Set())
+        .setIn([...myTasksKey, "status"], "loading");
+
+    case LOAD_MY_TASKS_FAILED:
+      return state
+        .setIn([...myTasksKey, "error"], action.error)
+        .setIn([...myTasksKey, "status"], "failed");
+
+    case LOAD_MY_TASKS_SUCCEEDED:
+      return state
+        .setIn([...myTasksKey, "tasks"], Immutable.fromJS(action.tasks))
+        .setIn([...myTasksKey, "status"], "loaded");
+
     default:
       return state;
   }
@@ -139,6 +163,10 @@ const releaseNeedAssignmentFailed = (error) => ({ type: RELEASE_NEED_ASSIGNMENT_
 export const completeNeedAssignment = (id) => ({ type: COMPLETE_NEED_ASSIGNMENT, id });
 const completeNeedAssignmentSucceeded = () => ({ type: COMPLETE_NEED_ASSIGNMENT_SUCCEEDED });
 const completeNeedAssignmentFailed = (error) => ({ type: COMPLETE_NEED_ASSIGNMENT_FAILED, error });
+
+export const loadMyTasks = () => ({ type: LOAD_MY_TASKS });
+const loadMyTasksFailed = () => ({ type: LOAD_MY_TASKS_FAILED });
+const loadMyTasksSucceeded = (tasks) => ({ type: LOAD_MY_TASKS_SUCCEEDED, tasks });
 
 /***** side effects, only as applicable. e.g. thunks, epics, etc *****/
 export const submitNeedEpic = action$ =>
@@ -235,6 +263,22 @@ export const completeNeedAssignmentEpic = action$ =>
             return [completeNeedAssignmentFailed({message: "Item not found."})];
           }
           return [completeNeedAssignmentFailed(err)];
+        })
+      )
+    })
+  );
+
+
+export const loadMyTasksEpic = action$ =>
+  action$.pipe(
+    ofType(LOAD_MY_TASKS),
+    mergeMap(() => {
+      return API.getAuthenticatedJSONRequestObservable(`/needs/my-tasks`, "get").pipe(
+        mergeMap(resp => {
+          return [loadMyTasksSucceeded(resp.response)];
+        }),
+        catchError(err => {
+          return [loadMyTasksFailed(err)];
         })
       )
     })

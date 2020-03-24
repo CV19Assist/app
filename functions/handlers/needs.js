@@ -202,6 +202,25 @@ routes.get("/", authenticate, validate(searchParams), async (req, res) => {
 });
 
 
+// Returns the needs (or tasks) for the current user.
+routes.get("/my-tasks", authenticate, async (req, res) => {
+  const query = needsGeocollection
+    .where("owner.userProfileId", "==", req.user.uid)
+    .where("status", "==", 10);
+
+  let qs;
+  try {
+    qs = await query.get();
+  } catch(err) {
+    console.log(err);
+    return res.status(500).end();
+  }
+
+  const results = qs.docs.map(doc => ({ ...doc.data(), ...doc }));
+  return res.status(200).json(results);
+});
+
+
 // ======= Get a specific Need
 routes.get("/:id", checkIfUserLoggedIn, async (req, res) => {
   const id = req.params.id;
@@ -392,5 +411,6 @@ routes.post("/:id/complete", authenticate, async (req, res) => {
 
   return res.status(200).end();
 });
+
 
 module.exports = routes;

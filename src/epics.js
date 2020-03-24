@@ -6,7 +6,8 @@ import {
   submitNeedEpic,
   loadNeedDetailsEpic,
   releaseNeedAssignmentEpic,
-  completeNeedAssignmentEpic
+  completeNeedAssignmentEpic,
+  loadMyTasksEpic
 } from "./modules/needs";
 
 export const rootEpic = combineEpics(
@@ -24,4 +25,5 @@ export const rootEpic = combineEpics(
   loadNeedDetailsEpic,
   releaseNeedAssignmentEpic,
   completeNeedAssignmentEpic,
+  loadMyTasksEpic,
 );

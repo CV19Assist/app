@@ -119,6 +119,13 @@ function App(props) {
                   >
                     <MenuItem
                       component={Link}
+                      to="/profile/tasks"
+                      onClick={handleProfileMenuClick}
+                    >
+                      My Tasks
+                    </MenuItem>
+                    <MenuItem
+                      component={Link}
                       to="/profile"
                       onClick={handleProfileMenuClick}
                     >

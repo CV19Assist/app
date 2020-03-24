@@ -66,11 +66,12 @@ const requestValidationSchema = Yup.object().shape({
 });
 
 const needOptions = [
-  {key: "food", description: "Food/Meal Delivery"},
+  {key: "food", description: "Food or Grocery Delivery"},
+  {key: "housing-utilities", description: "Housing or Utilities"},
   {key: "health-question", description: "Health Questions"},
-  {key: "housing-utilities", description: "Housing/Utilities"},
-  {key: "emotional-support", description: "Mental Health/Emotional Support"},
-  {key: "financial-needs", description: "Limited, Immediate Financial Needs"}
+  {key: "emotional-support", description: "Emotional Support"},
+  {key: "other", description: "Other - please add more information in the details section below"},
+  // {key: "financial-needs", description: "Limited, Immediate Financial Needs"}
 ];
 
 // const immediacyOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -138,7 +139,7 @@ function NeedHelp() {
               initialValues={{
                 immediacy: "",
                 contactInfo: "",
-                shortDescription: "",
+                // shortDescription: "",
                 custName: "",
                 otherDetails: ""
               }}
@@ -148,6 +149,12 @@ function NeedHelp() {
                   {/* {console.log(formik.errors)} */}
                   <Container>
                       <FormGroup>
+                        <Typography variant="h6" gutterBottom className={classes.otherComments}>
+                          What do you need help with?
+                        </Typography>
+                        {/* <Typography variant="body1" gutterBottom>
+                          If you have multiple needs then please 
+                        </Typography> */}
                         <FieldArray
                           name="needGroup"
                           render={errors => (
@@ -190,18 +197,18 @@ function NeedHelp() {
                         label="&nbsp; Limited, Immediate Financial Needs"
                       /> */}
                       </FormGroup>
-                    <Typography variant="h6" gutterBottom className={classes.otherComments}>
+                    {/* <Typography variant="h6" gutterBottom className={classes.otherComments}>
                       Short Description
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
+                    </Typography> */}
+                    {/* <Typography variant="body1" gutterBottom>
                       Need explanation
-                    </Typography>
-                    <Field
+                    </Typography> */}
+                    {/* <Field
                       as={TextField}
                       name="shortDescription"
                       type="text"
                       label="Short Description"
-                      placeholder="Please provide a short description of your request"
+                      placeholder="For example: I need help with the grocery shopping"
                       margin="normal"
                       variant="outlined"
                       fullWidth
@@ -209,7 +216,7 @@ function NeedHelp() {
                         formik.touched.shortDescription && !!formik.errors.shortDescription
                       }
                       helperText={formik.errors.custName}
-                    />
+                    /> */}
                     <Typography
                       variant="h6"
                       gutterBottom
