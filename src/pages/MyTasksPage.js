@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
-  Button,
-  Grid,
   makeStyles,
-  Card,
   Paper,
   Container,
   Typography,
@@ -29,7 +26,6 @@ const useStyles = makeStyles(theme => ({
 export default function MyTasksPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const user = useSelector(state => state.get("user"));
   const ui = useSelector(state => state.getIn(["ui", "needs", "myTasks"]));
   const status = ui.get("status");
   const history = useHistory();
