@@ -275,7 +275,17 @@ export const loadMyTasksEpic = action$ =>
     mergeMap(() => {
       return API.getAuthenticatedJSONRequestObservable(`/needs/my-tasks`, "get").pipe(
         mergeMap(resp => {
-          return [loadMyTasksSucceeded(resp.response)];
+          let needs = resp.response;
+          needs = needs.map(need => {
+            need.createdAt = moment(need.createdAt._seconds * 1000);
+            need.lastUpdatedAt = moment(need.lastUpdatedAt._seconds * 1000);
+            if (need.owner && need.owner.takenAt) {
+              need.owner.takenAt = moment(need.owner.takenAt._seconds * 1000);
+            }
+            return need;
+          });
+          console.log(needs);
+          return [loadMyTasksSucceeded(needs)];
         }),
         catchError(err => {
           return [loadMyTasksFailed(err)];

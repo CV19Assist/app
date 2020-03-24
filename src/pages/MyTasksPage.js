@@ -70,7 +70,11 @@ export default function MyTasksPage() {
                 button
                 onClick={() => handleNeedClick(need)}
               >
-                <ListItemText>{need.get("shortDescription")}</ListItemText>
+                <ListItemText>
+                  {need.get("createdAt").format("llll")}<br />
+                  <span style={{fontWeight: "bold"}}>{need.get("name")}</span><br />
+                  {need.get("needs").join(", ")}
+                </ListItemText>
               </ListItem>
               <Divider component="li" />
               </React.Fragment>
