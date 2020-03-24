@@ -137,8 +137,6 @@ function NeedDetails(props) {
             user.getIn(["userProfile", "id"]) ===
               need.getIn(["owner", "userProfileId"]) && (
               <React.Fragment>
-                {user.getIn(["userProfile", "id"])}
-                {need.getIn(["owner", "userProfileId"])}
                 <Grid item xs={8} />
                 <Grid item xs={2}>
                   <Button fullWidth variant="contained" onClick={handleRelease}>
