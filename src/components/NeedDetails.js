@@ -24,6 +24,9 @@ function NeedDetails(props) {
   }, []);
 
   const handleCompletion = () => {
+    if (!window.confirm("Currently, you cannot undo completion.  Are you sure that you want to mark this as completed?")) {
+      return;
+    }
     dispatch(completeNeedAssignment(id));
   };
 
@@ -54,12 +57,12 @@ function NeedDetails(props) {
             ["coordinates", "_latitude"])},${need.getIn(["coordinates", "_longitude"])}&size=300x300&zoom=10`}
         />
 
-        <Typography variant="caption" gutterBottom>
+        {/* <Typography variant="caption" gutterBottom>
           DESCRIPTION
         </Typography>
         <Typography variant="h5" gutterBottom>
           {need.get("shortDescription")}
-        </Typography>
+        </Typography> */}
 
         <Typography variant="caption" gutterBottom>
           NEEDS
@@ -106,9 +109,9 @@ function NeedDetails(props) {
 
         <Grid container spacing={2} className={classes.container}>
           <Grid item xs={10}>
-            {/* <Grid item xs={10}>
+            <Grid item xs={10}>
             <Typography color="secondary" align="left" variant="body1">
-              TASK SPECIFICS GUIDLINES - FOOD DELIVERY
+              PLEASE MAKE SURE THAT YOU MEET THE CRITERIA BELOW BEFORE VOLUNTEERING
             </Typography>
             <ul>
               <li>
@@ -125,7 +128,7 @@ function NeedDetails(props) {
                 days
               </li>
             </ul>
-          </Grid> */}
+          </Grid>
           </Grid>
 
           {props.hideActionButtons !== true &&

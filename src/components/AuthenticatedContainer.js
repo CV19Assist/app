@@ -9,7 +9,7 @@ import NewUser from './NewUser';
 // import Volunteer from '../components/Volunteer';
 import SearchResults from '../components/SearchResults';
 import TaskRequestDialog from '../components/TaskRequestDialog';
-// import ViewAll from '../components/ViewAll';
+import MyTasks from '../pages/MyTasksPage';
 
 function AuthenticatedContainer(props) {
   const user = useSelector(state => state.get("user"));
@@ -31,6 +31,7 @@ function AuthenticatedContainer(props) {
       <Switch>
         <Route exact path="/new-user" component={NewUser} />
         <Route exact path="/profile" component={Profile} />
+        <Route exact path="/profile/tasks" component={MyTasks} />
         <Route path="/volunteer" component={SearchResults} />
         {/* <Route exact path="/maps" component={Maps} /> */}
 

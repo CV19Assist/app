@@ -73,8 +73,10 @@ routes.get("/profile", authenticate, async (req, res) => {
     if (!profile.exists) {
       return res.status(404).json({error: `profile with id '${req.user.uid}' not found`});
     }
+    let profileData = profile.data().d;
+    profileData.id = req.user.uid;
     // console.log(profile.data())
-    return res.status(200).json({...profile.data().d});
+    return res.status(200).json({...profileData});
   }
   catch(err) {
     console.log(err);

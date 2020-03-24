@@ -293,7 +293,6 @@ function SearchResults() {
             
             <Container maxWidth="lg" className={classes.TaskContainer} >
             <Grid container>
-
                   <Grid item xs={9}>
                     <Typography variant="caption" gutterBottom>
                         ADDED {result.createdAt.format("llll")}

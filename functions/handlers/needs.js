@@ -13,7 +13,7 @@ const needValidation = {
   body: Joi.object({
     needs: Joi.array().min(1).items(Joi.string()),
     immediacy: Joi.number().greater(0).less(11).required(),
-    shortDescription: Joi.string().required(),
+    // shortDescription: Joi.string().required(),
     contactInfo: Joi.string().required(),
     name: Joi.string().required(),
     otherDetails: Joi.string().allow(""),
@@ -39,7 +39,7 @@ routes.post("/new", checkIfUserLoggedIn, validate(needValidation), async (req, r
     lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     needs: req.body.needs,
     immediacy: req.body.immediacy,
-    shortDescription: req.body.shortDescription,
+    // shortDescription: req.body.shortDescription,
     contactInfo: req.body.contactInfo,
     name: req.body.name,
     otherDetails: req.body.otherDetails,
@@ -199,6 +199,25 @@ routes.get("/", authenticate, validate(searchParams), async (req, res) => {
     console.log(err);
     return res.status(500).end();
   }
+});
+
+
+// Returns the needs (or tasks) for the current user.
+routes.get("/my-tasks", authenticate, async (req, res) => {
+  const query = needsGeocollection
+    .where("owner.userProfileId", "==", req.user.uid)
+    .where("status", "==", 10);
+
+  let qs;
+  try {
+    qs = await query.get();
+  } catch(err) {
+    console.log(err);
+    return res.status(500).end();
+  }
+
+  const results = qs.docs.map(doc => ({ ...doc.data(), ...doc }));
+  return res.status(200).json(results);
 });
 
 
@@ -392,5 +411,6 @@ routes.post("/:id/complete", authenticate, async (req, res) => {
 
   return res.status(200).end();
 });
+
 
 module.exports = routes;

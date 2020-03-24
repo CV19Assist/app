@@ -28,7 +28,7 @@ function TaskRequestDialog() {
   };
 
   return (
-    <Dialog open={dialogOpen} fullScreen>
+    <Dialog open={dialogOpen} maxWidth="md" fullWidth>
       {dialogOpen && (
         <React.Fragment>
           {/* <DialogTitle>Request</DialogTitle> */}
