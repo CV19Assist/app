@@ -57,12 +57,12 @@ function NeedDetails(props) {
             ["coordinates", "_latitude"])},${need.getIn(["coordinates", "_longitude"])}&size=300x300&zoom=10`}
         />
 
-        <Typography variant="caption" gutterBottom>
+        {/* <Typography variant="caption" gutterBottom>
           DESCRIPTION
         </Typography>
         <Typography variant="h5" gutterBottom>
           {need.get("shortDescription")}
-        </Typography>
+        </Typography> */}
 
         <Typography variant="caption" gutterBottom>
           NEEDS

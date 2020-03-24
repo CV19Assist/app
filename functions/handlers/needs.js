@@ -13,7 +13,7 @@ const needValidation = {
   body: Joi.object({
     needs: Joi.array().min(1).items(Joi.string()),
     immediacy: Joi.number().greater(0).less(11).required(),
-    shortDescription: Joi.string().required(),
+    // shortDescription: Joi.string().required(),
     contactInfo: Joi.string().required(),
     name: Joi.string().required(),
     otherDetails: Joi.string().allow(""),
@@ -39,7 +39,7 @@ routes.post("/new", checkIfUserLoggedIn, validate(needValidation), async (req, r
     lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     needs: req.body.needs,
     immediacy: req.body.immediacy,
-    shortDescription: req.body.shortDescription,
+    // shortDescription: req.body.shortDescription,
     contactInfo: req.body.contactInfo,
     name: req.body.name,
     otherDetails: req.body.otherDetails,

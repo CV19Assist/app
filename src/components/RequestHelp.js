@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 const requestValidationSchema = Yup.object().shape({
   custName: Yup.string().min(2, "Too Short").required("Required"),
   contactInfo: Yup.string().min(2, "Too Short").required("Required"),
-  shortDescription: Yup.string().required("Required"),
+  // shortDescription: Yup.string().required("Required"),
   immediacy: Yup.string().required("Required"),
   // needGroup: Yup.array().required("Please select at least one support need."),
   otherComments: Yup.string(),
@@ -306,8 +306,10 @@ function NeedHelp() {
                       Your Location
                     </Typography>
                     <Typography variant="body2" className={classes.intro}>
-                      A rough location is required to allow us to efficiently
-                      and quickly find a match for your need.
+                      A rough location is needed to allow us to efficiently
+                      and quickly find a match for your need. You can either click on the
+                      "Detect Location" button below the map or click on the map to specify the
+                      location.
                     </Typography>
                     <Grid container spacing={3}>
                       <Grid item xs={12}>

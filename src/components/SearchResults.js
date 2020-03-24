@@ -289,10 +289,10 @@ function SearchResults() {
                 <CardContent>
                   <Typography variant="caption" gutterBottom>
                     ADDED {result.createdAt.format("llll")}
-                  </Typography>
-                  <Typography variant="h5" gutterBottom>
+                  </Typography><br />
+                  {/* <Typography variant="h5" gutterBottom>
                     {result.shortDescription}
-                  </Typography>
+                  </Typography> */}
                   <Typography variant="caption" gutterBottom>
                     REQUESTOR
                   </Typography>
