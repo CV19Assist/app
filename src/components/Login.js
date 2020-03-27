@@ -2,6 +2,8 @@ import React from "react";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
+import Paper from "@material-ui/core/Paper";
+import Box from "@material-ui/core/Box";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import { FirebaseAuth, getAuthConfig } from "../firebase_auth";
 import { useSelector } from "react-redux";
@@ -9,13 +11,6 @@ import { useHistory } from "react-router";
 import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
-  heroContent: {
-    background: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    marginTop: theme.spacing(4)
-  }
 }));
 
 function Login() {
@@ -24,9 +19,7 @@ function Login() {
   const user = useSelector(state => state.get("user"));
 
   if (user.get("isAuthenticated") === true) {
-    return (
-      <Redirect to="/" />
-    );
+    return <Redirect to="/" />;
   }
 
   const handleSuccessfulLogin = () => {
@@ -35,46 +28,33 @@ function Login() {
 
   return (
     <React.Fragment>
-      <main>
-        <div className={classes.heroContent}>
-          <Container maxWidth="md">
+      <Container maxWidth="md">
+        <Typography
+          variant="h4"
+          align="center"
+          color="textPrimary"
+          gutterBottom
+        >
+          Login or Create Account
+        </Typography>
+        <Paper>
+          <Box p={2}>
             <Typography
-              component="h1"
-              variant="h2"
-              align="center"
-              color="textPrimary"
-              gutterBottom
-            >
-              Login
-            </Typography>
-            <Typography
-              variant="h5"
+              variant="subtitle1"
               align="center"
               color="textSecondary"
               paragraph
             >
+              Thank you very much for your interest. Please create an account or
+              login by click on a preferred method below.
             </Typography>
-            <div className={classes.heroButtons}>
-              {/* <Grid container spacing={2} justify="center">
-                <Grid item>
-                  <Button component={Link} to="/need-help" variant="contained" color="primary">
-                    I need help
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button component={Link} to="/can-help" variant="contained" color="primary">
-                    I can provide help
-                  </Button>
-                </Grid>
-              </Grid> */}
-            </div>
             <StyledFirebaseAuth
               uiConfig={getAuthConfig(handleSuccessfulLogin)}
               firebaseAuth={FirebaseAuth()}
             />
-          </Container>
-        </div>
-      </main>
+          </Box>
+        </Paper>
+      </Container>
     </React.Fragment>
   );
 }

@@ -183,8 +183,8 @@ function SearchResults() {
 
   return (
     <Container maxWidth="md">
+      <Typography variant="h6">Search Criteria</Typography>
       <Paper className={classes.filterPaper}>
-        <Typography variant="h6">Search Criteria</Typography>
         {!showAddressPicker && (
           <Typography id="continuous-slider" gutterBottom>
             Using your default location.

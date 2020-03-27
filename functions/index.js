@@ -4,6 +4,7 @@ const v1routes = express.Router();
 const { ValidationError } = require("express-validation");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const { sendNewNeedCreatedEmail, sendNewUserCreatedEmail } = require("./emails");
 
 const userProfileRoutes = require('./handlers/user');
 const needsRoutes = require('./handlers/needs');
@@ -54,4 +55,5 @@ app.use((err, req, res, next) => {
   return res.status(500).json({number: err.number, name: err.name, message: err.message});
 });
 
-exports.api = functions.https.onRequest(app);
+const api = functions.https.onRequest(app);
+module.exports = { api, sendNewNeedCreatedEmail, sendNewUserCreatedEmail };

@@ -44,14 +44,17 @@ const useStyles = makeStyles(theme => ({
     textDecoration: 'none'
   },
   footer: {
-    backgroundColor: theme.palette.background.paper,
+    // backgroundColor: theme.palette.background.paper,
     marginTop: 'auto',
-    // marginTop: theme.spacing(2),
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
   },
   appBar: {
     marginBottom: theme.spacing(2)
   },
+  bodyContainer: {
+    paddingBottom: theme.spacing(9),
+    marginBlock: theme.spacing(6)
+  }
 }));
 
 function App(props) {
@@ -97,10 +100,21 @@ function App(props) {
           <Toolbar>
             <Typography variant="h6" color="inherit" noWrap>
               <Link to="/" className={classes.headerLink}>
-                CV19 Assist
+                COVID-19 Assist
               </Link>
             </Typography>
             <div className={classes.grow} />
+            <Button color="inherit">Volunteers</Button>
+            <Button color="inherit">About Us</Button>
+            {!user.get("isAuthenticated") && (
+              <Button
+                component={Link}
+                to="/login"
+                color="inherit"
+              >
+                Login
+              </Button>
+            )}
             {user.get("isAuthenticated") === true &&
               user.get("userProfile") !== null && (
                 <React.Fragment>
@@ -145,7 +159,7 @@ function App(props) {
           </Toolbar>
         </AppBar>
 
-        <Container>
+        <Container classes={classes.bodyContainer}>
           <main>
             <Switch>
               <Route exact path="/" component={Homepage} />
@@ -176,15 +190,12 @@ function App(props) {
         <footer className={classes.footer}>
           <Typography variant="body2" color="textSecondary" align="center">
             {"Copyright © "}
-            {new Date().getFullYear()}
-            {` ${environment.get("abbreviation")} ${version} `}
             <a
               href="https://www.cv19assist.com"
               target="_blank"
               rel="noopener noreferrer"
-            >
-              CV19Assist.com
-            </a>
+            >CV19Assist.com</a>{" "}
+            {`${new Date().getFullYear()} - v${version} ${environment.get("abbreviation")}`}
           </Typography>
         </footer>
       </div>
