@@ -17,6 +17,10 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+import Hidden from '@material-ui/core/Hidden';
 
 // Pages
 import Homepage from './components/Homepage';
@@ -26,6 +30,9 @@ import RequestHelp from './components/RequestHelp';
 import RequestSuccessful from './components/RequestSuccessful';
 import AuthenticatedContainer from './components/AuthenticatedContainer';
 import { version } from '../package.json';
+import Volunteers from './components/Volunteers';
+import ContactUs from './components/ContactUs';
+import About from './components/About';
 // import Maps from './components/Maps';
 // import Geolocation from './components/Geolocation';
 // import MyTasks from './components/MyTasks';
@@ -57,6 +64,52 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+function MainMenu(props){
+  {
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    
+    const handleClick = event => {
+      setAnchorEl(event.currentTarget);
+    };
+  
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+  
+    if(props.mobile){
+      return (
+        <Hidden only={['lg', 'xl', 'md']}>
+          <IconButton edge="start" className={props.classes} color="inherit" aria-label="menu" aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} >
+              <MenuIcon />
+            </IconButton>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleClose} component={Link} to="/volunteers">Volunteers</MenuItem>
+            <MenuItem onClick={handleClose} component={Link} to="/contactus">Contact us</MenuItem>
+            <MenuItem onClick={handleClose} component={Link} to="/twitter">Twitter</MenuItem>
+            <MenuItem onClick={handleClose} component={Link} to="/about">About</MenuItem>
+          </Menu>
+          </Hidden>
+      );
+      }else{
+        return(          
+        <Hidden only={['sm', 'xs']}>
+        <ButtonGroup variant="text" color="inherit" aria-label="text primary button group">
+        <Button component={Link} to="/volunteers">Volunteers</Button>
+        <Button component={Link} to="/contactus">Contact us</Button>
+        <Button component={Link} to="/twitter">Twitter</Button>
+        <Button component={Link} to="/about">About</Button>
+        </ButtonGroup>
+      </Hidden>
+      );
+      }
+  }
+}
 function App(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -98,23 +151,14 @@ function App(props) {
       <div className={classes.root}>
         <AppBar position="relative" className={classes.appBar}>
           <Toolbar>
+          <MainMenu mobile={true}/>
             <Typography variant="h6" color="inherit" noWrap>
               <Link to="/" className={classes.headerLink}>
                 COVID-19 Assist
               </Link>
             </Typography>
             <div className={classes.grow} />
-            <Button color="inherit">Volunteers</Button>
-            <Button color="inherit">About Us</Button>
-            {!user.get("isAuthenticated") && (
-              <Button
-                component={Link}
-                to="/login"
-                color="inherit"
-              >
-                Login
-              </Button>
-            )}
+            <MainMenu mobile={false}/>
             {user.get("isAuthenticated") === true &&
               user.get("userProfile") !== null && (
                 <React.Fragment>
@@ -167,6 +211,13 @@ function App(props) {
               <Route exact path="/logout" component={Logout} />
               <Route exact path="/request" component={RequestHelp} />
               <Route exact path="/need-help" component={NeedHelp} />
+              <Route exact path='/twitter' component={() => { 
+                    window.open('https://twitter.com/CV19Assist','_blank');
+                    window.history.back();
+                }}/>
+              <Route exact path="/volunteers" component={Volunteers} />  
+              <Route exact path="/contactus" component={ContactUs} />  
+              <Route exact path="/about" component={About} />  
               <Route
                 exact
                 path="/request-successful"
