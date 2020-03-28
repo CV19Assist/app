@@ -1,4 +1,4 @@
-import {GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow} from "react-google-maps";
+import {GoogleMap, withScriptjs, withGoogleMap, Marker} from "react-google-maps";
 import React, { useState } from "react";
 
 
@@ -19,14 +19,14 @@ function Map(props) {
       defaultCenter={{ lat: 43, lng: -89.4 }}
       onClick={handleLocationClick}
     >
-      (showMarker && (
+      {showMarker && (
         <Marker
           position={{
             lat: markerLocation.lat,
             lng: markerLocation.lng
           }}
         />
-      ))
+      )}
     </GoogleMap>
   );
 }

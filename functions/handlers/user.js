@@ -24,7 +24,7 @@ const userProfileValidation = {
     state: Joi.string().allow(""),
     zipcode: Joi.string().allow(""),
     phone: Joi.string().required(),
-    location: Joi.object().keys({
+    coordinates: Joi.object().required().keys({
       _latitude: Joi.number().greater(-90).less(90),
       _longitude: Joi.number().greater(-180).less(180),
     })
@@ -38,10 +38,8 @@ routes.post(
   authenticate,
   validate(userProfileValidation),
   async (req, res) => {
-    let loc = req.body.location || null;
-    if (loc) {
-      loc = new admin.firestore.GeoPoint(loc._latitude, loc._longitude);
-    }
+    let loc = req.body.coordinates;
+    loc = new admin.firestore.GeoPoint(loc._latitude, loc._longitude);
     const newProfile = {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
@@ -75,8 +73,10 @@ routes.get("/profile", authenticate, async (req, res) => {
     if (!profile.exists) {
       return res.status(404).json({error: `profile with id '${req.user.uid}' not found`});
     }
-    console.log(profile.data())
-    return res.status(200).json({...profile.data().d});
+    let profileData = profile.data().d;
+    profileData.id = req.user.uid;
+    // console.log(profile.data())
+    return res.status(200).json({...profileData});
   }
   catch(err) {
     console.log(err);

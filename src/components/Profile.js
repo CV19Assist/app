@@ -7,19 +7,19 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Avatar from '@material-ui/core/Avatar';
 import PersonIcon from '@material-ui/icons/Person';
-import SettingsIcon from '@material-ui/icons/Settings';
-import HelpIcon from '@material-ui/icons/Help';
-import NotificationsIcon from '@material-ui/icons/Notifications';
-import ScheduleIcon from '@material-ui/icons/Schedule';
-import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import Divider from '@material-ui/core/Divider';
-import Card from '@material-ui/core/Card';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Badge from '@material-ui/core/Badge';
+// import SettingsIcon from '@material-ui/icons/Settings';
+// import HelpIcon from '@material-ui/icons/Help';
+// import NotificationsIcon from '@material-ui/icons/Notifications';
+// import ScheduleIcon from '@material-ui/icons/Schedule';
+// import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
+// import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+// import Divider from '@material-ui/core/Divider';
+// import Card from '@material-ui/core/Card';
+// import List from '@material-ui/core/List';
+// import ListItem from '@material-ui/core/ListItem';
+// import ListItemIcon from '@material-ui/core/ListItemIcon';
+// import ListItemText from '@material-ui/core/ListItemText';
+// import Badge from '@material-ui/core/Badge';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../modules/user';
 
@@ -35,6 +35,8 @@ const useStyles = makeStyles(theme => ({
   buttons: {
     display: 'flex',
     justifyContent: 'center',
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4)
   }
 }));
 
@@ -78,8 +80,13 @@ function Profile() {
               </Typography>
             </Grid>
           </Grid>
+
           <Container maxWidth="md">
-            <Card className={classes.cards}>
+            <Typography>
+              Profile editing functionality will be added soon.
+            </Typography>
+
+            {/*<Card className={classes.cards}>
               <List>
                 <ListItem button>
                   <ListItemIcon>
@@ -139,7 +146,8 @@ function Profile() {
                   </ListItemIcon>
                 </ListItem>
               </List>
-            </Card>
+            </Card> */}
+
             <div className={classes.buttons}>
               <Button
                 variant="outlined"

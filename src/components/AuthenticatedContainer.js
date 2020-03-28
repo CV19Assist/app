@@ -9,8 +9,7 @@ import NewUser from './NewUser';
 // import Volunteer from '../components/Volunteer';
 import SearchResults from '../components/SearchResults';
 import TaskRequestDialog from '../components/TaskRequestDialog';
-import ViewAll from '../components/ViewAll';
-import NeedHelp from './RequestHelp';
+import MyTasks from '../pages/MyTasksPage';
 
 function AuthenticatedContainer(props) {
   const user = useSelector(state => state.get("user"));
@@ -19,6 +18,7 @@ function AuthenticatedContainer(props) {
     return <Redirect to="/login" />;
   }
 
+  // Allow new user for users without a profile.
   if (
     user.get("userProfile") === null &&
     props.location.pathname !== "/new-user"
@@ -31,12 +31,8 @@ function AuthenticatedContainer(props) {
       <Switch>
         <Route exact path="/new-user" component={NewUser} />
         <Route exact path="/profile" component={Profile} />
-        <Route exact path="/need-help" component={NeedHelp} />
+        <Route exact path="/profile/tasks" component={MyTasks} />
         <Route path="/volunteer" component={SearchResults} />
-        <Route exact path="/contact">
-          <p>Contact Us</p>
-          <p>coming soon...</p>
-        </Route>
         {/* <Route exact path="/maps" component={Maps} /> */}
 
         {/* TODO: Need to figure out how to allow anonymous user to access this. */}

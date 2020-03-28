@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import {GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow} from "react-google-maps";
+import {GoogleMap, withScriptjs, withGoogleMap } from "react-google-maps";
 import { makeStyles } from '@material-ui/core';
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 // import * as parksData from "../data/skateboard-parks.json";
 import { defaultLngLat } from '../util/defaults';
 
