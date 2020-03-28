@@ -19,7 +19,7 @@ let AuthUIConfig = {
 
     // To be added later.
     // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-    // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+    firebase.auth.TwitterAuthProvider.PROVIDER_ID,
 
     // // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
   ],

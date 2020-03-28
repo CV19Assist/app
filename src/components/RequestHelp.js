@@ -20,9 +20,6 @@ import { submitNeed } from "../modules/needs";
 import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
-  header: {
-    marginBottom: theme.spacing(4),
-  },
   buttons: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -30,7 +27,7 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(3)
   },
   paper: {
-    paddingTop: theme.spacing(3),
+    // paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(1)
   },
   optionalDivider: {
@@ -59,7 +56,7 @@ const useStyles = makeStyles(theme => ({
 const requestValidationSchema = Yup.object().shape({
   custName: Yup.string().min(2, "Too Short").required("Required"),
   contactInfo: Yup.string().min(2, "Too Short").required("Required"),
-  shortDescription: Yup.string().required("Required"),
+  // shortDescription: Yup.string().required("Required"),
   immediacy: Yup.string().required("Required"),
   // needGroup: Yup.array().required("Please select at least one support need."),
   otherComments: Yup.string(),
@@ -82,12 +79,12 @@ function NeedHelp() {
   const dispatch = useDispatch();
   const [userLocation, setUserLocation] = useState(null);
 
-  const handleLocationChange = (location) => {
+  const handleLocationChange = location => {
     // console.log(location);
     setUserLocation(location);
-  }
+  };
 
-  const handleFormSubmit = (values) => {
+  const handleFormSubmit = values => {
     if (!userLocation) {
       alert("Please select a location by clicking on the map above.");
       return;
@@ -99,14 +96,14 @@ function NeedHelp() {
       return;
     }
     let selected = values.needGroup.filter(el => {
-      return (el != null) && (typeof(el) !== "undefined");
+      return el != null && typeof el !== "undefined";
     });
     if (selected.length === 0) {
       alert("Please select at least one need.");
       return;
     }
 
-    let newNeed = {...values};
+    let newNeed = { ...values };
     newNeed.needs = selected.map(el => el[0]);
     delete newNeed.needGroup;
 
@@ -116,23 +113,20 @@ function NeedHelp() {
 
     // console.log(values, newNeed);
     dispatch(submitNeed(newNeed));
-  }
+  };
 
   return (
     <Container maxWidth="md">
+      <Typography
+        variant="h5"
+        color="textPrimary"
+        gutterBottom
+      >
+        Request Help
+      </Typography>
       <Paper className={classes.paper}>
         <div className={classes.heroContent}>
           <Container maxWidth="md">
-            <Typography
-              component="h1"
-              variant="h4"
-              align="center"
-              color="textPrimary"
-              className={classes.header}
-              gutterBottom
-            >
-              Request Help
-            </Typography>
             <Formik
               validationSchema={requestValidationSchema}
               onSubmit={handleFormSubmit}
@@ -148,45 +142,49 @@ function NeedHelp() {
                 <form onSubmit={formik.handleSubmit}>
                   {/* {console.log(formik.errors)} */}
                   <Container>
-                      <FormGroup>
-                        <Typography variant="h6" gutterBottom className={classes.otherComments}>
-                          What do you need help with?
-                        </Typography>
-                        {/* <Typography variant="body1" gutterBottom>
+                    <FormGroup>
+                      <Typography
+                        variant="h5"
+                        gutterBottom
+                        className={classes.otherComments}
+                      >
+                        What do you need help with?
+                      </Typography>
+                      {/* <Typography variant="body1" gutterBottom>
                           If you have multiple needs then please 
                         </Typography> */}
-                        <FieldArray
-                          name="needGroup"
-                          render={errors => (
-                            <React.Fragment>
-                              {needOptions.map((option, index) => (
-                                <Field
-                                  key={index}
-                                  as={FormControlLabel}
-                                  control={
-                                    <Checkbox
-                                      // onChange={formik.handleChange}
-                                      name={`needGroup.${index}`}
-                                      value={option.key}
-                                    />
-                                  }
-                                  label={option.description}
-                                />
-                              ))}
-                              {errors.needGroup === "string" && (
-                                <Typography
-                                  variant="body2"
-                                  className={classes.errorText}
-                                >
-                                  Please select at least one need.
-                                </Typography>
-                              )}
-                            </React.Fragment>
-                          )}
-                        />
+                      <FieldArray
+                        name="needGroup"
+                        render={errors => (
+                          <React.Fragment>
+                            {needOptions.map((option, index) => (
+                              <Field
+                                key={index}
+                                as={FormControlLabel}
+                                control={
+                                  <Checkbox
+                                    // onChange={formik.handleChange}
+                                    name={`needGroup.${index}`}
+                                    value={option.key}
+                                  />
+                                }
+                                label={option.description}
+                              />
+                            ))}
+                            {errors.needGroup === "string" && (
+                              <Typography
+                                variant="body2"
+                                className={classes.errorText}
+                              >
+                                Please select at least one need.
+                              </Typography>
+                            )}
+                          </React.Fragment>
+                        )}
+                      />
 
-                        {/* TODO: Implement this functionality */}
-                        {/* <Field
+                      {/* TODO: Implement this functionality */}
+                      {/* <Field
                         as={FormControlLabel}
                         control={
                           <Checkbox
@@ -196,7 +194,7 @@ function NeedHelp() {
                         }
                         label="&nbsp; Limited, Immediate Financial Needs"
                       /> */}
-                      </FormGroup>
+                    </FormGroup>
                     {/* <Typography variant="h6" gutterBottom className={classes.otherComments}>
                       Short Description
                     </Typography> */}
@@ -218,7 +216,7 @@ function NeedHelp() {
                       helperText={formik.errors.custName}
                     /> */}
                     <Typography
-                      variant="h6"
+                      variant="h5"
                       gutterBottom
                       className={classes.otherComments}
                     >
@@ -266,7 +264,9 @@ function NeedHelp() {
                       />
                     </Field>
                     {formik.touched.immediacy && !!formik.errors.immediacy && (
-                      <FormHelperText error>Please select an immediacy.</FormHelperText>
+                      <FormHelperText error>
+                        Please select an immediacy.
+                      </FormHelperText>
                     )}
                     {/* <Grid container spacing={3}>
                       <Grid item xs>
@@ -306,8 +306,10 @@ function NeedHelp() {
                       Your Location
                     </Typography>
                     <Typography variant="body2" className={classes.intro}>
-                      A rough location is required to allow us to efficiently
-                      and quickly find a match for your need.
+                      A rough location is needed to allow us to efficiently and
+                      quickly find a match for your need. You can either click
+                      on the "Detect Location" button below the map or click on
+                      the map to specify the location.
                     </Typography>
                     <Grid container spacing={3}>
                       <Grid item xs={12}>

@@ -1,56 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import Divider from '@material-ui/core/Divider';
-import Card from '@material-ui/core/Card';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from "@material-ui/core/CardActions";
-import Slider from '@material-ui/core/Slider';
-import AnnouncementOutlinedIcon from '@material-ui/icons/AnnouncementOutlined';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Alert from '@material-ui/lab/Alert';
+import React, { useEffect, useState } from "react";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core";
+import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
+import Button from "@material-ui/core/Button";
+import Divider from "@material-ui/core/Divider";
+import Card from "@material-ui/core/Card";
+import Paper from "@material-ui/core/Paper";
+import TextField from "@material-ui/core/TextField";
+import CardContent from "@material-ui/core/CardContent";
+import Slider from "@material-ui/core/Slider";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Alert from "@material-ui/lab/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import PlacesAutocomplete, {
-    geocodeByAddress,
-    getLatLng
+  geocodeByAddress,
+  getLatLng
 } from "react-places-autocomplete";
 import { loadSearchResults } from "../modules/needsSearch";
 import { requestNeedAssignment } from "../modules/needs";
-
 
 const useStyles = makeStyles(theme => ({
   round: {
     borderRadius: 50,
     paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(3),
+    paddingLeft: theme.spacing(3)
   },
   center: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   },
   indent: {
-    marginLeft: theme.spacing(2),
+    marginLeft: theme.spacing(2)
   },
   icons: {
     width: theme.spacing(5),
-    height: theme.spacing(5),
+    height: theme.spacing(5)
   },
   cards: {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(2)
   },
   arrows: {
     padding: theme.spacing(1.5),
     borderRadius: 100,
     marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(4)
   },
   filterPaper: {
     padding: theme.spacing(2)
@@ -75,15 +72,25 @@ const useStyles = makeStyles(theme => ({
   },
   grabButton: {
     marginRight: theme.spacing(3)
+  },
+  TaskTitle: {
+    color: "#F4B7B4"
+  },
+  TaskContainer: {
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2)
+  },
+  DetailsButton: {
+    paddingTop: theme.spacing(1)
   }
 }));
 
 const markValues = [
-  { value: 1, label: '1 mi', },
+  { value: 1, label: "1 mi" },
   // { value: 2, label: '2 mi', },
   // { value: 5, label: '5 mi', },
   // { value: 20, label: '20 mi', },
-  { value: 30, label: '30 mi', },
+  { value: 30, label: "30 mi" }
   // { value: 50, label: '50 mi', },
   // { value: 90, label: '90 mi', },
 ];
@@ -150,19 +157,22 @@ function SearchResults() {
     dispatch(loadSearchResults(filter));
   };
 
-  const getNeedUrl = (id) => {
+  const getNeedUrl = id => {
     let href = window.location.href;
-    let path = `${href.substr(0, href.indexOf("/", href.indexOf("://")+3))}/needs/${id}`;
+    let path = `${href.substr(
+      0,
+      href.indexOf("/", href.indexOf("://") + 3)
+    )}/needs/${id}`;
     // console.log(path);
     return path;
-  }
+  };
 
-  const handleCopyNeedLink = (id) => {
-    const el = document.createElement('textarea');
+  const handleCopyNeedLink = id => {
+    const el = document.createElement("textarea");
     document.body.appendChild(el);
     el.value = getNeedUrl(id);
     el.select();
-    document.execCommand('copy');
+    document.execCommand("copy");
     document.body.removeChild(el);
   };
 
@@ -173,8 +183,8 @@ function SearchResults() {
 
   return (
     <Container maxWidth="md">
+      <Typography variant="h6">Search Criteria</Typography>
       <Paper className={classes.filterPaper}>
-        <Typography variant="h6">Search Criteria</Typography>
         {!showAddressPicker && (
           <Typography id="continuous-slider" gutterBottom>
             Using your default location.
@@ -278,48 +288,57 @@ function SearchResults() {
       {results &&
         results.map(result => (
           <Card key={result.id} className={classes.cards}>
-            <Grid container>
-              <Grid item xs={3} className={classes.center}>
-                <Typography variant="h4">
-                  {(result.distance * 0.62137).toFixed(2)} miles
-                </Typography>
-              </Grid>
-              <Divider orientation="vertical" flexItem />
-              <Grid item xs>
-                <CardContent>
+            <Container maxWidth="lg" className={classes.TaskContainer}>
+              <Grid container>
+                <Grid item xs={9}>
                   <Typography variant="caption" gutterBottom>
                     ADDED {result.createdAt.format("llll")}
                   </Typography>
-                  <Typography variant="h5" gutterBottom>
-                    {result.shortDescription}
+                  <Typography
+                    variant="h5"
+                    className={classes.TaskTitle}
+                    gutterBottom
+                  >
+                    {result.needs.join(", ")}
                   </Typography>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <img
+                    align="right"
+                    src="/taskIcon.png"
+                    width="50px"
+                    height="50px"
+                  ></img>
+                </Grid>
+
+                <Grid item xs={12}>
                   <Typography variant="caption" gutterBottom>
                     REQUESTOR
                   </Typography>
-                  <Typography variant="h6">{result.name}</Typography>
+                </Grid>
 
-                  {result.otherDetails && (
-                    <React.Fragment>
-                      <Typography variant="caption" gutterBottom>
-                        OTHER DETAILS
-                      </Typography>
-                      <Typography variant="h6" gutterBottom>
-                        {result.otherDetails}
-                      </Typography>
-                    </React.Fragment>
-                  )}
-                </CardContent>
-                <CardActions>
-                  <div className={classes.indent}>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      onClick={() => handleGrabNeed(result)}
-                      className={classes.grabButton}
-                    >
-                      GRAB
-                    </Button>
-                    {navigator.share ? (
+                <Grid item xs={6}>
+                  <Typography variant="h6">{result.name}</Typography>
+                </Grid>
+
+                <Grid item xs={6}>
+                  <Typography
+                    align="right"
+                    variant="h5"
+                    className={classes.TaskTitle}
+                  >
+                    {(result.distance * 0.62137).toFixed(2)} miles
+                  </Typography>
+                </Grid>
+
+                <Grid
+                  className={classes.DetailsButton}
+                  align="right"
+                  item
+                  xs={12}
+                >
+                  {navigator.share ? (
                       <Button
                         color="primary"
                         variant="outlined"
@@ -341,24 +360,13 @@ function SearchResults() {
                       >
                         COPY LINK FOR SHARING
                       </Button>
-                    )}
-                  </div>
-                </CardActions>
-              </Grid>
-              <Grid item xs={1}>
-                <Grid container direction="column">
-                  <Grid item xs>
-                    {result.immediacy === 1 && (
-                      <AnnouncementOutlinedIcon
-                        title="Urgent"
-                        className={classes.icons}
-                        color="error"
-                      />
-                    )}
-                  </Grid>
+                    )}{" "}
+                  <Button variant="contained" color="primary" onClick={() => handleGrabNeed(result)}>
+                    DETAILS
+                  </Button>
                 </Grid>
               </Grid>
-            </Grid>
+            </Container>
           </Card>
         ))}
 

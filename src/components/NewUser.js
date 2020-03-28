@@ -204,8 +204,10 @@ function NewUser() {
                   Please click or tap on your location
                 </Typography>
                 <Typography variant="body2" className={classes.intro}>
-                  We do not need a precise location, but we do require a
-                  location so we can find matches more efficiently.
+                  A rough location is needed to allow us to efficiently and
+                  quickly find a match. You can either click on
+                  the "Detect Location" button below the map or click on the map to specify
+                  the location.
                 </Typography>
                 <Card>
                   <Location onLocationChange={handleLocationChange} />
@@ -294,7 +296,8 @@ function NewUser() {
                   warranties, express or implied, and hereby disclaims all
                   implied warranties, including any warranty of merchantability
                   and warranty of fitness for a particular purpose.
-                  <br /><br />
+                  <br />
+                  <br />
                   The volunteers are working on a privacy policy and will
                   publish it soon.
                 </Typography>

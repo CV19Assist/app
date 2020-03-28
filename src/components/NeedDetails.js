@@ -57,12 +57,12 @@ function NeedDetails(props) {
             ["coordinates", "_latitude"])},${need.getIn(["coordinates", "_longitude"])}&size=300x300&zoom=10`}
         />
 
-        <Typography variant="caption" gutterBottom>
+        {/* <Typography variant="caption" gutterBottom>
           DESCRIPTION
         </Typography>
         <Typography variant="h5" gutterBottom>
           {need.get("shortDescription")}
-        </Typography>
+        </Typography> */}
 
         <Typography variant="caption" gutterBottom>
           NEEDS
@@ -137,8 +137,6 @@ function NeedDetails(props) {
             user.getIn(["userProfile", "id"]) ===
               need.getIn(["owner", "userProfileId"]) && (
               <React.Fragment>
-                {user.getIn(["userProfile", "id"])}
-                {need.getIn(["owner", "userProfileId"])}
                 <Grid item xs={8} />
                 <Grid item xs={2}>
                   <Button fullWidth variant="contained" onClick={handleRelease}>

@@ -40,7 +40,7 @@ needs = [
         // 10 - urgent
 
     
-      shortDescription: Joi.string().required(),
+      // shortDescription: Joi.string().required(),
       contactInfo: Joi.string().required(),
       name: Joi.string().required(),
       otherDetails: Joi.string().allow(""),

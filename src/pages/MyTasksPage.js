@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { Link } from 'react-router-dom';
 import {
-  Button,
-  Grid,
   makeStyles,
-  Card,
   Paper,
+  Button,
   Container,
   Typography,
   LinearProgress,
@@ -29,7 +28,6 @@ const useStyles = makeStyles(theme => ({
 export default function MyTasksPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const user = useSelector(state => state.get("user"));
   const ui = useSelector(state => state.getIn(["ui", "needs", "myTasks"]));
   const status = ui.get("status");
   const history = useHistory();
@@ -38,49 +36,73 @@ export default function MyTasksPage() {
     dispatch(loadMyTasks());
   }, []);
 
-  const handleNeedClick = (need) => {
-    history.push(`/needs/${need.get("id")}`)
-  }
+  const handleNeedClick = need => {
+    history.push(`/needs/${need.get("id")}`);
+  };
 
   let body = null;
   if (status === "loading") {
-    body = (
-      <LinearProgress />
+    return (
+      <Container maxWidth="md">
+        <Paper className={classes.paper}>
+          <LinearProgress />
+        </Paper>
+      </Container>
     );
   } else {
-    body = (
-      <React.Fragment>
+    const tasks = ui.get("tasks");
+    return (
+      <Container maxWidth="md">
         <Typography
-          component="h1"
-          variant="h4"
-          align="center"
-          className={classes.header}
+          variant="h6"
+          // align="center"
         >
           My Tasks
         </Typography>
-        <p>Below are your current tasks.</p>
-
-        <List>
-          {ui
-            .get("tasks")
-            .toSeq()
-            .map(need => (
-              <React.Fragment key={need.get("id")}>
-              <ListItem
-                button
-                onClick={() => handleNeedClick(need)}
+        <Paper className={classes.paper}>
+          {tasks.size == 0 ? (
+            <React.Fragment>
+              <Typography gutterBottom>
+                You currently do not have any tasks.
+              </Typography>
+              <Button
+                component={Link}
+                to="/volunteer"
+                variant="contained"
+                color="primary"
               >
-                <ListItemText>{need.get("shortDescription")}</ListItemText>
-              </ListItem>
-              <Divider component="li" />
-              </React.Fragment>
-            ))}
-        </List>
-        <p>
-          Note: we are working on adding the ability to see the completed tasks
-          and should have that released in the coming weeks.
-        </p>
-      </React.Fragment>
+                Find new requests
+              </Button>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <p>Below are your current tasks.</p>
+              <List>
+                {tasks.toSeq().map(need => (
+                  <React.Fragment key={need.get("id")}>
+                    <ListItem button onClick={() => handleNeedClick(need)}>
+                      <ListItemText>
+                        {need.get("createdAt").format("llll")}
+                        <br />
+                        <span style={{ fontWeight: "bold" }}>
+                          {need.get("name")}
+                        </span>
+                        <br />
+                        {need.get("needs").join(", ")}
+                      </ListItemText>
+                    </ListItem>
+                    <Divider component="li" />
+                  </React.Fragment>
+                ))}
+              </List>
+            </React.Fragment>
+          )}
+          <p>
+            Note: we are working on adding the ability to see the completed
+            tasks and should have that released in the coming weeks.
+          </p>
+        </Paper>
+      </Container>
       // <Card key={result.id} className={classes.cards}>
       //   <Grid container>
       //     <Grid item xs={3} className={classes.center}>
@@ -166,12 +188,4 @@ export default function MyTasksPage() {
       // </Card>
     );
   }
-
-  return (
-    <Container maxWidth="md">
-      <Paper className={classes.paper}>
-        {body}
-      </Paper>
-    </Container>
-  );
 }
