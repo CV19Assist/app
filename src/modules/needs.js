@@ -2,7 +2,7 @@ import Immutable from "immutable";
 import { mergeMap, catchError } from 'rxjs/operators';
 import { ofType } from 'redux-observable';
 import API from '../util/api';
-import { push } from 'connected-react-router/immutable';
+import { push, replace } from 'connected-react-router/immutable';
 import moment from 'moment';
 
 /***** Actions *****/
@@ -192,11 +192,13 @@ export const submitForAssignmentEpic = action$ =>
       return API.getAuthenticatedJSONRequestObservable("/needs/assign", "post", {id: action.need.id}).pipe(
         mergeMap(resp => {
           // console.log(resp);
-          return [submitForAssignmentSucceeded(), push(`/needs/${action.need.id}`)];
+          return [submitForAssignmentSucceeded(), replace(`/refresh/needs/${action.need.id}`)];
         }),
         catchError(err => {
           if (err.status === 403) {
             alert(err.response.message);
+          } else {
+            alert(err);
           }
           return [submitForAssignmentFailed(err)];
         })
@@ -237,7 +239,7 @@ export const releaseNeedAssignmentEpic = action$ =>
     mergeMap(action => {
       return API.getAuthenticatedJSONRequestObservable(`/needs/${action.id}/release`, "post").pipe(
         mergeMap(resp => {
-          return [releaseNeedAssignmentSucceeded(), push("/volunteer")];
+          return [releaseNeedAssignmentSucceeded(), push(`/refresh/needs/${action.id}`)];
         }),
         catchError(err => {
           if (err.status === 404) {
@@ -256,7 +258,7 @@ export const completeNeedAssignmentEpic = action$ =>
     mergeMap(action => {
       return API.getAuthenticatedJSONRequestObservable(`/needs/${action.id}/complete`, "post").pipe(
         mergeMap(resp => {
-          return [completeNeedAssignmentSucceeded(), push("/volunteer")];
+          return [completeNeedAssignmentSucceeded(), push("/search")];
         }),
         catchError(err => {
           if (err.status === 404) {

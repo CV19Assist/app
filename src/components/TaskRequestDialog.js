@@ -8,6 +8,9 @@ import Button from '@material-ui/core/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { cancelRequestNeedAssignment, submitForAssignment } from "../modules/needs";
 import NeedDetails from './NeedDetails';
+import ShareIcon from '@material-ui/icons/Share';
+import AcceptIcon from '@material-ui/icons/ThumbUp';
+import OpenInNewWindowIcon from '@material-ui/icons/OpenInNew';
 
 // const useStyles = makeStyles(theme => ({
 // }));
@@ -27,6 +30,20 @@ function TaskRequestDialog() {
     dispatch(submitForAssignment(need));
   };
 
+  const handleOpenInNewWindow = () => {
+    window.open(`/needs/${need.id}`);
+  };
+
+  const getNeedUrl = id => {
+    let href = window.location.href;
+    let path = `${href.substr(
+      0,
+      href.indexOf("/", href.indexOf("://") + 3)
+    )}/needs/${id}`;
+    // console.log(path);
+    return path;
+  };
+
   return (
     <Dialog open={dialogOpen} maxWidth="md" fullWidth>
       {dialogOpen && (
@@ -37,10 +54,24 @@ function TaskRequestDialog() {
           </DialogContent>
           <DialogActions>
             {/* <Button autoFocus onClick={handleClose} color="primary"> */}
-            <Button autoFocus color="secondary" onClick={handleCancelRequest}>
+            <Button color="secondary" onClick={handleCancelRequest}>
               Cancel
             </Button>
-            <Button autoFocus color="primary" onClick={handleTaskAssignment}>
+            <Button onClick={handleOpenInNewWindow} startIcon={<OpenInNewWindowIcon />}>
+              Open in New Window
+            </Button>
+            {navigator.share && (
+              <Button startIcon={<ShareIcon />} onClick={() => {
+                navigator.share({
+                  title: "CV19 Assist Need Link",
+                  text: "CV19 Assist Need Link",
+                  url: getNeedUrl(need.id)
+                });
+              }}>
+                Share
+              </Button>
+            )}
+            <Button autoFocus color="primary" onClick={handleTaskAssignment} startIcon={<AcceptIcon />}>
               Looks good, assign to me
             </Button>
           </DialogActions>

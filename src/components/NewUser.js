@@ -13,6 +13,7 @@ import Grid from "@material-ui/core/Grid"
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import { Formik, Field } from "formik";
+import { Helmet } from 'react-helmet';
 import * as Yup from "yup";
 import { saveUserProfile } from "../modules/user";
 import Location from "./ClickableMap";
@@ -63,7 +64,6 @@ const userProfileSchema = Yup.object().shape({
   zipcode: Yup.string(),
 });
 
-
 function NewUser() {
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -111,6 +111,7 @@ function NewUser() {
 
   return (
     <Container maxWidth="md">
+      <Helmet><title>Sign Up</title></Helmet>
       <Paper className={classes.paper}>
         <Typography
           component="h1"

@@ -42,7 +42,8 @@ needs = [
     
       // shortDescription: Joi.string().required(),
       contactInfo: Joi.string().required(),
-      name: Joi.string().required(),
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
       otherDetails: Joi.string().allow(""),
       coordinates: Joi.object().keys({
         _latitude: Joi.number()

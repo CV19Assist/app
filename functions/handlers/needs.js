@@ -15,7 +15,8 @@ const needValidation = {
     immediacy: Joi.number().greater(0).less(11).required(),
     // shortDescription: Joi.string().required(),
     contactInfo: Joi.string().required(),
-    name: Joi.string().required(),
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
     otherDetails: Joi.string().allow(""),
     coordinates: Joi.object().required().keys({
       _latitude: Joi.number()
@@ -41,7 +42,8 @@ routes.post("/new", checkIfUserLoggedIn, validate(needValidation), async (req, r
     immediacy: req.body.immediacy,
     // shortDescription: req.body.shortDescription,
     contactInfo: req.body.contactInfo,
-    name: req.body.name,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     otherDetails: req.body.otherDetails,
     coordinates: loc,
     status: 1,

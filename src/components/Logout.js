@@ -1,15 +1,19 @@
 import React, { useEffect } from "react";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core";
-import Container from "@material-ui/core/Container";
 import { useDispatch } from "react-redux";
+import {
+  makeStyles,
+  Container,
+  Typography,
+  Paper,
+  LinearProgress
+} from "@material-ui/core";
 import { logout } from "../modules/user";
+import { Helmet } from 'react-helmet';
 
 const useStyles = makeStyles(theme => ({
-  heroContent: {
-    background: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
+  paper: {
+    padding: theme.spacing(3)
+  }
 }));
 
 function Logout() {
@@ -20,23 +24,20 @@ function Logout() {
   }, [dispatch]);
 
   return (
-    <React.Fragment>
-      <main>
-        <div className={classes.heroContent}>
-          <Container maxWidth="md">
-            <Typography
-              component="h1"
-              variant="h2"
-              align="center"
-              color="textPrimary"
-              gutterBottom
-            >
-              Logging out...
-            </Typography>
-          </Container>
-        </div>
-      </main>
-    </React.Fragment>
+    <Container maxWidth="md">
+      <Helmet><title>Logging Out</title></Helmet>
+      <Paper className={classes.paper}>
+        <Typography
+          variant="h4"
+          align="center"
+          color="textPrimary"
+          gutterBottom
+        >
+          Logging out...
+        </Typography>
+        <LinearProgress />
+      </Paper>
+    </Container>
   );
 }
 
