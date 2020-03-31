@@ -105,9 +105,9 @@ function AboutPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Steve Knurr
+            Steven Knurr
           </a>{" "}
-          along with plenty of help from additional volunteers including some
+          along with plenty of help from additional volunteers, including some
           early notable volunteers listed below.
         </p>
         <ul>
@@ -129,7 +129,7 @@ function AboutPage() {
               Deniz Simsek
             </a>{" "}
           </li>
-          <li>Jessie Lou</li>
+          <li>Jessie Luo</li>
         </ul>
         <p>
           Please see the contributor list on our{" "}
