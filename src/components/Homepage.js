@@ -49,7 +49,9 @@ function Homepage() {
 
   return (
     <React.Fragment>
-      <Helmet><title>Welcome</title></Helmet>
+      <Helmet>
+        <title>Welcome</title>
+      </Helmet>
       <Container className={classes.header} maxWidth="xl">
         <Typography
           component="h5"
@@ -92,9 +94,10 @@ function Homepage() {
             <Typography variant="h6">Request Assistance</Typography>
             <Paper className={classes.sectionContentPaper}>
               <Typography variant="body2" gutterBottom>
-                Free services for the most at-risk community members. Request
-                grocery delivery, prescription pick-up, or a phone call for
-                emotional support. We have got you covered!
+                We provide free services for the most at-risk community members.
+                Request grocery delivery, prescription pick-up, or a phone call
+                for emotional support.  There is no charge for the deliver
+                We have got you covered!
               </Typography>
               <div className={classes.actionButtons}>
                 <Button

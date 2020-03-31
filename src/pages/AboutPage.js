@@ -17,7 +17,9 @@ function AboutPage() {
 
   return (
     <Container maxWidth="md">
-      <Helmet><title>About</title></Helmet>
+      <Helmet>
+        <title>About</title>
+      </Helmet>
       <Typography variant="h5" gutterBottom>
         About
       </Typography>
@@ -83,14 +85,54 @@ function AboutPage() {
           </a>{" "}
           page. The project is lead by{" "}
           <a
-            href="https://github.com/thebitguru"
+            href="https://www.linkedin.com/in/farhanahmad/"
             target="_blank"
             rel="noopener noreferrer"
           >
             Farhan Ahmad
+          </a>
+          ,{" "}
+          <a
+            href="https://www.linkedin.com/in/saad-baig-68228759/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Saad Baig
+          </a>
+          , and{" "}
+          <a
+            href="https://www.linkedin.com/in/epicdesignevolution/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Steve Knurr
           </a>{" "}
-          and Saad Baig with plenty of help from volunteers. Please see the
-          contributor list on our{" "}
+          along with plenty of help from additional volunteers including some
+          early notable volunteers listed below.
+        </p>
+        <ul>
+          <li>
+            <a
+              href="https://www.linkedin.com/in/maaz-baig-a779525a/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Maaz Baig
+            </a>{" "}
+          </li>
+          <li>
+            <a
+              href="https://github.com/MrSimsek"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Deniz Simsek
+            </a>{" "}
+          </li>
+          <li>Jessie Lou</li>
+        </ul>
+        <p>
+          Please see the contributor list on our{" "}
           <a
             href="https://github.com/CV19Assist/app/graphs/contributors"
             target="_blank"

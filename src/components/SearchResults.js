@@ -100,7 +100,7 @@ const markValues = [
 ];
 
 // Default distance in miles.
-const defaultDistance = 5;
+const defaultDistance = 25;
 
 function SearchResults() {
   const classes = useStyles();

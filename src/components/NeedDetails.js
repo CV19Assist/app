@@ -1,6 +1,6 @@
 import React, { useEffect }  from "react";
 import PropTypes from 'prop-types';
-import { Button, Grid, makeStyles, CircularProgress, Typography } from '@material-ui/core';
+import { Button, Grid, makeStyles, CircularProgress, Typography, Divider } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { useSelector, useDispatch } from 'react-redux';
 import { loadNeedDetails, releaseNeedAssignment, completeNeedAssignment } from "../modules/needs";
@@ -22,6 +22,10 @@ const useStyles = makeStyles(theme => ({
   actionButton: {
     merginRight: theme.spacing(2),
     merginLeft: theme.spacing(2),
+  },
+  divider: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   }
 }));
 
@@ -50,15 +54,17 @@ function NeedDetails(props) {
   };
 
   const handleRequestAssigment = () => {
-    dispatch(submitForAssignment({id: need.get("id")}));
-  }
+    dispatch(submitForAssignment({ id: need.get("id") }));
+  };
 
   const handleRelease = () => {
     dispatch(releaseNeedAssignment(id));
   };
 
   const handleVolunteerToAccept = () => {
-    dispatch(cacheLaunchURL(`${location.pathname}${location.search}${location.hash}`));
+    dispatch(
+      cacheLaunchURL(`${location.pathname}${location.search}${location.hash}`)
+    );
     dispatch(push("/login"));
   };
 
@@ -109,15 +115,11 @@ function NeedDetails(props) {
           NEEDS
         </Typography>
         <Typography variant="h6" gutterBottom>
-          {immediacy === 1 ? (
-            "URGENT"
-          ) : (
-            immediacy <= 5 ? (
-              "Not very urgent: "
-            ) : (
-              "URGENT: "
-            )
-          )}
+          {immediacy === 1
+            ? "URGENT"
+            : immediacy <= 5
+            ? "Not very urgent: "
+            : "URGENT: "}
           {need.get("needs").map(item => (
             <React.Fragment key={item}>
               {allCategoryMap[item] ? (
@@ -174,39 +176,40 @@ function NeedDetails(props) {
           </Typography>
         )}
 
-        <Grid container spacing={2} className={classes.container}>
-          <Grid item xs={10}>
-            <Grid item xs={10}>
-              <Typography color="secondary" align="left" variant="body1">
-                PLEASE MAKE SURE THAT YOU MEET THE CRITERIA BELOW BEFORE
-                VOLUNTEERING
-              </Typography>
-              <ul>
-                <li>
-                  I am not exhibiting any symptoms of COVID-19 (cough, fever,
-                  etc.)
-                </li>
-                <li>
-                  I have not come in contact with anyone exhibiting COVID-19
-                  symptoms in the past 14 days
-                </li>
-                <li>I have been practicing social distancing</li>
-                <li>
-                  I am not part of the{" "}
-                  <a
-                    href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    at-risk group
-                  </a>
-                </li>
-                <li>
-                  I am in good overall health and can practice social distancing
-                  if needed to go to public places.
-                </li>
-              </ul>
-            </Grid>
+        <Divider className={classes.divider} />
+
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Typography color="secondary" align="left" variant="body1">
+              PLEASE MAKE SURE THAT YOU MEET THE CRITERIA BELOW BEFORE
+              VOLUNTEERING
+            </Typography>
+
+            <ul>
+              <li>
+                I am not exhibiting any symptoms of COVID-19 (cough, fever,
+                etc.)
+              </li>
+              <li>
+                I have not come in contact with anyone exhibiting COVID-19
+                symptoms in the past 14 days
+              </li>
+              <li>I have been practicing social distancing</li>
+              <li>
+                I am not part of the{" "}
+                <a
+                  href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  at-risk group
+                </a>
+              </li>
+              <li>
+                I am in good overall health and can practice social distancing
+                if needed to go to public places.
+              </li>
+            </ul>
           </Grid>
 
           {/* If not specifically asked to hide. */}
@@ -232,8 +235,7 @@ function NeedDetails(props) {
                     Please sign up as a volunteer to accept this request
                   </Button>
                 </Grid>
-              ) :
-              // Logged in, not complete
+              ) : // Logged in, not complete
               need.get("status") === 10 ? (
                 // Logged, assigned.
                 user.getIn(["userProfile", "id"]) ===
