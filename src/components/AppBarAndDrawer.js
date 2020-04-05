@@ -13,10 +13,13 @@ import MenuItem from "@material-ui/core/MenuItem";
 import IconButton from "@material-ui/core/IconButton";
 import Hidden from "@material-ui/core/Hidden";
 import Paper from "@material-ui/core/Paper";
+import Divider from "@material-ui/core/Divider";
 import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
+import { push as pushURL } from 'connected-react-router/immutable';
+import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
   grow: { flexGrow: 1 },
@@ -31,7 +34,11 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2)
   },
   drawerHeader: {
-    padding: theme.spacing(1)
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    textDecoration: 'none',
   }
 }));
 
@@ -39,6 +46,7 @@ function AppBarAndDrawer(props) {
   const classes = useStyles();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const user = props.user;
+  const dispatch = useDispatch();
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
   const isAuthenticated =  user.get("isAuthenticated");
 
@@ -58,6 +66,11 @@ function AppBarAndDrawer(props) {
     setDrawerOpen(false);
   };
 
+  const launchURL = (url) => {
+    dispatch(pushURL(url));
+    closeDrawer();
+  }
+
   return (
     <AppBar position="relative" className={classes.appBar}>
       <Toolbar>
@@ -73,19 +86,36 @@ function AppBarAndDrawer(props) {
             <MenuIcon />
           </IconButton>
           <Drawer open={drawerOpen} onClose={toggleDrawerOpen}>
-            <Paper className={classes.drawerHeader}>
-              <Typography variant="h5" component={Link} to="/">
-                COVID-19 Assist
-              </Typography>
-            </Paper>
+            <Typography
+              variant="h5"
+              component={Link}
+              to="/"
+              onClick={closeDrawer}
+              className={classes.drawerHeader}
+            >
+              COVID-19 Assist
+            </Typography>
+            <Divider />
             <List>
-              <ListItem to="/request" component={Link} onClick={closeDrawer}>
+              <ListItem
+                onClick={() => {
+                  launchURL("/request");
+                }}
+              >
                 <ListItemText primary="Request Assistance" />
               </ListItem>
-              <ListItem to="/search" component={Link} onClick={closeDrawer}>
+              <ListItem
+                onClick={() => {
+                  launchURL("/search");
+                }}
+              >
                 <ListItemText primary="Help Someone" />
               </ListItem>
-              <ListItem to="/" component={Link} onClick={closeDrawer}>
+              <ListItem
+                onClick={() => {
+                  launchURL("/");
+                }}
+              >
                 <ListItemText primary="Home" />
               </ListItem>
               <ListItem
@@ -96,10 +126,18 @@ function AppBarAndDrawer(props) {
               >
                 <ListItemText primary="Twitter" />
               </ListItem>
-              <ListItem to="/contact" component={Link} onClick={closeDrawer}>
+              <ListItem
+                onClick={() => {
+                  launchURL("/contact");
+                }}
+              >
                 <ListItemText primary="Contact" />
               </ListItem>
-              <ListItem to="/about" component={Link} onClick={closeDrawer}>
+              <ListItem
+                onClick={() => {
+                  launchURL("/about");
+                }}
+              >
                 <ListItemText primary="About" />
               </ListItem>
             </List>
@@ -113,10 +151,20 @@ function AppBarAndDrawer(props) {
         </Typography>
         <div className={classes.grow} />
         <Hidden only={["sm", "xs"]}>
-          <Button component={Link} to="/request" color="inherit" variant={!isAuthenticated ? "outlined" : "text"}>
+          <Button
+            component={Link}
+            to="/request"
+            color="inherit"
+            variant={!isAuthenticated ? "outlined" : "text"}
+          >
             Request Assistance
           </Button>
-          <Button component={Link} to="/search" color="inherit" variant={isAuthenticated ? "outlined" : "text"}>
+          <Button
+            component={Link}
+            to="/search"
+            color="inherit"
+            variant={isAuthenticated ? "outlined" : "text"}
+          >
             Help Someone
           </Button>
           <Button component={Link} to="/contact" color="inherit">

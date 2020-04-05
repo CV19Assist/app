@@ -8,6 +8,7 @@ import Button from '@material-ui/core/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { cancelRequestNeedAssignment, submitForAssignment } from "../modules/needs";
 import NeedDetails from './NeedDetails';
+import Hidden from "@material-ui/core/Hidden";
 import ShareIcon from '@material-ui/icons/Share';
 import AcceptIcon from '@material-ui/icons/ThumbUp';
 import OpenInNewWindowIcon from '@material-ui/icons/OpenInNew';
@@ -57,9 +58,11 @@ function TaskRequestDialog() {
             <Button color="secondary" onClick={handleCancelRequest}>
               Cancel
             </Button>
-            <Button onClick={handleOpenInNewWindow} startIcon={<OpenInNewWindowIcon />}>
-              Open in New Window
-            </Button>
+            <Hidden only={["xs", "sm"]}>
+              <Button onClick={handleOpenInNewWindow} startIcon={<OpenInNewWindowIcon />}>
+                Open in New Window
+              </Button>
+            </Hidden>
             {navigator.share && (
               <Button startIcon={<ShareIcon />} onClick={() => {
                 navigator.share({

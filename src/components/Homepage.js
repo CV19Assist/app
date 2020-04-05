@@ -1,11 +1,9 @@
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
-import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
+import { makeStyles, Box, Typography, Container, Grid, Button, Paper, Card, CardContent, Divider } from '@material-ui/core';
+import { Skeleton } from '@material-ui/lab';
+import PeopleIcon from "@material-ui/icons/People";
+import RequestIcon from "@material-ui/icons/LiveHelp";
 import { useSelector } from 'react-redux';
 import { activeCategoryMap } from '../util/categories';
 import { Helmet } from 'react-helmet';
@@ -31,15 +29,34 @@ const useStyles = makeStyles(theme => ({
     // flexGrow: 1,
   },
   header: {
-    // background: theme.color
-    background: '#3F50B0',
+    backgroundImage: `url('${process.env.PUBLIC_URL}/background.jpg')`,
+    backgroundSize: 'cover',
+    backgroundColor: '#3F50B0',
+    backgroundPosition: 'center bottom',
+    minHeight: '50vh',
     color: '#ffffff',
     marginTop: theme.spacing(-2),
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(3),
+    flexGrow: 1,
+    display: 'flex',
+  },
+  introContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
   },
   introText: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+  },
+  statBox: {
+    // textAlign: 'right',
+    padding: theme.spacing(1)
+  },
+  requests: {
+    display: 'flex',
+    flexDirection: 'column',
   }
 }));
 
@@ -49,20 +66,21 @@ function Homepage() {
 
   return (
     <React.Fragment>
-      <Helmet><title>Welcome</title></Helmet>
-      <Container className={classes.header} maxWidth="xl">
-        <Typography
-          component="h5"
-          variant="h5"
-          align="center"
-          // color="textPrimary"
-          gutterBottom
-        >
-          Welcome to the Volunteer
-          <br /> Coronavirus Assistance System
-        </Typography>
-        <Container maxWidth="md">
+      <Helmet>
+        <title>Welcome</title>
+      </Helmet>
+      <Container className={classes.header} maxWidth={false} disableGutters>
+        <Container maxWidth="md" className={classes.introContainer}>
           <Paper className={classes.introText} elevation={5}>
+            <Typography
+              variant="h5"
+              align="center"
+              // color="textPrimary"
+              gutterBottom
+            >
+              Welcome to the Volunteer Coronavirus Assistance System
+            </Typography>
+
             <Typography
               id="content-homepage"
               variant="subtitle1"
@@ -86,15 +104,16 @@ function Homepage() {
         </Container>
       </Container>
 
-      <Container maxWidth="md" className={classes.sectionContainer}>
+      <Container className={classes.sectionContainer}>
         <Grid container spacing={2}>
           <Grid item className={classes.sectionContent} xs={12} md={6}>
             <Typography variant="h6">Request Assistance</Typography>
             <Paper className={classes.sectionContentPaper}>
               <Typography variant="body2" gutterBottom>
-                Free services for the most at-risk community members. Request
-                grocery delivery, prescription pick-up, or a phone call for
-                emotional support. We have got you covered!
+                We provide free services for the most at-risk community members.
+                Request grocery delivery, prescription pick-up, or a phone call
+                for emotional support. There is no charge for the deliver We
+                have got you covered!
               </Typography>
               <div className={classes.actionButtons}>
                 <Button
@@ -148,6 +167,41 @@ function Homepage() {
               </div>
             </Paper>
           </Grid>
+
+          {/* <Grid item className={classes.sectionContent} xs={12} md={12}>
+            <Typography variant="h6">Quick Info</Typography>
+            <Grid container spacing={1}>
+              <Grid item md={9} xs={12} className={classes.requests}>
+                <Paper className={classes.sectionContentPaper}>
+                  <Typography variant="body2" gutterBottom>
+                    Below are the currently open requests. Note that these are
+                    not restricted to any specific location.
+                  </Typography>
+
+                  <Skeleton animation="wave" />
+                  <Skeleton animation="wave" />
+                  <Skeleton animation="wave" />
+                </Paper>
+              </Grid>
+
+              <Grid item md={3} xs={12}>
+                <Paper className={classes.statBox}>
+                    <Typography variant="h6">Stats</Typography>
+                    <Divider light />
+                    <Box display={'flex'}>
+                      <Box p={1} flex={'auto'}>
+                        <Typography variant="overline">Volunteers</Typography>
+                        <Typography variant="h6">140</Typography>
+                      </Box>
+                      <Box p={1} flex={'auto'}>
+                        <Typography variant="overline">Requests</Typography>
+                        <Typography variant="h6">4</Typography>
+                      </Box>
+                    </Box>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </React.Fragment>
