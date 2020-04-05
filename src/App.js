@@ -24,7 +24,8 @@ import AboutPage from './pages/AboutPage';
 // import MyTasks from './components/MyTasks';
 import NeedDetails from './pages/NeedDetailsPage';
 import ContactUsPage from './pages/ContactUsPage';
-import Blog from './components/blog.js'; 
+import Blog from './pages/Blog'; 
+import SinglePost from './pages/SinglePost'
 
 const useStyles = makeStyles(theme => ({
   grow: { flexGrow: 1 },
@@ -96,12 +97,13 @@ function App(props) {
             <Route exact path="/about" component={AboutPage} />
             <Route exact path="/request" component={RequestHelp} />
             <Route exact path="/blog" component={Blog} />
+            <Route  path="/blog/:id" component={SinglePost} />
             <Route
               exact
               path="/request-successful"
               component={RequestSuccessful}
             />
-            <Route exact path="/needs/:id" component={NeedDetails} />
+            <Route exact path="/needs/:slug" component={NeedDetails} />
             <Refresh path="/refresh" />
 
             {/* TODO: Remove temporary routes */}

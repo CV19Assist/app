@@ -145,7 +145,7 @@ function AppBarAndDrawer(props) {
                   launchURL("/blog");
                 }}
               >
-                <ListItemText primary="blog" />
+                <ListItemText primary="Blog" />
               </ListItem>
             </List>
           </Drawer>
@@ -183,7 +183,9 @@ function AppBarAndDrawer(props) {
           <Button component={Link} to="/about" color="inherit">
             About
           </Button>
-          
+          <Button component={Link} to="/blog" color="inherit">
+            Blog
+          </Button>
         </Hidden>
 
         {isAuthenticated === false ? (
