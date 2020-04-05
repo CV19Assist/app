@@ -20,7 +20,7 @@ var corsOptions = {
     if (whitelist.indexOf(origin) !== -1) {
       return callback(null, true);
     } else {
-      console.log(origin);
+      // console.log(origin);
       return callback(new Error('Cross-Origin Resource Sharing (CORS) for this origin is not allowed.'));
     }
   }

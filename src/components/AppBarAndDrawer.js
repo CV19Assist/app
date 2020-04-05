@@ -50,10 +50,6 @@ function AppBarAndDrawer(props) {
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
   const isAuthenticated =  user.get("isAuthenticated");
 
-  const launchTwitter = () => {
-    window.open("https://twitter.com/CV19Assist", "_blank");
-  };
-
   const handleProfileMenuClick = () => {
     setProfileMenuAnchor(null);
   };
@@ -120,11 +116,10 @@ function AppBarAndDrawer(props) {
               </ListItem>
               <ListItem
                 onClick={() => {
-                  launchTwitter();
-                  closeDrawer();
+                  launchURL("/donate");
                 }}
               >
-                <ListItemText primary="Twitter" />
+                <ListItemText primary="Donate" />
               </ListItem>
               <ListItem
                 onClick={() => {
@@ -167,11 +162,11 @@ function AppBarAndDrawer(props) {
           >
             Help Someone
           </Button>
-          <Button component={Link} to="/contact" color="inherit">
-            Contact us
+          <Button component={Link} to="/donate" color="inherit">
+            Donate
           </Button>
-          <Button onClick={launchTwitter} color="inherit">
-            Twitter
+          <Button component={Link} to="/contact" color="inherit">
+            Contact
           </Button>
           <Button component={Link} to="/about" color="inherit">
             About
@@ -239,7 +234,8 @@ function AppBarAndDrawer(props) {
 }
 
 AppBarAndDrawer.propTypes = {
-  user: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired,
+  onLaunchTwitter: PropTypes.func.isRequired,
 };
 
 export default AppBarAndDrawer;

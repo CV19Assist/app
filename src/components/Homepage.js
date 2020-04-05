@@ -32,7 +32,8 @@ const useStyles = makeStyles(theme => ({
     backgroundImage: `url('${process.env.PUBLIC_URL}/background.jpg')`,
     backgroundSize: 'cover',
     backgroundColor: '#3F50B0',
-    backgroundPosition: 'center bottom',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center botom',
     minHeight: '50vh',
     color: '#ffffff',
     marginTop: theme.spacing(-2),
@@ -87,18 +88,20 @@ function Homepage() {
               align="center"
             >
               The spread of COVID19 is having a huge impact on our lives,
-              especially{" "}
+              especially older adults and people of any age who have serious
+              underlying medical conditions might be at higher risk for severe
+              illness from COVID-19 (
               <a
                 href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                those at high risk
+                "at-risk population"
               </a>
-              . It is more important now than ever for us to come together and
+              ). It is more important now than ever for us to come together and
               support our communities, whether it be material support or
-              emotional support. Our goal is to connect those in need with those
-              that are able to help and spread positive vibes.
+              emotional support. Our goal is to connect those in such high-risk
+              population with those that are able to help.
             </Typography>
           </Paper>
         </Container>
@@ -168,6 +171,36 @@ function Homepage() {
             </Paper>
           </Grid>
 
+          <Grid item md={12}>
+            <Typography variant="h6">Press Coverage</Typography>
+            <Paper className={classes.sectionContentPaper}>
+              <Typography variant="body2" gutterBottom>
+                Our vision is to help communities across the US. Thanks to our
+                volunteers, we are starting to get local media coverage. We
+                intend to leverage these opportunities to spread the word,
+                especially to our target at-health-risk population.
+              </Typography>
+              <ul>
+                <li>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://madison365.com/local-entrepreneur-develops-volunteer-coronavirus-assistance-system-to-connect-those-in-need-with-volunteers/"
+                  >
+                    Madison 365: Local entrepreneur develops Volunteer
+                    Coronavirus Assistance System to connect those in need with
+                    volunteers
+                  </a>
+                </li>
+              </ul>
+              <Typography variant="body2" gutterBottom>
+                Please <Link to="/contact">contact us</Link> if you represent a
+                press organization or are connected to one who would be open to
+                covering this initiative.
+              </Typography>
+            </Paper>
+          </Grid>
+
           {/* <Grid item className={classes.sectionContent} xs={12} md={12}>
             <Typography variant="h6">Quick Info</Typography>
             <Grid container spacing={1}>
@@ -186,22 +219,34 @@ function Homepage() {
 
               <Grid item md={3} xs={12}>
                 <Paper className={classes.statBox}>
-                    <Typography variant="h6">Stats</Typography>
-                    <Divider light />
-                    <Box display={'flex'}>
-                      <Box p={1} flex={'auto'}>
-                        <Typography variant="overline">Volunteers</Typography>
-                        <Typography variant="h6">140</Typography>
-                      </Box>
-                      <Box p={1} flex={'auto'}>
-                        <Typography variant="overline">Requests</Typography>
-                        <Typography variant="h6">4</Typography>
-                      </Box>
+                  <Typography variant="h6">Stats</Typography>
+                  <Divider light />
+                  <Box display={"flex"}>
+                    <Box p={1} flex={"auto"}>
+                      <Typography variant="overline">Volunteers</Typography>
+                      <Typography variant="h6">140</Typography>
                     </Box>
+                    <Box p={1} flex={"auto"}>
+                      <Typography variant="overline">Requests</Typography>
+                      <Typography variant="h6">4</Typography>
+                    </Box>
+                  </Box>
                 </Paper>
               </Grid>
             </Grid>
           </Grid> */}
+
+          <Grid item md={12}>
+            <Typography variant="h6">Note About Financial Need</Typography>
+            <Paper className={classes.sectionContentPaper}>
+              <Typography variant="body2" gutterBottom>
+                This service is for anyone that falls in the at-risk category,
+                regardless of if they can afford groceries or not. If someone
+                needs help covering the cost of the items, please let us know in
+                the request, and we will do our best to help.
+              </Typography>
+            </Paper>
+          </Grid>
         </Grid>
       </Container>
     </React.Fragment>
