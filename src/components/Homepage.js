@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { makeStyles, Box, Typography, Container, Grid, Button, Paper, Card, CardContent, Divider } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
-import PeopleIcon from "@material-ui/icons/People";
-import RequestIcon from "@material-ui/icons/LiveHelp";
-import { useSelector } from 'react-redux';
 import { activeCategoryMap } from '../util/categories';
 import { Helmet } from 'react-helmet';
+// import { loadUnfulfilledNeeds } from "../modules/needsSearch";
+import { useDispatch, useSelector } from 'react-redux';
 
 const useStyles = makeStyles(theme => ({
   sectionContainer: {
@@ -58,12 +57,22 @@ const useStyles = makeStyles(theme => ({
   requests: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  divider: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   }
 }));
 
 function Homepage() {
   const classes = useStyles();
   const user = useSelector(state => state.get("user"));
+  const dispatch = useDispatch();
+  // const unfulfilledRequests = useSelector((state) => state.getIn(["ui", "unfulfilledRequests"]));
+
+  // useEffect(() => {
+  //   dispatch(loadUnfulfilledNeeds());
+  // }, []);
 
   return (
     <React.Fragment>
@@ -115,8 +124,7 @@ function Homepage() {
               <Typography variant="body2" gutterBottom>
                 We provide free services for the most at-risk community members.
                 Request grocery delivery, prescription pick-up, or a phone call
-                for emotional support. There is no charge for the deliver We
-                have got you covered!
+                for emotional support. There is no charge for the delivery.
               </Typography>
               <div className={classes.actionButtons}>
                 <Button
@@ -168,6 +176,23 @@ function Homepage() {
                     : "Sign Up"}
                 </Button>
               </div>
+
+              {/* <Divider className={classes.divider} />
+
+              <Typography variant="body2" gutterBottom>
+                Below are the currently open requests. Note that these are not
+                restricted to any specific geographic location yet.
+              </Typography>
+              {unfulfilledRequests.get("state") === "loading" && (
+                <React.Fragment>
+                  <Skeleton animation="wave" />
+                  <Skeleton animation="wave" />
+                  <Skeleton animation="wave" />
+                </React.Fragment>
+              )}
+              {unfulfilledRequests.get("state") === "" && (
+                <React.Fragment>Loaded</React.Fragment>
+              )} */}
             </Paper>
           </Grid>
 
@@ -192,6 +217,16 @@ function Homepage() {
                     volunteers
                   </a>
                 </li>
+                <li>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://wkow.com/2020/04/05/local-developers-create-website-to-link-volunteers-with-people-in-need-of-help/"
+                  >
+                    WKOW: Local developers create website to link volunteers
+                    with people in need of help
+                  </a>
+                </li>
               </ul>
               <Typography variant="body2" gutterBottom>
                 Please <Link to="/contact">contact us</Link> if you represent a
@@ -204,18 +239,6 @@ function Homepage() {
           {/* <Grid item className={classes.sectionContent} xs={12} md={12}>
             <Typography variant="h6">Quick Info</Typography>
             <Grid container spacing={1}>
-              <Grid item md={9} xs={12} className={classes.requests}>
-                <Paper className={classes.sectionContentPaper}>
-                  <Typography variant="body2" gutterBottom>
-                    Below are the currently open requests. Note that these are
-                    not restricted to any specific location.
-                  </Typography>
-
-                  <Skeleton animation="wave" />
-                  <Skeleton animation="wave" />
-                  <Skeleton animation="wave" />
-                </Paper>
-              </Grid>
 
               <Grid item md={3} xs={12}>
                 <Paper className={classes.statBox}>
@@ -224,11 +247,11 @@ function Homepage() {
                   <Box display={"flex"}>
                     <Box p={1} flex={"auto"}>
                       <Typography variant="overline">Volunteers</Typography>
-                      <Typography variant="h6">140</Typography>
+                      <Typography variant="h6">xxx</Typography>
                     </Box>
                     <Box p={1} flex={"auto"}>
                       <Typography variant="overline">Requests</Typography>
-                      <Typography variant="h6">4</Typography>
+                      <Typography variant="h6">xx</Typography>
                     </Box>
                   </Box>
                 </Paper>
