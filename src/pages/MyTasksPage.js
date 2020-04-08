@@ -15,6 +15,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { loadMyTasks } from "../modules/needs";
+import { Helmet } from 'react-helmet';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -34,16 +35,18 @@ export default function MyTasksPage() {
 
   useEffect(() => {
     dispatch(loadMyTasks());
-  }, []);
+  }, [dispatch]);
 
   const handleNeedClick = need => {
     history.push(`/needs/${need.get("id")}`);
   };
 
-  let body = null;
   if (status === "loading") {
     return (
       <Container maxWidth="md">
+        <Helmet>
+          <title>My Tasks</title>
+        </Helmet>
         <Paper className={classes.paper}>
           <LinearProgress />
         </Paper>
@@ -53,6 +56,9 @@ export default function MyTasksPage() {
     const tasks = ui.get("tasks");
     return (
       <Container maxWidth="md">
+        <Helmet>
+          <title>My Tasks</title>
+        </Helmet>
         <Typography
           variant="h6"
           // align="center"
@@ -60,14 +66,14 @@ export default function MyTasksPage() {
           My Tasks
         </Typography>
         <Paper className={classes.paper}>
-          {tasks.size == 0 ? (
+          {tasks.size === 0 ? (
             <React.Fragment>
               <Typography gutterBottom>
                 You currently do not have any tasks.
               </Typography>
               <Button
                 component={Link}
-                to="/volunteer"
+                to="/search"
                 variant="contained"
                 color="primary"
               >
@@ -85,7 +91,7 @@ export default function MyTasksPage() {
                         {need.get("createdAt").format("llll")}
                         <br />
                         <span style={{ fontWeight: "bold" }}>
-                          {need.get("name")}
+                          {need.get("name") ? need.get("name") : `${need.get("firstName")} ${need.get("lastName")}`}
                         </span>
                         <br />
                         {need.get("needs").join(", ")}

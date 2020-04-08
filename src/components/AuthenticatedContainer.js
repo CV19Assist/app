@@ -32,7 +32,7 @@ function AuthenticatedContainer(props) {
         <Route exact path="/new-user" component={NewUser} />
         <Route exact path="/profile" component={Profile} />
         <Route exact path="/profile/tasks" component={MyTasks} />
-        <Route path="/volunteer" component={SearchResults} />
+        <Route path="/search" component={SearchResults} />
         {/* <Route exact path="/maps" component={Maps} /> */}
 
         {/* TODO: Need to figure out how to allow anonymous user to access this. */}

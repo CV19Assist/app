@@ -10,6 +10,7 @@ import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import CardContent from "@material-ui/core/CardContent";
 import Slider from "@material-ui/core/Slider";
+import Chip from "@material-ui/core/Chip";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Alert from "@material-ui/lab/Alert";
@@ -20,6 +21,9 @@ import PlacesAutocomplete, {
 } from "react-places-autocomplete";
 import { loadSearchResults } from "../modules/needsSearch";
 import { requestNeedAssignment } from "../modules/needs";
+import { allCategoryMap } from "../util/categories";
+import { Helmet } from 'react-helmet';
+import ShareIcon from '@material-ui/icons/Share';
 
 const useStyles = makeStyles(theme => ({
   round: {
@@ -96,7 +100,7 @@ const markValues = [
 ];
 
 // Default distance in miles.
-const defaultDistance = 5;
+const defaultDistance = 25;
 
 function SearchResults() {
   const classes = useStyles();
@@ -125,7 +129,7 @@ function SearchResults() {
       units: "mi"
     };
     dispatch(loadSearchResults(filter));
-  }, []);
+  }, [dispatch]);
 
   // const handlePlaceSelect2 = (address) => {
   //   console.log(`ui select ${address}`);
@@ -142,7 +146,7 @@ function SearchResults() {
       .then(results => getLatLng(results[0]))
       .then(latLng => {
         setCurrentPlaceLatLng(latLng);
-        console.log("Success", latLng);
+        // console.log("Success", latLng);
       })
       .catch(error => console.error("Error", error));
   };
@@ -183,6 +187,9 @@ function SearchResults() {
 
   return (
     <Container maxWidth="md">
+      <Helmet>
+        <title>Find Opportunities</title>
+      </Helmet>
       <Typography variant="h6">Search Criteria</Typography>
       <Paper className={classes.filterPaper}>
         {!showAddressPicker && (
@@ -258,7 +265,6 @@ function SearchResults() {
           </Alert>
         )}
       </Paper>
-
       {searchStatus === "loading" && (
         <Card className={classes.cards}>
           <CardContent>
@@ -266,7 +272,6 @@ function SearchResults() {
           </CardContent>
         </Card>
       )}
-
       {!results && searchStatus !== "loading" && (
         <Card className={classes.cards}>
           <CardContent>
@@ -274,7 +279,6 @@ function SearchResults() {
           </CardContent>
         </Card>
       )}
-
       {results !== null && results.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
@@ -284,7 +288,6 @@ function SearchResults() {
           </CardContent>
         </Card>
       )}
-
       {results &&
         results.map(result => (
           <Card key={result.id} className={classes.cards}>
@@ -299,18 +302,33 @@ function SearchResults() {
                     className={classes.TaskTitle}
                     gutterBottom
                   >
-                    {result.needs.join(", ")}
+                    {result.needs.map(item => (
+                      <React.Fragment key={item}>
+                        {allCategoryMap[item] ? (
+                          <Chip label={allCategoryMap[item].shortDescription} />
+                        ) : (
+                          <Alert severity="error">
+                            Could not find '{item}' in all category map.
+                          </Alert>
+                        )}
+                        <br />
+                      </React.Fragment>
+                    ))}
                   </Typography>
                 </Grid>
 
-                <Grid item xs={3}>
-                  <img
-                    align="right"
-                    src="/taskIcon.png"
-                    width="50px"
-                    height="50px"
-                  ></img>
-                </Grid>
+                { parseInt(result.immediacy) > 5 && (
+                  <Grid item xs={3}>
+                    <img
+                      align="right"
+                      src="/taskIcon.png"
+                      width="50px"
+                      height="50px"
+                      alt="Urgent"
+                      title="Urgent"
+                    ></img>
+                  </Grid>
+                )}
 
                 <Grid item xs={12}>
                   <Typography variant="caption" gutterBottom>
@@ -319,7 +337,9 @@ function SearchResults() {
                 </Grid>
 
                 <Grid item xs={6}>
-                  <Typography variant="h6">{result.name}</Typography>
+                  <Typography variant="h6">
+                    {result.name ? result.name : result.firstName}
+                  </Typography>
                 </Grid>
 
                 <Grid item xs={6}>
@@ -339,37 +359,40 @@ function SearchResults() {
                   xs={12}
                 >
                   {navigator.share ? (
-                      <Button
-                        color="primary"
-                        variant="outlined"
-                        onClick={() => {
-                          navigator.share({
-                            title: 'CV19 Assist Need Link',
-                            text: 'CV19 Assist Need Link',
-                            url: getNeedUrl(result.id),
-                          })
-                        }}
-                      >
-                        SHARE
-                      </Button>
-                    ) : (
-                      <Button
-                        color="primary"
-                        variant="outlined"
-                        onClick={() => handleCopyNeedLink(result.id)}
-                      >
-                        COPY LINK FOR SHARING
-                      </Button>
-                    )}{" "}
-                  <Button variant="contained" color="primary" onClick={() => handleGrabNeed(result)}>
-                    DETAILS
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      onClick={() => {
+                        navigator.share({
+                          title: "CV19 Assist Need Link",
+                          text: "CV19 Assist Need Link",
+                          url: getNeedUrl(result.id)
+                        });
+                      }}
+                    >
+                      SHARE
+                    </Button>
+                  ) : (
+                    <Button
+                      color="primary"
+                      variant="outlined"
+                      onClick={() => handleCopyNeedLink(result.id)}
+                    >
+                      COPY LINK FOR SHARING
+                    </Button>
+                  )}{" "}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleGrabNeed(result)}
+                  >
+                    DETAILS...
                   </Button>
                 </Grid>
               </Grid>
             </Container>
           </Card>
         ))}
-
       {/* <Grid container>
         <Grid item xs className={classes.center}>
           <Button variant="contained" className={classes.arrows}>

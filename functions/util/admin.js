@@ -1,12 +1,15 @@
 const admin = require("firebase-admin");
 
-const serviceAccount = require("../firebase-adminsdk.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://cv19assist-dev.firebaseio.com"
-});
+if (process.env.FUNCTIONS_EMULATOR) {
+  const serviceAccount = require("../firebase-adminsdk.json");
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://cv19assist-dev.firebaseio.com"
+  });
+} else {
+  admin.initializeApp();
+}
 
-// admin.initializeApp();
 
 const db = admin.firestore();
 

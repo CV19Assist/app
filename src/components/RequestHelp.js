@@ -3,6 +3,7 @@ import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import Paper from "@material-ui/core/Paper";
 import Divider from "@material-ui/core/Divider";
+import { Helmet } from 'react-helmet';
 import Button from "@material-ui/core/Button";
 import { RadioGroup } from "formik-material-ui";
 import Card from "@material-ui/core/Card";
@@ -18,6 +19,9 @@ import Location from "./ClickableMap";
 import * as Yup from "yup";
 import { submitNeed } from "../modules/needs";
 import { useDispatch } from 'react-redux';
+import { activeCategoryMap } from "../util/categories";
+import { useLocation } from "react-router-dom";
+import queryString from 'query-string';
 
 const useStyles = makeStyles(theme => ({
   buttons: {
@@ -54,30 +58,20 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const requestValidationSchema = Yup.object().shape({
-  custName: Yup.string().min(2, "Too Short").required("Required"),
+  firstName: Yup.string().min(2, "Too Short").required("Required"),
+  lastName: Yup.string().min(2, "Too Short").required("Required"),
   contactInfo: Yup.string().min(2, "Too Short").required("Required"),
   // shortDescription: Yup.string().required("Required"),
   immediacy: Yup.string().required("Required"),
-  // needGroup: Yup.array().required("Please select at least one support need."),
+  needs: Yup.array().required("Please select at least one support need."),
   otherComments: Yup.string(),
 });
-
-const needOptions = [
-  {key: "food", description: "Food or Grocery Delivery"},
-  {key: "housing-utilities", description: "Housing or Utilities"},
-  {key: "health-question", description: "Health Questions"},
-  {key: "emotional-support", description: "Emotional Support"},
-  {key: "other", description: "Other - please add more information in the details section below"},
-  // {key: "financial-needs", description: "Limited, Immediate Financial Needs"}
-];
-
-// const immediacyOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-// const immediacyOptions = [1, 5, 10];
 
 function NeedHelp() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [userLocation, setUserLocation] = useState(null);
+  const location = useLocation();
 
   const handleLocationChange = location => {
     // console.log(location);
@@ -85,43 +79,46 @@ function NeedHelp() {
   };
 
   const handleFormSubmit = values => {
+    // console.log(values);
     if (!userLocation) {
       alert("Please select a location by clicking on the map above.");
       return;
     }
 
-    // Squash the needs.
-    if (!values.needGroup) {
-      alert("Please select at least one need.");
-      return;
-    }
-    let selected = values.needGroup.filter(el => {
-      return el != null && typeof el !== "undefined";
-    });
-    if (selected.length === 0) {
-      alert("Please select at least one need.");
-      return;
-    }
-
     let newNeed = { ...values };
-    newNeed.needs = selected.map(el => el[0]);
-    delete newNeed.needGroup;
-
     newNeed.coordinates = userLocation;
-    newNeed.name = values.custName;
-    delete newNeed.custName;
-
     // console.log(values, newNeed);
     dispatch(submitNeed(newNeed));
   };
 
+  const initialValues = {
+    immediacy: "",
+    contactInfo: "",
+    firstName: "",
+    lastName: "",
+    otherDetails: "",
+    needs: []
+  };
+  if (location.search) {
+    let qs = queryString.parse(location.search);
+    if (qs.type) {
+      // Do something here.
+      let specified = qs.type;
+      Object.keys(activeCategoryMap).forEach(key => {
+        if (key === specified) {
+          initialValues.needs.push(key);
+        }
+      });
+      // console.log(initialValues);
+    }
+  }
+
   return (
     <Container maxWidth="md">
-      <Typography
-        variant="h5"
-        color="textPrimary"
-        gutterBottom
-      >
+      <Helmet>
+        <title>Request Assistance</title>
+      </Helmet>
+      <Typography variant="h5" color="textPrimary" gutterBottom>
         Request Help
       </Typography>
       <Paper className={classes.paper}>
@@ -130,13 +127,7 @@ function NeedHelp() {
             <Formik
               validationSchema={requestValidationSchema}
               onSubmit={handleFormSubmit}
-              initialValues={{
-                immediacy: "",
-                contactInfo: "",
-                // shortDescription: "",
-                custName: "",
-                otherDetails: ""
-              }}
+              initialValues={initialValues}
             >
               {formik => (
                 <form onSubmit={formik.handleSubmit}>
@@ -154,67 +145,43 @@ function NeedHelp() {
                           If you have multiple needs then please 
                         </Typography> */}
                       <FieldArray
-                        name="needGroup"
+                        name="needs"
                         render={errors => (
                           <React.Fragment>
-                            {needOptions.map((option, index) => (
-                              <Field
-                                key={index}
-                                as={FormControlLabel}
-                                control={
-                                  <Checkbox
-                                    // onChange={formik.handleChange}
-                                    name={`needGroup.${index}`}
-                                    value={option.key}
-                                  />
-                                }
-                                label={option.description}
-                              />
-                            ))}
-                            {errors.needGroup === "string" && (
-                              <Typography
-                                variant="body2"
-                                className={classes.errorText}
-                              >
-                                Please select at least one need.
-                              </Typography>
+                            {Object.keys(activeCategoryMap).map(
+                              (optionKey, index) => (
+                                <Field name="needs" key={index}>
+                                  {({ field, form }) => (
+                                    <FormControlLabel
+                                      label={
+                                        activeCategoryMap[optionKey].description
+                                      }
+                                      control={
+                                        <Checkbox
+                                          checked={
+                                            field.value &&
+                                            field.value.includes(optionKey)
+                                          }
+                                          onChange={field.onChange}
+                                          name={field.name}
+                                          value={optionKey}
+                                        />
+                                      }
+                                    />
+                                  )}
+                                </Field>
+                              )
+                            )}
+                            {formik.errors.needs && (
+                              <FormHelperText error>
+                                {formik.errors.needs}
+                              </FormHelperText>
                             )}
                           </React.Fragment>
                         )}
                       />
-
-                      {/* TODO: Implement this functionality */}
-                      {/* <Field
-                        as={FormControlLabel}
-                        control={
-                          <Checkbox
-                            onChange={formik.handleChange}
-                            name="checkOther"
-                          />
-                        }
-                        label="&nbsp; Limited, Immediate Financial Needs"
-                      /> */}
                     </FormGroup>
-                    {/* <Typography variant="h6" gutterBottom className={classes.otherComments}>
-                      Short Description
-                    </Typography> */}
-                    {/* <Typography variant="body1" gutterBottom>
-                      Need explanation
-                    </Typography> */}
-                    {/* <Field
-                      as={TextField}
-                      name="shortDescription"
-                      type="text"
-                      label="Short Description"
-                      placeholder="For example: I need help with the grocery shopping"
-                      margin="normal"
-                      variant="outlined"
-                      fullWidth
-                      error={
-                        formik.touched.shortDescription && !!formik.errors.shortDescription
-                      }
-                      helperText={formik.errors.custName}
-                    /> */}
+
                     <Typography
                       variant="h5"
                       gutterBottom
@@ -253,14 +220,14 @@ function NeedHelp() {
                         label="Low"
                       />
                       <FormControlLabel
-                        value="2"
+                        value="5"
                         control={<Radio />}
-                        label="Medium"
+                        label="Medium - Not very urgent"
                       />
                       <FormControlLabel
-                        value="3"
+                        value="10"
                         control={<Radio />}
-                        label="High"
+                        label="High - Urgent"
                       />
                     </Field>
                     {formik.touched.immediacy && !!formik.errors.immediacy && (
@@ -316,18 +283,47 @@ function NeedHelp() {
                         <Card>
                           <Location onLocationChange={handleLocationChange} />
                         </Card>
-                        {/* TODO: Add support for detection */}
-                        {/* <div className={classes.buttons}>
-                        <Button variant="contained" color="primary">
-                          Detect Location
-                        </Button>
-                      </div> */}
                       </Grid>
                     </Grid>
                     <Divider className={classes.optionalDivider} />
                     <Typography variant="h5" gutterBottom>
                       Contact Information
                     </Typography>
+
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} md={6}>
+                        <Field
+                          as={TextField}
+                          name="firstName"
+                          type="text"
+                          label="First Name"
+                          margin="normal"
+                          variant="outlined"
+                          error={
+                            formik.touched.firstName &&
+                            !!formik.errors.firstName
+                          }
+                          fullWidth
+                          helperText={formik.errors.firstName}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Field
+                          as={TextField}
+                          name="lastName"
+                          type="text"
+                          label="Last Name"
+                          margin="normal"
+                          variant="outlined"
+                          fullWidth
+                          error={
+                            formik.touched.lastName && !!formik.errors.lastName
+                          }
+                          helperText={formik.errors.lastName}
+                        />
+                      </Grid>
+                    </Grid>
+
                     <Field
                       as={TextField}
                       name="contactInfo"
@@ -343,27 +339,20 @@ function NeedHelp() {
                       }
                       helperText={formik.errors.contactInfo}
                     />
-                    <Field
-                      as={TextField}
-                      name="custName"
-                      type="text"
-                      label="Name"
-                      placeholder="Please provide both first and last names"
-                      margin="normal"
-                      variant="outlined"
-                      fullWidth
-                      error={
-                        formik.touched.custName && !!formik.errors.custName
-                      }
-                      helperText={formik.errors.custName}
-                    />
+
                     {!formik.isValid && (
                       <Typography variant="body2" className={classes.errorText}>
                         Please fix the errors above.
                       </Typography>
                     )}
+
                     <div className={classes.buttons}>
-                      <Button type="submit" variant="contained" color="primary">
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={formik.isSubmitting}
+                      >
                         Submit Request
                       </Button>
                     </div>

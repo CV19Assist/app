@@ -2,7 +2,6 @@ import React, { useState, useEffect }  from "react";
 import { Button, Grid, makeStyles, Paper, Container, CircularProgress, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from "react-router-dom";
 import NeedDetailsComponent from '../components/NeedDetails';
 
 const useStyles = makeStyles(theme => ({

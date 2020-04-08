@@ -10,7 +10,7 @@ exports.sendNewNeedCreatedEmail = functions.firestore
     db.collection('mail').add({
       to: adminEmails,
       message: {
-        subject: `New request created - ${needData.d.name}`,
+        subject: `New request created - ${needData.d.firstName}`,
         text: `New request was created: ${need.id}`
       }
     });

@@ -159,7 +159,7 @@ export const saveUserProfileEpic = action$ =>
       return API.getAuthenticatedJSONRequestObservable("/user/profile", "post", profileData).pipe(
         mergeMap(resp => {
           console.log(resp);
-          return [saveUserProfileSucceeded(profileData), push("/volunteer")];
+          return [saveUserProfileSucceeded(profileData), push("/search")];
         }),
         catchError(err => {
           alert(`Unexpected error: ${err}`);

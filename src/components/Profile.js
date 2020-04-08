@@ -1,6 +1,7 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
+import { Helmet } from 'react-helmet';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
@@ -49,6 +50,7 @@ function Profile() {
 
   return (
     <React.Fragment>
+      <Helmet><title>My Profile</title></Helmet>
       <Container maxWidth="md">
         <Paper>
           <Grid container spacing={3} direction="column" alignItems="center">
