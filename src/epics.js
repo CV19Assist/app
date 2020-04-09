@@ -1,6 +1,6 @@
 import { combineEpics } from "redux-observable";
 import { userCheckEpic, logoutEpic, saveUserProfileEpic } from "./modules/user";
-import { loadSearchEpic } from "./modules/needsSearch";
+import { loadSearchEpic, } from "./modules/needsSearch";
 import {
   submitForAssignmentEpic,
   submitNeedEpic,

@@ -13,9 +13,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import { getEnvironmentInfo } from './modules/environment';
 import { initializeUserAuth, cacheLaunchURL } from './modules/user';
-import { firebase } from './firebase';
 import TwitterIcon from '@material-ui/icons/Twitter';
 import FacebookIcon from '@material-ui/icons/Facebook';
+import { auth as firebaseAuth } from "./firebase";
 
 // Pages
 import Homepage from './components/Homepage';
@@ -80,7 +80,7 @@ function App(props) {
     dispatch(
       cacheLaunchURL(`${location.pathname}${location.search}${location.hash}`)
     );
-    firebase.auth().onAuthStateChanged((user) => {
+    firebaseAuth.onAuthStateChanged((user) => {
       dispatch(initializeUserAuth());
     });
   }, [dispatch]);
@@ -150,14 +150,14 @@ function App(props) {
           <FacebookIcon color="action" />
         </IconButton>
         <Typography variant="body2" color="textSecondary" align="center">
-          {"Copyright © "}
+          {`Copyright © ${new Date().getFullYear()} `}
           <a
             href="https://www.cv19assist.com"
             target="_blank"
             rel="noopener noreferrer"
           >
             CV19Assist.com
-          </a>{` ${new Date().getFullYear()}`}
+          </a>
         </Typography>
         <Typography variant="body2" color="textSecondary" align="center">
           {version}

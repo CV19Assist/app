@@ -30,12 +30,20 @@ function AboutPage() {
       </Typography>
       <Paper className={classes.paper}>
         <p>
-          Volunteers already cover the cost for development and hosting this
-          website, but there are still organizations that are helping us provide
-          financial assistance for requests which could benefit from your
-          donations. We are assured by these organizations that the funds will
-          be set aside for assistance related to COVID-19. We will continue to
-          build out this list of organizations.
+          <span style={{ fontWeight: "bold" }}>Together, apart.</span> CV19
+          Assist is a tool for everyone. No matter race, gender, sexual
+          orientation, and religion, we all need and can provide help and
+          support. We’re coders, designers, business people; we all bring our
+          unique talents to this project. That is why we have sought out
+          expertise in the charitable space by partnering with faith-based and
+          other community organizations.
+        </p>
+        <p>
+          Right now, we’re a logistical network connecting those in need with
+          those that can help. But we could do more with your help. The
+          financial burden of food is real. And regardless of stimulus and
+          government support, there’s always going to be a need. Your donations
+          can simplify the entire process for those most in need.
         </p>
       </Paper>
       <Paper className={classes.paper}>
@@ -49,7 +57,7 @@ function AboutPage() {
           initial needs which required financial assistance.
         </p>
         <p>
-          You can do tax deductible donations at{" "}
+          You can send tax deductible donations at{" "}
           <a
             href="https://tinyurl.com/MadisonMCAP"
             target="_blank"
@@ -64,7 +72,8 @@ function AboutPage() {
 
         <p>
           Please <Link to="/contact">contact us</Link> if your organization will
-          like to help with this initiative and be listed on this page for donations.
+          like to help with this initiative and be listed on this page for
+          donations.
         </p>
       </Paper>
     </Container>

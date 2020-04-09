@@ -4,7 +4,8 @@ const v1routes = express.Router();
 const { ValidationError } = require("express-validation");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const { sendNewNeedCreatedEmail, sendNewUserCreatedEmail } = require("./emails");
+const { sendNewUserCreatedEmail } = require("./emails");
+const { onNewNeedCreated, onNeedDeleted, onNeedUpdated, resetAggregateInfo } = require("./triggers/needs");
 
 const userProfileRoutes = require('./handlers/user');
 const needsRoutes = require('./handlers/needs');
@@ -56,4 +57,4 @@ app.use((err, req, res, next) => {
 });
 
 const api = functions.https.onRequest(app);
-module.exports = { api, sendNewNeedCreatedEmail, sendNewUserCreatedEmail };
+module.exports = { api, onNewNeedCreated, onNeedUpdated, onNeedDeleted, resetAggregateInfo, sendNewUserCreatedEmail };

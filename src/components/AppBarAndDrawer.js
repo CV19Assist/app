@@ -12,7 +12,6 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import IconButton from "@material-ui/core/IconButton";
 import Hidden from "@material-ui/core/Hidden";
-import Paper from "@material-ui/core/Paper";
 import Divider from "@material-ui/core/Divider";
 import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
@@ -69,7 +68,7 @@ function AppBarAndDrawer(props) {
 
   return (
     <AppBar position="relative" className={classes.appBar}>
-      <Toolbar>
+      <Toolbar variant="dense">
         <Hidden only={["lg", "xl", "md"]}>
           <IconButton
             edge="start"

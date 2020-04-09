@@ -6,8 +6,8 @@ import moment from 'moment';
 
 /***** Actions *****/
 export const LOAD_SEARCH_RESULTS = "LOAD_SEARCH_RESULTS";
-export const LOAD_SEARCH_RESULTS_SUCCEEDED = "LOAD_SEARCH_RESULTS_SUCCEEDED";
-export const LOAD_SEARCH_RESULTS_FAILED = "LOAD_SEARCH_RESULTS_FAILED";
+const LOAD_SEARCH_RESULTS_SUCCEEDED = "LOAD_SEARCH_RESULTS_SUCCEEDED";
+const LOAD_SEARCH_RESULTS_FAILED = "LOAD_SEARCH_RESULTS_FAILED";
 
 const defaultState = Immutable.Map({
   state: "",   // "loading", "failed", ""
@@ -17,6 +17,12 @@ const defaultState = Immutable.Map({
 });
 
 const moduleRootUIStateKey = ["ui", "search"];
+
+const defaultUnfulfilledRequestState = Immutable.Map({
+  state: "",   // "loading", "failed", ""
+  error: null, // an object with error info.
+  results: null, // null when no query, or Immutable set.
+});
 
 /***** Reducers *****/
 export function reducer(state = defaultState, action) {
@@ -57,7 +63,6 @@ export function reducer(state = defaultState, action) {
 export const loadSearchResults = (filter) => ({ type: LOAD_SEARCH_RESULTS, filter });
 export const loadSearchResultsFailed = (error) => ({ type: LOAD_SEARCH_RESULTS_FAILED, error });
 export const loadSearchResultsSucceeded = (response) => ({ type: LOAD_SEARCH_RESULTS_SUCCEEDED, response });
-
 
 /***** side effects, only as applicable. e.g. thunks, epics, etc *****/
 export const loadSearchEpic = action$ =>

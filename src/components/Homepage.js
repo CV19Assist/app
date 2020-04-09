@@ -1,11 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { makeStyles, Box, Typography, Container, Grid, Button, Paper, Card, CardContent, Divider } from '@material-ui/core';
+import {
+  makeStyles,
+  Typography,
+  Container,
+  Grid,
+  Button,
+  Paper,
+  Divider,
+  List, ListItem, ListItemText
+} from "@material-ui/core";
+import { allCategoryMap } from "../util/categories";
 import { Skeleton } from '@material-ui/lab';
 import { activeCategoryMap } from '../util/categories';
 import { Helmet } from 'react-helmet';
-// import { loadUnfulfilledNeeds } from "../modules/needsSearch";
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { db } from "../firebase";
+import moment from "moment";
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 
 const useStyles = makeStyles(theme => ({
   sectionContainer: {
@@ -61,18 +73,47 @@ const useStyles = makeStyles(theme => ({
   divider: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
-  }
+  },
+  listTransitionEnter: {
+    opacity: 0,
+  },
+  listTransitionEnterActive: {
+    opacity: 1,
+    transition: "opacity 500ms ease-in"
+  },
+  listTransitionExit: {
+    opacity: 1,
+  },
+  listTransitionExitActive: {
+    opacity: 0,
+    transition: "opacity 500ms ease-in"
+  },
+
 }));
 
 function Homepage() {
   const classes = useStyles();
-  const user = useSelector(state => state.get("user"));
-  const dispatch = useDispatch();
-  // const unfulfilledRequests = useSelector((state) => state.getIn(["ui", "unfulfilledRequests"]));
+  const user = useSelector((state) => state.get("user"));
+  const [unfulfilledNeedsInfo, setUnfulfilledNeedsInfo] = useState({ count: 0 });
+  const [loadingNeeds, setLoadingNeeds] = useState(false);
 
-  // useEffect(() => {
-  //   dispatch(loadUnfulfilledNeeds());
-  // }, []);
+  useEffect(() => {
+    setLoadingNeeds(true);
+    const unsubscribe = db
+      .collection("aggregates")
+      .doc("unfulfilledNeedsInfo")
+      .onSnapshot((doc) => {
+        let newDoc = doc.data();
+        if (!doc.exists) {
+          newDoc = {count: 0, needs: []};
+        }
+        // console.log(newDoc);
+        setUnfulfilledNeedsInfo(newDoc);
+        setLoadingNeeds(false);
+      });
+
+    return unsubscribe;
+  }, []);
 
   return (
     <React.Fragment>
@@ -177,22 +218,86 @@ function Homepage() {
                 </Button>
               </div>
 
-              {/* <Divider className={classes.divider} />
+              <Divider className={classes.divider} />
 
-              <Typography variant="body2" gutterBottom>
-                Below are the currently open requests. Note that these are not
-                restricted to any specific geographic location yet.
-              </Typography>
-              {unfulfilledRequests.get("state") === "loading" && (
+              {loadingNeeds && (
                 <React.Fragment>
                   <Skeleton animation="wave" />
                   <Skeleton animation="wave" />
                   <Skeleton animation="wave" />
                 </React.Fragment>
               )}
-              {unfulfilledRequests.get("state") === "" && (
-                <React.Fragment>Loaded</React.Fragment>
-              )} */}
+              {!loadingNeeds &&
+                (unfulfilledNeedsInfo.count === 0 ? (
+                  <p>All needs have been fulfilled.</p>
+                ) : (
+                  <>
+                    <Typography variant="body2" gutterBottom>
+                      Below are a few of the currently open requests. Note that
+                      these are not restricted to any specific geographic
+                      location yet. If you are in the request area or know of
+                      someone in the request area, please help spread the word
+                      and refer them to this site.
+                    </Typography>
+
+                    <TransitionGroup component={List}>
+                      {/* <List> */}
+                      {unfulfilledNeedsInfo.needs.map((item) => (
+                        <CSSTransition
+                          key={item.id}
+                          className="Test"
+                          unmountOnExit
+                          timeout={1000}
+                          classNames={{
+                            enter: classes.listTransitionEnter,
+                            enterActive: classes.listTransitionEnterActive,
+                            exit: classes.listTransitionExit,
+                            exitActive: classes.listTransitionExitActive,
+                          }}
+                        >
+                          <ListItem
+                            button
+                            divider
+                            dense
+                            key={item.id}
+                            component={Link}
+                            to={`/needs/${item.id}`}
+                          >
+                            <ListItemText
+                              primary={moment(item.createdAt.toDate()).format(
+                                "llll"
+                              )}
+                              secondary={
+                                <React.Fragment>
+                                  <Typography
+                                    component="span"
+                                    variant="body2"
+                                    color="textPrimary"
+                                  >
+                                    {item.immediacy === "10" && (
+                                      <>Urgent &ndash; </>
+                                    )}
+                                    {item.firstName}
+                                  </Typography>
+                                  :{" "}
+                                  {item.needs
+                                    .map(
+                                      (title) =>
+                                        allCategoryMap[title].shortDescription
+                                    )
+                                    .join(", ")}
+                                  <br />
+                                  {item.location}
+                                </React.Fragment>
+                              }
+                            />
+                          </ListItem>
+                        </CSSTransition>
+                      ))}
+                      {/* </List> */}
+                    </TransitionGroup>
+                  </>
+                ))}
             </Paper>
           </Grid>
 
