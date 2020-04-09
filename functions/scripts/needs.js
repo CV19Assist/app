@@ -19,11 +19,12 @@ async function resetAggregateInfo() {
   });
   info.count = count;
   info.needs = needs;
+  // console.log(info);
   let unfulfilledNeedsInfo = db.collection("aggregates").doc("unfulfilledNeedsInfo");
   return unfulfilledNeedsInfo.set(info);
-};
+}
 
 resetAggregateInfo()
   .catch(err => {
     console.log(err);
-  })
+  });

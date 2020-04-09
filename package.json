@@ -1,6 +1,6 @@
 {
   "name": "cv19assist",
-  "version": "0.1.12",
+  "version": "0.1.15",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.9",
