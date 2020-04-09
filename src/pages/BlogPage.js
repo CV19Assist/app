@@ -1,36 +1,36 @@
 import React from "react";
-import { Fragment } from "react";
 import { useEffect, useState } from "react";
 import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
-import { Link } from "react-router-dom";
-import Divider from "@material-ui/core/Divider";
-import Post from "../components/Post"
+import { Redirect } from "react-router-dom";
+import Post from "../components/Post";
 
 function Blog() {
   const [posts, setPosts] = useState([]);
+  const [loaded, setLoaded] = useState(true);
 
   useEffect(() => {
-    fetch("https://cv19assist.github.io/blog/index.json")
+    fetch(process.env.REACT_APP_BLOG_POST_INDEX)
       .then(res => res.json())
       .then(data => {
+        setLoaded(true);
         setPosts(data);
       })
-      .catch(err => console.log({ error: err }));
+      .catch(err => {
+        setLoaded(false);
+        console.log({ error: err });
+      });
   }, []);
+
+  if (!loaded) {
+    return <Redirect to="*" />;
+  }
 
   return (
     <React.Fragment>
       <main>
         <Container maxWidth="md">
-          <Typography
-            variant="h4"
-            align="left"
-            color="textPrimary"
-            gutterBottom
-          >
-            
+          <Typography variant="h4" align="left" gutterBottom>
             Recent Blog Posts:
           </Typography>
           {posts.map(post => {

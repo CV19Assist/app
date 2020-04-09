@@ -3,79 +3,83 @@ import { useEffect, useState } from "react";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
-import Divider from "@material-ui/core/Divider";
 
+import { Redirect } from "react-router-dom";
 const useStyles = makeStyles(theme => ({
   container: {
     textAlign: "center"
   },
   title: {
-    fontSize: "3em",
-    margin: "2em 0px"
+    padding: theme.spacing(8)
   },
   sub: {
-    fontSize: "0.8rem",
-    color: "rgb(85, 85, 85)"
+    color: theme.palette.text.secondary
   },
   content: {
-    marginTop: "1.5em",
-    marginBottom: "1em",
-    lineHeight: "1.5em",
-    fontSize: "1.2em",
-    color: "rgb(85, 85, 85)"
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    lineHeight: theme.spacing(0.2),
+
+    color: theme.palette.text.primary
   }
 }));
 
 function SinglePost({ match }) {
   const classes = useStyles();
   const [post, setPost] = useState({});
-  
+  const [loaded, setLoaded] = useState(true);
   useEffect(() => {
     fetch(`https://cv19assist.github.io/blog/entry-${match.params.id}.json`)
       .then(res => res.json())
       .then(data => {
+        setLoaded(true);
         setPost(data);
       })
-      .catch(err => console.log({ error: err }));
+      .catch(err => {
+        setLoaded(false);
+        console.log({ error: err });
+      });
   }, []);
 
+  if (!loaded) {
+    return <Redirect to="/*" />;
+  }
   return (
     <React.Fragment>
       <main className={classes.container}>
         <div>
           <Container maxWidth="md">
             <Typography
+              component="h1"
+              variant="h3"
               className={classes.title}
               align="center"
-              color="textPrimary"
               gutterBottom
             >
               {post.title}
             </Typography>
             <Typography
-              variant="p"
+              component="h5"
+              variant="subtitle2"
               className={classes.sub}
-              align="left"
-              color="textPrimary"
+              align="center"
               gutterBottom
             >
               By {post.author}
             </Typography>
-            {" "}-{" "}
+
             <Typography
+              component="h5"
+              variant="subtitle2"
+              align="center"
               className={classes.sub}
-              variant="p"
-              align="left"
-              color="textPrimary"
               gutterBottom
             >
-              {post.createdAt ? post.createdAt.substring(0, 10):null}
+              {post.createdAt ? post.createdAt.substring(0, 10) : null}
             </Typography>
             <Typography
-              component="p"
               className={classes.content}
               align="center"
-              color="textPrimary"
               gutterBottom
               dangerouslySetInnerHTML={{ __html: post.html }}
             ></Typography>

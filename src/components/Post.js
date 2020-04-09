@@ -9,22 +9,20 @@ import Divider from "@material-ui/core/Divider";
 
 const useStyles = makeStyles(theme => ({
   title: {
-    fontSize: "1.4em",
-    color: "primary",
-    marginTop: "2em"
+    color: theme.palette.text.primary,
+    marginTop: theme.spacing(2)
   },
   sub: {
-    fontSize: "0.8rem",
-    color: "rgb(85, 85, 85)"
+    color: theme.palette.text.secondary
   },
-  content:{
-      marginTop: "1em",
-      marginBottom: "1em",
-      lineHeight: "1.5em",
-      color: "rgb(85, 85, 85)"
+  content: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    lineHeight: theme.spacing(0.2),
+    color: theme.palette.text.primary
   },
   divider: {
-      margin: "2em"
+    margin: theme.spacing(2)
   }
 }));
 
@@ -35,7 +33,7 @@ function Post(props) {
       <Typography
         variant="h5"
         className={classes.title}
-        color="textPrimary"
+        align="left"
         gutterBottom
         component={Link}
         to={`/blog/${props.slug}`}
@@ -44,20 +42,17 @@ function Post(props) {
       </Typography>
       <br />
       <Typography
-        variant="p"
+        variant="subtitle2"
         className={classes.sub}
         align="left"
-        color="textPrimary"
         gutterBottom
       >
         By {props.author}
       </Typography>
-      {" "}-{" "}
       <Typography
         className={classes.sub}
-        variant="p"
+        variant="subtitle2"
         align="left"
-        color="textPrimary"
         gutterBottom
       >
         {props.date}
@@ -66,12 +61,11 @@ function Post(props) {
         className={classes.content}
         component="p"
         align="left"
-        color="textPrimary"
         gutterBottom
       >
         {props.content}
       </Typography>
-      <Divider light className={classes.divider}/>
+      <Divider light className={classes.divider} />
     </React.Fragment>
   );
 }
