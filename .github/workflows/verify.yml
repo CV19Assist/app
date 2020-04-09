@@ -24,8 +24,6 @@ jobs:
       - name: Install Dependencies
         env:
           CI: true
-          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
-          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           npm ci
           npm --prefix functions ci
@@ -40,8 +38,3 @@ jobs:
         run: |
           npm run lint # Check for lint in app code
           npm run build # Build app bundles
-
-      - name: Verify Functions
-        run: |
-          npm run --prefix functions test:cov # Run unit tests with coverage
-          npm run --prefix functions build
