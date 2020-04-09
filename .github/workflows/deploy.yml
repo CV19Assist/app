@@ -33,10 +33,13 @@ jobs:
           npm --prefix functions ci
 
       - name: Verify App
+        env:
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
-          npm run build:config # Create env specific src/config.js
-          npm run lint # Check for lint in app code
-          npm run build # Build app bundles
+          gitBranch=${GITHUB_REF##*/}
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build; else echo build:staging; fi)
+          npm run $buildCommand
 
         # Deploys to project alias which matches branch name (in .firebaserc)
       - name: Deploy to Firebase
