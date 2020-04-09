@@ -16,6 +16,13 @@ firebase deploy --only hosting
 firebase deploy --only functions,hosting
 ```
 
+## CI
+
+CI uses Github Actions and the settings live within the [workflows folder](/.github/workflows). There are two workflows:
+
+* `verify.yml` - verifies code on pull request by checking for lint then building
+* `deploy.yml` - deploys to Firebase project which matches branch name (aliases in [.firebaserc](/.firebaserc))
+
 ## Available Scripts
 
 In the project directory, you can run:
