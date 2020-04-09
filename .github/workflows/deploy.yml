@@ -1,0 +1,73 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - prod
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
+        run: |
+          npm ci
+          npm --prefix functions ci
+
+      - name: Verify App
+        run: |
+          npm run build:config # Create env specific src/config.js
+          npm run lint # Check for lint in app code
+          npm run build # Build app bundles
+
+      - name: Verify Functions
+        run: |
+          npm run --prefix functions test:cov # Run unit tests with coverage
+          npm run --prefix functions build
+
+      - name: Archive Build Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: build
+          path: build
+
+      - name: Archive Functions Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: functions-build
+          path: functions/dist
+
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          $(npm bin)/firebase-ci deploy -s
+
+      - name: Archive Debug Log
+        uses: actions/upload-artifact@master
+        if: failure()
+        with:
+          name: firebase-debug
+          path: firebase-debug.log

@@ -1,0 +1,47 @@
+name: Verify
+
+on: [pull_request]
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
+        run: |
+          npm ci
+          npm --prefix functions ci
+
+      - name: Set Environment Settings
+        run: |
+          echo "Setting emulator settings to environment..."
+          echo "::set-env name=REACT_APP_FIREBASE_DATABASE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.database.port)"
+          echo "::set-env name=REACT_APP_FIRESTORE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.firestore.port)"
+
+      - name: Verify App
+        run: |
+          npm run lint # Check for lint in app code
+          npm run build # Build app bundles
+
+      - name: Verify Functions
+        run: |
+          npm run --prefix functions test:cov # Run unit tests with coverage
+          npm run --prefix functions build
