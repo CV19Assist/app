@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   CssBaseline,
   Paper,
@@ -18,39 +18,42 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import { auth as firebaseAuth } from "./firebase";
 
 // Pages
-import Homepage from './components/Homepage';
-import Refresh from './components/Refresh';
-import Login from './components/Login';
-import Logout from './components/Logout';
-import RequestHelp from './components/RequestHelp';
-import RequestSuccessful from './components/RequestSuccessful';
-import AppBarAndDrawer from './components/AppBarAndDrawer';
-import AuthenticatedContainer from './components/AuthenticatedContainer';
-import { version } from '../package.json';
-import AboutPage from './pages/AboutPage';
+import Homepage from "./components/Homepage";
+import Refresh from "./components/Refresh";
+import Login from "./components/Login";
+import Logout from "./components/Logout";
+import RequestHelp from "./components/RequestHelp";
+import RequestSuccessful from "./components/RequestSuccessful";
+import AppBarAndDrawer from "./components/AppBarAndDrawer";
+import AuthenticatedContainer from "./components/AuthenticatedContainer";
+import { version } from "../package.json";
+import AboutPage from "./pages/AboutPage";
 // import Maps from './components/Maps';
 // import Geolocation from './components/Geolocation';
 // import MyTasks from './components/MyTasks';
-import NeedDetails from './pages/NeedDetailsPage';
+import PageNotFound from "./components/PageNotFound";
+import NeedDetails from "./pages/NeedDetailsPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import Blog from "./pages/BlogPage";
 import Donate from './pages/Donate';
-import ContactUsPage from './pages/ContactUsPage';
+import SinglePost from "./pages/SinglePostPage";
 
 const useStyles = makeStyles(theme => ({
   grow: { flexGrow: 1 },
   footer: {
-    marginTop: 'auto',
-    padding: theme.spacing(3),
+    marginTop: "auto",
+    padding: theme.spacing(3)
   },
   loadingContainer: {
-    display: 'flex',
+    display: "flex",
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center"
   },
   loadingPaper: {
     flexGrow: 1,
     padding: theme.spacing(3),
-    textAlign: "center",
+    textAlign: "center"
   },
   loadingSpinner: {
     margin: theme.spacing(2)
@@ -115,6 +118,8 @@ function App(props) {
             <Route exact path="/logout" component={Logout} />
             <Route exact path="/about" component={AboutPage} />
             <Route exact path="/request" component={RequestHelp} />
+            <Route exact path="/blog" component={Blog} />
+            <Route path="/blog/:id" component={SinglePost} />
             <Route exact path="/donate" component={Donate} />
             <Route
               exact
@@ -129,6 +134,7 @@ function App(props) {
               <Route exact path="/myTasks" component={MyTasks} /> */}
 
             <Route exact path="/contact" component={ContactUsPage} />
+            <Route path="*" component={PageNotFound} />
             <Route component={AuthenticatedContainer} />
           </Switch>
         </main>

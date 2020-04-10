@@ -134,6 +134,13 @@ function AppBarAndDrawer(props) {
               >
                 <ListItemText primary="About" />
               </ListItem>
+              <ListItem
+                onClick={() => {
+                  launchURL("/blog");
+                }}
+              >
+                <ListItemText primary="Blog" />
+              </ListItem>
             </List>
           </Drawer>
         </Hidden>
@@ -169,6 +176,9 @@ function AppBarAndDrawer(props) {
           </Button>
           <Button component={Link} to="/about" color="inherit">
             About
+          </Button>
+          <Button component={Link} to="/blog" color="inherit">
+            Blog
           </Button>
         </Hidden>
 
