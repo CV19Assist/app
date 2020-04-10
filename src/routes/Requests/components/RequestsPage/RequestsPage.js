@@ -30,9 +30,9 @@ import styles from './RequestsPage.styles';
 const useStyles = makeStyles(styles);
 
 const requestValidationSchema = Yup.object().shape({
-  firstName: Yup.string().min(2, 'Too Short').required('Required'),
-  lastName: Yup.string().min(2, 'Too Short').required('Required'),
-  contactInfo: Yup.string().min(2, 'Too Short').required('Required'),
+  firstName: Yup.string().required('Required').min(2, 'Too Short'),
+  lastName: Yup.string().required('Required').min(2, 'Too Short'),
+  contactInfo: Yup.string().required('Required').min(2, 'Too Short'),
   // shortDescription: Yup.string().required("Required"),
   immediacy: Yup.string().required('Required'),
   needs: Yup.array().required('Please select at least one support need.'),
@@ -50,10 +50,12 @@ function NeedHelp() {
     register,
     handleSubmit,
     errors,
+    watch,
     formState: { isValid, dirtyFields, isSubmitting },
   } = useForm({
     validationSchema: requestValidationSchema,
   });
+
   async function submitNeed(values) {
     // console.log(values);
     // if (!userLocation) {
@@ -61,9 +63,8 @@ function NeedHelp() {
     //   return;
     // }
 
-    const newNeed = { ...values };
     // newNeed.coordinates = userLocation;
-    console.log(values, newNeed); // eslint-disable-line no-console
+    console.log('Submitting values', values); // eslint-disable-line no-console
     try {
       await firestore.collection('needs').add({
         ...values,
@@ -98,13 +99,12 @@ function NeedHelp() {
       // console.log(initialValues);
     }
   }
-  //   const groceryPickup =
-  //   formik.values.needs.indexOf('grocery-pickup') > -1;
-  // const hasFinancialComponent =
-  //   formik.values.needs.length > 1 ||
-  //   formik.values.needs.indexOf('emotional-support') === -1;
-  const groceryPickup = true;
-  const hasFinancialComponent = true;
+
+  const currentNeeds = watch('needs');
+  const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
+  const hasFinancialComponent =
+    currentNeeds &&
+    (Object.keys(currentNeeds) > 1 || currentNeeds['emotional-support']);
   return (
     <Container maxWidth="md">
       <Helmet>
@@ -131,6 +131,7 @@ function NeedHelp() {
                         </Typography> */}
                   {Object.keys(activeCategoryMap).map((optionKey) => (
                     <FormControlLabel
+                      key={optionKey}
                       control={
                         <Checkbox
                           name={`needs.${optionKey}`}
@@ -219,23 +220,19 @@ function NeedHelp() {
                   as soon as possible, however, we cannot guarantee anything
                   because we are dependent on volunteer availability.
                 </Typography>
-                {/* <Field component={RadioGroup} name="immediacy">
-                        <FormControlLabel
-                          value="1"
-                          control={<Radio />}
-                          label="Low"
-                        />
-                        <FormControlLabel
-                          value="5"
-                          control={<Radio />}
-                          label="Medium - Not very urgent"
-                        />
-                        <FormControlLabel
-                          value="10"
-                          control={<Radio />}
-                          label="High - Urgent"
-                        />
-                      </Field> */}
+                <RadioGroup name="immediacy" innerRef={register}>
+                  <FormControlLabel value="1" control={<Radio />} label="Low" />
+                  <FormControlLabel
+                    value="5"
+                    control={<Radio />}
+                    label="Medium - Not very urgent"
+                  />
+                  <FormControlLabel
+                    value="10"
+                    control={<Radio />}
+                    label="High - Urgent"
+                  />
+                </RadioGroup>
                 {dirtyFields.immediacy && !!errors.immediacy && (
                   <FormHelperText error>
                     Please select an immediacy.
@@ -305,9 +302,11 @@ function NeedHelp() {
                       margin="normal"
                       variant="outlined"
                       inputRef={register}
-                      error={dirtyFields.firstName && !!errors.firstName}
+                      error={!!errors.firstName}
                       fullWidth
-                      helperText={errors.firstName}
+                      helperText={
+                        errors && errors.firstName && errors.firstName.message
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -319,8 +318,10 @@ function NeedHelp() {
                       variant="outlined"
                       fullWidth
                       inputRef={register}
-                      error={dirtyFields.lastName && !!errors.lastName}
-                      helperText={errors.lastName}
+                      error={!!errors.lastName}
+                      helperText={
+                        errors && errors.firstName && errors.firstName.message
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -334,8 +335,10 @@ function NeedHelp() {
                   variant="outlined"
                   fullWidth
                   inputRef={register}
-                  error={dirtyFields.contactInfo && !!errors.contactInfo}
-                  helperText={errors && errors.contactInfo}
+                  error={!!errors.contactInfo}
+                  helperText={
+                    errors && errors.contactInfo && errors.contactInfo.message
+                  }
                 />
 
                 {!isValid && (
