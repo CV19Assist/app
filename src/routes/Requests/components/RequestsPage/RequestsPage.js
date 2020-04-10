@@ -44,6 +44,7 @@ function NeedHelp() {
   const classes = useStyles();
   const location = useLocation();
   const firestore = useFirestore();
+  const { FieldValue } = useFirestore;
   const { showSuccess, showError } = useNotifications();
   const {
     register,
@@ -64,7 +65,11 @@ function NeedHelp() {
     // newNeed.coordinates = userLocation;
     console.log(values, newNeed); // eslint-disable-line no-console
     try {
-      await firestore.collection('needs').add(values);
+      await firestore.collection('needs').add({
+        ...values,
+        createdAt: FieldValue.serverTimestamp(),
+        lastUpdatedAt: FieldValue.serverTimestamp(),
+      });
       showSuccess('Request submitted!');
     } catch (err) {
       showError(err.message || 'Error submitting request');
