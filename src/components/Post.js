@@ -7,23 +7,23 @@ import Container from "@material-ui/core/Container";
 import { Link } from "react-router-dom";
 import Divider from "@material-ui/core/Divider";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   title: {
     color: theme.palette.text.primary,
-    marginTop: theme.spacing(2)
+    marginTop: theme.spacing(2),
   },
   sub: {
-    color: theme.palette.text.secondary
+    color: theme.palette.text.secondary,
   },
   content: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     lineHeight: theme.spacing(0.2),
-    color: theme.palette.text.primary
+    color: theme.palette.text.primary,
   },
   divider: {
-    margin: theme.spacing(2)
-  }
+    margin: theme.spacing(2),
+  },
 }));
 
 function Post(props) {
@@ -33,7 +33,6 @@ function Post(props) {
       <Typography
         variant="h5"
         className={classes.title}
-        align="left"
         gutterBottom
         component={Link}
         to={`/blog/${props.slug}`}

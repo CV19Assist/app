@@ -19,7 +19,7 @@
     "@testing-library/user-event": "^7.2.1",
     "connected-react-router": "^6.8.0",
     "env-cmd": "^10.1.0",
-    "firebase": "^7.11.0",
+    "firebase": "^7.14.0",
     "formik": "^2.1.4",
     "formik-material-ui": "^2.0.0-beta.1",
     "geofirestore": "^3.4.1",
@@ -44,8 +44,8 @@
     "yup": "^0.28.3"
   },
   "devDependencies": {
-    "@firebase/testing": "^0.18.2",
     "firebase-ci": "^0.12.2",
+    "@firebase/testing": "^0.19.0",
     "source-map-explorer": "^2.4.2"
   },
   "eslintConfig": {

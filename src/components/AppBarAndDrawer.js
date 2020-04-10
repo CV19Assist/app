@@ -122,6 +122,13 @@ function AppBarAndDrawer(props) {
               </ListItem>
               <ListItem
                 onClick={() => {
+                  launchURL("/blog");
+                }}
+              >
+                <ListItemText primary="Blog" />
+              </ListItem>
+              <ListItem
+                onClick={() => {
                   launchURL("/contact");
                 }}
               >
@@ -133,13 +140,6 @@ function AppBarAndDrawer(props) {
                 }}
               >
                 <ListItemText primary="About" />
-              </ListItem>
-              <ListItem
-                onClick={() => {
-                  launchURL("/blog");
-                }}
-              >
-                <ListItemText primary="Blog" />
               </ListItem>
             </List>
           </Drawer>
@@ -171,14 +171,14 @@ function AppBarAndDrawer(props) {
           <Button component={Link} to="/donate" color="inherit">
             Donate
           </Button>
+          <Button component={Link} to="/blog" color="inherit">
+            Blog
+          </Button>
           <Button component={Link} to="/contact" color="inherit">
             Contact
           </Button>
           <Button component={Link} to="/about" color="inherit">
             About
-          </Button>
-          <Button component={Link} to="/blog" color="inherit">
-            Blog
           </Button>
         </Hidden>
 

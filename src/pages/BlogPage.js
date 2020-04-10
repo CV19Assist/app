@@ -11,12 +11,12 @@ function Blog() {
 
   useEffect(() => {
     fetch(process.env.REACT_APP_BLOG_POST_INDEX)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setLoaded(true);
         setPosts(data);
       })
-      .catch(err => {
+      .catch((err) => {
         setLoaded(false);
         console.log({ error: err });
       });
@@ -28,25 +28,23 @@ function Blog() {
 
   return (
     <React.Fragment>
-      <main>
-        <Container maxWidth="md">
-          <Typography variant="h4" align="left" gutterBottom>
-            Recent Blog Posts:
-          </Typography>
-          {posts.map(post => {
-            return (
-              <Post
-                slug={post.slug}
-                title={post.title}
-                author={post.author}
-                date={post.createdAt.substring(0, 10)}
-                key={post.id}
-                content={post.summary}
-              />
-            );
-          })}
-        </Container>
-      </main>
+      <Container maxWidth="md">
+        <Typography variant="h4" gutterBottom>
+          Blog
+        </Typography>
+        {posts.map((post) => {
+          return (
+            <Post
+              slug={post.slug}
+              title={post.title}
+              author={post.author}
+              date={post.createdAt.substring(0, 10)}
+              key={post.id}
+              content={post.summary}
+            />
+          );
+        })}
+      </Container>
     </React.Fragment>
   );
 }

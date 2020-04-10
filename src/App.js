@@ -117,10 +117,10 @@ function App(props) {
             <Route exact path="/login" component={Login} />
             <Route exact path="/logout" component={Logout} />
             <Route exact path="/about" component={AboutPage} />
-            <Route exact path="/request" component={RequestHelp} />
             <Route exact path="/blog" component={Blog} />
-            <Route path="/blog/:id" component={SinglePost} />
+            <Route exact path="/blog/:id" component={SinglePost} />
             <Route exact path="/donate" component={Donate} />
+            <Route exact path="/request" component={RequestHelp} />
             <Route
               exact
               path="/request-successful"
@@ -134,8 +134,8 @@ function App(props) {
               <Route exact path="/myTasks" component={MyTasks} /> */}
 
             <Route exact path="/contact" component={ContactUsPage} />
-            <Route path="*" component={PageNotFound} />
             <Route component={AuthenticatedContainer} />
+            <Route path="*" component={PageNotFound} />
           </Switch>
         </main>
       </Container>
