@@ -42,7 +42,6 @@ jobs:
 
       - name: Verify App
         run: |
-          yarn build:config # Create env specific src/config.js
           yarn lint # Check for lint in app code
           yarn build # Build app bundles
 

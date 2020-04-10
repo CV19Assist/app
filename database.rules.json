@@ -1,0 +1,12 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "versionInfo": {
+      "app": {
+        ".write": false,
+        ".read": true
+      }
+    }
+  }
+}
