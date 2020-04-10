@@ -19,7 +19,7 @@ function ContactPage() {
       <Typography variant="h5" gutterBottom>
         Contact us
       </Typography>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} data-test="contact-content">
         <p>
           For any questions or comments, please contact us at{' '}
           <a href="mailto:info@cv19assist.com">info@cv19assist.com</a>.

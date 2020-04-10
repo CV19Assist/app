@@ -21,7 +21,7 @@ function DonatePage() {
       <Typography variant="h5" gutterBottom>
         Donate
       </Typography>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} data-test="donate-content">
         <p>
           <span style={{ fontWeight: 'bold' }}>Together, apart.</span> CV19
           Assist is a tool for everyone. No matter race, gender, sexual

@@ -19,7 +19,7 @@ function AboutPage() {
       <Typography variant="h5" gutterBottom>
         About
       </Typography>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} data-test="about-content">
         <p>
           The world is facing the biggest outbreak of the viral illness,
           Coronavirus Disease (COVID-19). COVID-19 belongs to a large family of
