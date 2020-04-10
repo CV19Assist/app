@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FirebaseAppProvider } from 'reactfire';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import NotificationsProvider from 'modules/notification/NotificationsProvider';
 import ThemeSettings from '../../theme';
 
@@ -29,9 +30,12 @@ function App({ routes }) {
   return (
     <MuiThemeProvider theme={theme}>
       <FirebaseAppProvider firebaseConfig={firebaseConfig} initPerformance>
-        <NotificationsProvider>
-          <Router>{routes}</Router>
-        </NotificationsProvider>
+        <>
+          <NotificationsProvider>
+            <Router>{routes}</Router>
+          </NotificationsProvider>
+          <CssBaseline />
+        </>
       </FirebaseAppProvider>
     </MuiThemeProvider>
   );

@@ -25,7 +25,7 @@ import { useForm } from 'react-hook-form';
 import { useFirestore } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
-import styles from './RequestsPage.styles';
+import styles from './RequestPage.styles';
 
 const useStyles = makeStyles(styles);
 
@@ -40,12 +40,25 @@ const requestValidationSchema = Yup.object().shape({
   needFinancialAssistance: Yup.string(),
 });
 
-function NeedHelp() {
+function Request() {
   const classes = useStyles();
   const location = useLocation();
   const firestore = useFirestore();
   const { FieldValue } = useFirestore;
+  const { type: qsType } = queryString.parse(location.search);
   const { showSuccess, showError } = useNotifications();
+  const defaultValues = {
+    immediacy: '',
+    contactInfo: '',
+    firstName: '',
+    lastName: '',
+    otherDetails: '',
+    needFinancialAssistance: 'false',
+    needs: [],
+  };
+  if (qsType) {
+    defaultValues.needs = { [qsType]: true };
+  }
   const {
     register,
     handleSubmit,
@@ -54,6 +67,7 @@ function NeedHelp() {
     formState: { isValid, dirtyFields, isSubmitting },
   } = useForm({
     validationSchema: requestValidationSchema,
+    defaultValues,
   });
 
   async function submitNeed(values) {
@@ -77,15 +91,6 @@ function NeedHelp() {
     }
   }
 
-  const initialValues = {
-    immediacy: '',
-    contactInfo: '',
-    firstName: '',
-    lastName: '',
-    otherDetails: '',
-    needFinancialAssistance: 'false',
-    needs: [],
-  };
   if (location.search) {
     const qs = queryString.parse(location.search);
     if (qs.type) {
@@ -93,10 +98,9 @@ function NeedHelp() {
       const specified = qs.type;
       Object.keys(activeCategoryMap).forEach((key) => {
         if (key === specified) {
-          initialValues.needs.push(key);
+          defaultValues.needs.push(key);
         }
       });
-      // console.log(initialValues);
     }
   }
 
@@ -187,16 +191,16 @@ function NeedHelp() {
                       can also provide financial assistance.
                     </Typography>
                     <RadioGroup
-                      aria-label="path type"
+                      aria-label="Need Financial Assistance"
                       name="needFinancialAssistance"
-                      inputRef={register}>
+                      component="fieldset">
                       <FormControlLabel
-                        value="false"
+                        value="true"
                         control={<Radio />}
                         label="Yes, I can pay and only need help with the delivery."
                       />
                       <FormControlLabel
-                        value="true"
+                        value="false"
                         control={<Radio />}
                         label="No, I need help paying for the items."
                       />
@@ -365,4 +369,4 @@ function NeedHelp() {
   );
 }
 
-export default NeedHelp;
+export default Request;

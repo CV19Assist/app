@@ -7,7 +7,10 @@ import CoreLayout from '../layouts/CoreLayout';
 import Home from './Home';
 import LoginRoute from './Login';
 import SignupRoute from './Signup';
-import RequestsRoute from './Requests';
+import RequestRoute from './Request';
+import ContactRoute from './Contact';
+import AboutRoute from './About';
+import DonateRoute from './Donate';
 import AccountRoute from './Account';
 import NotFoundRoute from './NotFound';
 
@@ -21,7 +24,10 @@ export default function createRoutes() {
             /* Build Route components from routeSettings */
             [
               AccountRoute,
-              RequestsRoute,
+              RequestRoute,
+              DonateRoute,
+              ContactRoute,
+              AboutRoute,
               SignupRoute,
               LoginRoute,
               /* Add More Routes Here */

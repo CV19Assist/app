@@ -1,16 +1,19 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
+import { useAuth } from 'reactfire';
 import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { validateEmail } from 'utils/form';
+import useNotifications from 'modules/notification/useNotifications';
 import styles from './LoginForm.styles';
 
 const useStyles = makeStyles(styles);
 
-function LoginForm({ onSubmit }) {
+function LoginForm() {
   const classes = useStyles();
+  const auth = useAuth();
+  const { showError } = useNotifications();
   const {
     register,
     handleSubmit,
@@ -21,8 +24,14 @@ function LoginForm({ onSubmit }) {
     nativeValidation: false,
   });
 
+  function emailLogin(creds) {
+    return auth
+      .signInWithEmailAndPassword(creds.email, creds.password)
+      .catch((err) => showError(err.message));
+  }
+
   return (
-    <form className={classes.root} onSubmit={handleSubmit(onSubmit)}>
+    <form className={classes.root} onSubmit={handleSubmit(emailLogin)}>
       <TextField
         type="email"
         name="email"
@@ -60,9 +69,5 @@ function LoginForm({ onSubmit }) {
     </form>
   );
 }
-
-LoginForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
 
 export default LoginForm;

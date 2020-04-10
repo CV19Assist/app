@@ -31,16 +31,10 @@ function LoginPage() {
       .catch((err) => showError(err.message));
   }
 
-  function emailLogin(creds) {
-    return auth
-      .signInWithEmailAndPassword(creds.email, creds.password)
-      .catch((err) => showError(err.message));
-  }
-
   return (
     <div className={classes.root}>
       <Paper className={classes.panel}>
-        <LoginForm onSubmit={emailLogin} />
+        <LoginForm />
       </Paper>
       <div className={classes.orLabel}>or</div>
       <div className={classes.providers}>
