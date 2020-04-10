@@ -117,7 +117,7 @@ function Request() {
       <Typography variant="h5" color="textPrimary" gutterBottom>
         Request Help
       </Typography>
-      <Paper className={classes.paper} data-test="request-content">
+      <Paper className={classes.paper} data-test="request-form">
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <form onSubmit={handleSubmit(submitNeed)}>

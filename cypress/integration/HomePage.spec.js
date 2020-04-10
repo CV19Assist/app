@@ -2,7 +2,6 @@ import { createSelector } from '../utils';
 
 describe('Home', () => {
   beforeEach(() => {
-    cy.logout();
     cy.visit('/');
   });
 
