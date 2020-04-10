@@ -1,0 +1,58 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - prod
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+        run: |
+          npm ci
+          npm --prefix functions ci
+
+      - name: Verify App
+        env:
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          gitBranch=${GITHUB_REF##*/}
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build; else echo build:staging; fi)
+          npm run $buildCommand
+
+        # Deploys to project alias which matches branch name (in .firebaserc)
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          $(npm bin)/firebase-ci deploy -s
+
+      - name: Archive Debug Log
+        uses: actions/upload-artifact@master
+        if: failure()
+        with:
+          name: firebase-debug
+          path: firebase-debug.log

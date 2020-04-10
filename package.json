@@ -2,6 +2,14 @@
   "name": "cv19assist",
   "version": "0.1.15",
   "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "build:staging": "env-cmd -f .env.staging react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "analyze": "source-map-explorer 'build/static/js/*.js'"
+  },
   "dependencies": {
     "@material-ui/core": "^4.9.9",
     "@material-ui/icons": "^4.9.1",
@@ -35,15 +43,10 @@
     "redux-observable": "^1.2.0",
     "yup": "^0.28.3"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:staging": "env-cmd -f .env.staging react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "firebase-hosting-deploy": "firebase deploy --only functions",
-    "firebase-functions-deploy": "firebase deploy --only hosting"
+  "devDependencies": {
+    "@firebase/testing": "^0.18.2",
+    "firebase-ci": "^0.12.2",
+    "source-map-explorer": "^2.4.2"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -59,9 +62,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@firebase/testing": "^0.18.2",
-    "source-map-explorer": "^2.4.2"
   }
 }
