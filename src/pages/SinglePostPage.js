@@ -39,6 +39,7 @@ function SinglePost({ match }) {
         setLoaded(false);
         console.log({ error: err });
       });
+  // eslint-disable-next-line
   }, []);
 
   if (!loaded) {

@@ -18,11 +18,11 @@ const defaultState = Immutable.Map({
 
 const moduleRootUIStateKey = ["ui", "search"];
 
-const defaultUnfulfilledRequestState = Immutable.Map({
-  state: "",   // "loading", "failed", ""
-  error: null, // an object with error info.
-  results: null, // null when no query, or Immutable set.
-});
+// const defaultUnfulfilledRequestState = Immutable.Map({
+//   state: "",   // "loading", "failed", ""
+//   error: null, // an object with error info.
+//   results: null, // null when no query, or Immutable set.
+// });
 
 /***** Reducers *****/
 export function reducer(state = defaultState, action) {

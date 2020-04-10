@@ -40,7 +40,8 @@ function NeedDetails(props) {
 
   useEffect(() => {
     dispatch(loadNeedDetails(id));
-  }, [dispatch]);
+  // eslint-disable-next-line
+  }, []);
 
   const handleCompletion = () => {
     if (

@@ -86,7 +86,8 @@ function App(props) {
     firebaseAuth.onAuthStateChanged((user) => {
       dispatch(initializeUserAuth());
     });
-  }, [dispatch]);
+  // eslint-disable-next-line
+  }, []);
 
   // Don't render anything until firebase auth is fully initialized.
   if (user.get("isInitialized") !== true) {

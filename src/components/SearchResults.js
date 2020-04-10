@@ -128,7 +128,8 @@ function SearchResults() {
       units: "mi"
     };
     dispatch(loadSearchResults(filter));
-  }, [dispatch]);
+  // eslint-disable-next-line
+  }, []);
 
   // const handlePlaceSelect2 = (address) => {
   //   console.log(`ui select ${address}`);
