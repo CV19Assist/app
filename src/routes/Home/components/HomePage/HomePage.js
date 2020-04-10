@@ -79,27 +79,27 @@ function Homepage() {
                 for emotional support. There is no charge for the delivery.
               </Typography>
               <div className={classes.actionButtons}>
-                {/* <Button
+                <Button
                   component={Link}
                   to="/request?type=grocery-pickup"
                   variant="contained"
                   color="primary">
-                  {activeCategoryMap['grocery-pickup'].shortDescription}
+                  Grocery Pick-Up
                 </Button>
                 <Button
                   component={Link}
                   to="/request?type=emotional-support"
                   variant="outlined"
                   color="primary">
-                  {activeCategoryMap['emotional-support'].shortDescription}
+                  emotional-support
                 </Button>
                 <Button
                   component={Link}
                   to="/request?type=other"
                   variant="outlined"
                   color="primary">
-                  {activeCategoryMap.other.shortDescription}
-                </Button> */}
+                  Other
+                </Button>
               </div>
             </Paper>
           </Grid>
