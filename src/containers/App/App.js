@@ -29,6 +29,7 @@ if (process.env.REACT_APP_FIREBASE_DATABASE_EMULATOR_HOST) {
 function App({ routes }) {
   return (
     <MuiThemeProvider theme={theme}>
+      <CssBaseline />
       <FirebaseAppProvider firebaseConfig={firebaseConfig} initPerformance>
         <>
           <NotificationsProvider>

@@ -16,6 +16,7 @@ import { Helmet } from 'react-helmet';
 import { format } from 'date-fns';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
+import NeedsMap from './NeedsMap';
 import styles from './HomePage.styles';
 
 const useStyles = makeStyles(styles);
@@ -25,8 +26,8 @@ function Homepage() {
   const user = useUser();
   const firestore = useFirestore();
   const unfulfilledNeedsRef = firestore
-    .collection('aggregates')
-    .doc('unfulfilledNeedsInfo');
+    .collection("aggregates")
+    .doc("unfulfilledNeedsInfo");
   const unfulfilledNeedsInfo = useFirestoreDocData(unfulfilledNeedsRef);
 
   return (
@@ -36,19 +37,21 @@ function Homepage() {
       </Helmet>
       <Container className={classes.header} maxWidth={false} disableGutters>
         <Container maxWidth="md" className={classes.introContainer}>
-          <Paper className={classes.introText} elevation={5}>
+          <Paper className={classes.introText} elevation={4}>
             <Typography
               variant="h5"
               align="center"
               // color="textPrimary"
-              gutterBottom>
+              gutterBottom
+            >
               Welcome to the Volunteer Coronavirus Assistance System
             </Typography>
 
             <Typography
               id="content-homepage"
               variant="subtitle1"
-              align="center">
+              align="center"
+            >
               The spread of COVID19 is having a huge impact on our lives,
               especially older adults and people of any age who have serious
               underlying medical conditions might be at higher risk for severe
@@ -56,7 +59,8 @@ function Homepage() {
               <a
                 href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
                 target="_blank"
-                rel="noopener noreferrer">
+                rel="noopener noreferrer"
+              >
                 &quot;at-risk population&quot;
               </a>
               ). It is more important now than ever for us to come together and
@@ -70,7 +74,7 @@ function Homepage() {
 
       <Container className={classes.sectionContainer}>
         <Grid container spacing={2}>
-          <Grid item className={classes.sectionContent} xs={12} md={6}>
+          <Grid item className={classes.sectionContent} xs={12} md={4}>
             <Typography variant="h6">Request Assistance</Typography>
             <Paper className={classes.sectionContentPaper}>
               <Typography variant="body2" gutterBottom>
@@ -83,29 +87,33 @@ function Homepage() {
                   component={Link}
                   to="/request?type=grocery-pickup"
                   variant="contained"
-                  color="primary">
+                  color="primary"
+                >
                   Grocery Pick-Up
                 </Button>
                 <Button
                   component={Link}
                   to="/request?type=emotional-support"
                   variant="outlined"
-                  color="primary">
+                  color="primary"
+                >
                   emotional-support
                 </Button>
                 <Button
                   component={Link}
                   to="/request?type=other"
                   variant="outlined"
-                  color="primary">
+                  color="primary"
+                >
                   Other
                 </Button>
               </div>
             </Paper>
           </Grid>
-          <Grid item className={classes.sectionContent} xs={12} md={6}>
+
+          <Grid item xs={12} md={8}>
             <Typography variant="h6">Volunteer</Typography>
-            <Paper className={classes.sectionContentPaper}>
+            <Paper className={classes.volunteerContent}>
               <Typography variant="body2" gutterBottom>
                 At-risk community members need us now more than ever. Sign up to
                 see available requests (like picking up grocery) near you and
@@ -113,17 +121,26 @@ function Homepage() {
                 pandemic!
               </Typography>
 
+              <Typography variant="body2" gutterBottom>
+                Below are a few of the currently open requests. If
+                you are in the request area or know of someone in the request
+                area, please help spread the word and refer them to this site.
+              </Typography>
+
+              <NeedsMap unfulfilledNeedsInfo={unfulfilledNeedsInfo} />
+
               <div className={classes.actionButtons}>
                 <Button
                   component={Link}
                   to="/search"
                   variant="contained"
-                  color="primary">
-                  {user ? 'View Requests for Assistance' : 'Sign Up'}
+                  color="primary"
+                >
+                  {user ? "View Requests for Assistance" : "Sign Up"}
                 </Button>
               </div>
 
-              <Divider className={classes.divider} />
+              {/* <Divider className={classes.divider} />
 
               {unfulfilledNeedsInfo.count === 0 ? (
                 <p>All needs have been fulfilled.</p>
@@ -138,7 +155,6 @@ function Homepage() {
                   </Typography>
 
                   <TransitionGroup component={List}>
-                    {/* <List> */}
                     {unfulfilledNeedsInfo.needs.map((item) => (
                       <CSSTransition
                         key={item.id}
@@ -150,34 +166,37 @@ function Homepage() {
                           enterActive: classes.listTransitionEnterActive,
                           exit: classes.listTransitionExit,
                           exitActive: classes.listTransitionExitActive,
-                        }}>
+                        }}
+                      >
                         <ListItem
                           button
                           divider
                           dense
                           key={item.id}
                           component={Link}
-                          to={`/needs/${item.id}`}>
+                          to={`/needs/${item.id}`}
+                        >
                           <ListItemText
-                            primary={format(item.createdAt.toDate(), 'PPpp')}
+                            primary={format(item.createdAt.toDate(), "PPpp")}
                             secondary={
                               <>
                                 <Typography
                                   component="span"
                                   variant="body2"
-                                  color="textPrimary">
-                                  {item.immediacy === '10' && (
+                                  color="textPrimary"
+                                >
+                                  {item.immediacy === "10" && (
                                     <>Urgent &ndash; </>
                                   )}
                                   {item.firstName}
                                 </Typography>
-                                :{' '}
-                                {/* {item.needs
+                                :{" "}
+                                {item.needs
                                   .map(
                                     (title) =>
                                       allCategoryMap[title].shortDescription,
                                   )
-                                  .join(', ')} */}
+                                  .join(', ')}
                                 <br />
                                 {item.location}
                               </>
@@ -186,10 +205,9 @@ function Homepage() {
                         </ListItem>
                       </CSSTransition>
                     ))}
-                    {/* </List> */}
                   </TransitionGroup>
                 </>
-              )}
+              )} */}
             </Paper>
           </Grid>
 
@@ -207,7 +225,8 @@ function Homepage() {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://madison365.com/local-entrepreneur-develops-volunteer-coronavirus-assistance-system-to-connect-those-in-need-with-volunteers/">
+                    href="https://madison365.com/local-entrepreneur-develops-volunteer-coronavirus-assistance-system-to-connect-those-in-need-with-volunteers/"
+                  >
                     Madison 365: Local entrepreneur develops Volunteer
                     Coronavirus Assistance System to connect those in need with
                     volunteers
@@ -217,7 +236,8 @@ function Homepage() {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://wkow.com/2020/04/05/local-developers-create-website-to-link-volunteers-with-people-in-need-of-help/">
+                    href="https://wkow.com/2020/04/05/local-developers-create-website-to-link-volunteers-with-people-in-need-of-help/"
+                  >
                     WKOW: Local developers create website to link volunteers
                     with people in need of help
                   </a>
