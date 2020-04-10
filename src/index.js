@@ -1,27 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
+import initScripts from './utils';
+import { version } from '../package.json';
+import { env } from './config';
+import App from './containers/App';
+import createRoutes from './routes';
 import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
-import configureStore, { history } from "./configureStore";
-import { ConnectedRouter } from 'connected-react-router/immutable';
-import { config as dotEnvConfig } from "dotenv";
 
-dotEnvConfig();
+// import * as serviceWorker from './serviceWorker'
 
-const store = configureStore();
+// Window Variables
+// ------------------------------------
+window.version = version;
+window.env = env;
+initScripts();
 
-ReactDOM.render(
-  <Provider store={store}>
-    <ConnectedRouter history={history}>
-      <App />
-    </ConnectedRouter>
-  </Provider>,
-  document.getElementById("root")
-);
+// Store Initialization
+// ------------------------------------
+
+const routes = createRoutes();
+
+ReactDOM.render(<App routes={routes} />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// Learn more about service workers: http://bit.ly/CRA-PWA
+// serviceWorker.unregister()
