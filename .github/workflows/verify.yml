@@ -1,0 +1,33 @@
+name: Verify
+
+on: [pull_request]
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+        run: |
+          npm ci
+          npm --prefix functions ci
+
+      - name: Verify App
+        run: |
+          npm run build:staging
