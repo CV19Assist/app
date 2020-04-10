@@ -67,4 +67,11 @@ export default (theme) => ({
     opacity: 0,
     transition: 'opacity 500ms ease-in',
   },
+  socialButtons: {
+    float: 'right',
+  },
+  footer: {
+    marginTop: 'auto',
+    padding: theme.spacing(3),
+  },
 });

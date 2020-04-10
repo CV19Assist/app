@@ -17,4 +17,9 @@ export default (theme) => ({
     paddingRight: theme.spacing(1),
     textDecoration: 'none',
   },
+  signIn: {
+    color: 'white',
+    textDecoration: 'none',
+    alignSelf: 'center',
+  },
 });

@@ -25,7 +25,7 @@ function Navbar() {
           component={Link}
           to={LOGIN_PATH}
           data-test="sign-in">
-          Sign In
+          Login
         </Button>
       )}
     </NavbarWithoutAuth>

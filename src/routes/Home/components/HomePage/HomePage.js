@@ -159,7 +159,7 @@ function Homepage() {
                           component={Link}
                           to={`/needs/${item.id}`}>
                           <ListItemText
-                            primary={format(item.createdAt.toDate(), 'llll')}
+                            primary={format(item.createdAt.toDate(), 'PPpp')}
                             secondary={
                               <>
                                 <Typography

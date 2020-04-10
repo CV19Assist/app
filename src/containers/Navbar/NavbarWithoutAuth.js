@@ -18,7 +18,7 @@ import styles from './Navbar.styles';
 
 const useStyles = makeStyles(styles);
 
-function NavbarWithoutAuth({ children, brandPath }) {
+function NavbarWithoutAuth({ children }) {
   const classes = useStyles();
   const history = useHistory();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -37,17 +37,7 @@ function NavbarWithoutAuth({ children, brandPath }) {
   };
   return (
     <AppBar position="static" className={classes.appBar}>
-      <Toolbar>
-        <Typography
-          color="inherit"
-          variant="h6"
-          component={Link}
-          to={brandPath || '/'}
-          className={classes.brand}
-          data-test="brand">
-          App
-        </Typography>
-        <div className={classes.flex} />
+      <Toolbar variant="dense">
         <Hidden only={['lg', 'xl', 'md']}>
           <IconButton
             edge="start"
@@ -116,7 +106,11 @@ function NavbarWithoutAuth({ children, brandPath }) {
         </Typography>
         <div className={classes.grow} />
         <Hidden only={['sm', 'xs']}>
-          <Button component={Link} to="/request" color="inherit">
+          <Button
+            component={Link}
+            to="/request"
+            color="inherit"
+            variant="outlined">
             Request Assistance
           </Button>
           <Button component={Link} to="/search" color="inherit">
@@ -140,7 +134,6 @@ function NavbarWithoutAuth({ children, brandPath }) {
 
 NavbarWithoutAuth.propTypes = {
   children: PropTypes.element,
-  brandPath: PropTypes.string,
 };
 
 export default NavbarWithoutAuth;
