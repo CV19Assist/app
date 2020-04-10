@@ -1,0 +1,4 @@
+{
+  "subject": "{{config.environment.name}}: New request created - {{need.d.firstName}} - {{need.d.immediacy}}",
+  "html": "New request was created: <a href='{{config.environment.url}}/needs/{{need.id}}'>{{need.id}}</a>"
+}

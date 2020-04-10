@@ -1,8 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-/functions/firebase-adminsdk.json
-/.firebase/hosting.*.cache
-
 # dependencies
 /node_modules
 /.pnp
@@ -24,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+/functions/firebase-adminsdk.json
+/functions/firebase-adminsdk-prod.json
+/.firebase/hosting.*.cache
+/firebase-debug.log
+/firestore-debug.log
+/firestore-debug.log
+/functions/firestore-debug.log

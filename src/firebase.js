@@ -1,7 +1,9 @@
 import firebase from 'firebase/app';
+import 'firebase/firestore';
 import 'firebase/analytics';
 import 'firebase/functions';
 import 'firebase/auth';
+import { GeoFirestore } from "geofirestore";
 
 // Your web app's Firebase configuration
 let firebaseConfig = {
@@ -18,16 +20,15 @@ let firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
-// const db = firebase.firestore();
-const firebaseAuth = firebase.auth();
+const db = firebase.firestore();
+const auth = firebase.auth();
+const geofirestore = new GeoFirestore(db);
 
-// // TODO: Is this still needed?
-// class FirebaseHelper {
-//   constructor() {
-//     this.API_URL = process.env.API_URL;
-//   }
-// };
+if (process.env.REACT_APP_FIREBASE_DATABASE_URL === "http://localhost:8080") {
+  db.settings({
+    host: "localhost:8080",
+    ssl: false
+  });
+}
 
-// const firebaseHelper = new FirebaseHelper();
-
-export { firebase, firebaseAuth };
+export { firebase, db, geofirestore, auth };

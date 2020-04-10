@@ -46,7 +46,24 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 For local development, you can create a `.env.development.local` with the following configuration to run against the local firebase functions emulator.
 
-
 ```
 REACT_APP_API_URL=http://localhost:5001/cv19assist-dev/us-central1/api/v1
+```
+
+## Initializing the Firebase Environment
+
+The firebase functions require the following environment variables.
+
+```
+# Set the environment URL - Production
+firebase functions:config:set environment.name=Production
+firebase functions:config:set frontend.url=https://cv19assist.com
+firebase functions:config:set admin.emails.0='first-email-address-here'
+firebase functions:config:set admin.emails.1='second-email-address-here'
+
+# For staging
+firebase functions:config:set environment.name=Dev
+firebase functions:config:set frontend.url=https://cv19assist-dev.web.app
+firebase functions:config:set admin.emails.0='first-email-address-here'
+firebase functions:config:set admin.emails.1='second-email-address-here'
 ```

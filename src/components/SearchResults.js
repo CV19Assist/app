@@ -23,7 +23,6 @@ import { loadSearchResults } from "../modules/needsSearch";
 import { requestNeedAssignment } from "../modules/needs";
 import { allCategoryMap } from "../util/categories";
 import { Helmet } from 'react-helmet';
-import ShareIcon from '@material-ui/icons/Share';
 
 const useStyles = makeStyles(theme => ({
   round: {

@@ -17,6 +17,7 @@ const needValidation = {
     contactInfo: Joi.string().required(),
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
+    needFinancialAssistance: Joi.boolean().required(),
     otherDetails: Joi.string().allow(""),
     coordinates: Joi.object().required().keys({
       _latitude: Joi.number()
@@ -45,6 +46,7 @@ routes.post("/new", checkIfUserLoggedIn, validate(needValidation), async (req, r
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     otherDetails: req.body.otherDetails,
+    needFinancialAssistance: req.body.needFinancialAssistance === "true",
     coordinates: loc,
     status: 1,
   };

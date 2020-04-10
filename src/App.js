@@ -4,15 +4,18 @@ import {
   Paper,
   CircularProgress,
   Container,
-  Typography
+  Typography,
+  IconButton,
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core";
-import { Helmet } from "react-helmet";
-import { useDispatch, useSelector } from "react-redux";
-import { Route, Switch, useLocation } from "react-router-dom";
-import { getEnvironmentInfo } from "./modules/environment";
-import { initializeUserAuth, cacheLaunchURL } from "./modules/user";
-import { firebase } from "./firebase";
+import { makeStyles } from '@material-ui/core';
+import { Helmet } from 'react-helmet';
+import { useDispatch, useSelector } from 'react-redux';
+import { Route, Switch, useLocation } from 'react-router-dom';
+import { getEnvironmentInfo } from './modules/environment';
+import { initializeUserAuth, cacheLaunchURL } from './modules/user';
+import TwitterIcon from '@material-ui/icons/Twitter';
+import FacebookIcon from '@material-ui/icons/Facebook';
+import { auth as firebaseAuth } from "./firebase";
 
 // Pages
 import Homepage from "./components/Homepage";
@@ -32,6 +35,7 @@ import PageNotFound from "./components/PageNotFound";
 import NeedDetails from "./pages/NeedDetailsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import Blog from "./pages/BlogPage";
+import Donate from './pages/Donate';
 import SinglePost from "./pages/SinglePostPage";
 
 const useStyles = makeStyles(theme => ({
@@ -53,6 +57,9 @@ const useStyles = makeStyles(theme => ({
   },
   loadingSpinner: {
     margin: theme.spacing(2)
+  },
+  socialButtons: {
+    float: "right"
   }
 }));
 
@@ -60,15 +67,23 @@ function App(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const location = useLocation();
-  const environment = useSelector(state => state.get("environment"));
-  const user = useSelector(state => state.get("user"));
+  const environment = useSelector((state) => state.get("environment"));
+  const user = useSelector((state) => state.get("user"));
+
+  const launchFacebook = () => {
+    window.open("https://www.facebook.com/CV19Assist/", "_blank");
+  };
+
+  const launchTwitter = () => {
+    window.open("https://twitter.com/CV19Assist", "_blank");
+  };
 
   useEffect(() => {
     dispatch(getEnvironmentInfo());
     dispatch(
       cacheLaunchURL(`${location.pathname}${location.search}${location.hash}`)
     );
-    firebase.auth().onAuthStateChanged(user => {
+    firebaseAuth.onAuthStateChanged((user) => {
       dispatch(initializeUserAuth());
     });
   }, [dispatch]);
@@ -93,7 +108,7 @@ function App(props) {
       <Helmet titleTemplate="%s | CV19 Assist" />
       <CssBaseline />
 
-      <AppBarAndDrawer user={user} />
+      <AppBarAndDrawer user={user} onLaunchTwitter={launchTwitter} />
 
       <Container maxWidth={false} disableGutters>
         <main>
@@ -105,6 +120,7 @@ function App(props) {
             <Route exact path="/request" component={RequestHelp} />
             <Route exact path="/blog" component={Blog} />
             <Route path="/blog/:id" component={SinglePost} />
+            <Route exact path="/donate" component={Donate} />
             <Route
               exact
               path="/request-successful"
@@ -125,18 +141,33 @@ function App(props) {
       </Container>
 
       <footer className={classes.footer}>
+        <IconButton
+          component="div"
+          className={classes.socialButtons}
+          onClick={launchTwitter}
+        >
+          <TwitterIcon color="action" />
+        </IconButton>
+        <IconButton
+          component="div"
+          className={classes.socialButtons}
+          onClick={launchFacebook}
+        >
+          <FacebookIcon color="action" />
+        </IconButton>
         <Typography variant="body2" color="textSecondary" align="center">
-          {"Copyright © "}
+          {`Copyright © ${new Date().getFullYear()} `}
           <a
             href="https://www.cv19assist.com"
             target="_blank"
             rel="noopener noreferrer"
           >
             CV19Assist.com
-          </a>{" "}
-          {`${new Date().getFullYear()} - v${version} ${environment.get(
-            "abbreviation"
-          )}`}
+          </a>
+        </Typography>
+        <Typography variant="body2" color="textSecondary" align="center">
+          {version}
+          <span dangerouslySetInnerHTML={{ __html: `<!-- v${version} - ${environment.get("abbreviation")} -->`}} />
         </Typography>
       </footer>
     </React.Fragment>

@@ -92,3 +92,23 @@ needs = [
     }
   }
 ];
+
+
+aggregates = {
+  unfulfilledNeedsInfo: [
+    {
+      id: "",
+      createdAt: "",
+      immediacy: "",
+      needs: ["", ""],
+      coordinates: Joi.object().keys({
+        _latitude: Joi.number()
+          .greater(-90)
+          .less(90),
+        _longitude: Joi.number()
+          .greater(-180)
+          .less(180)
+      }),
+    }, ...
+  ]
+};

@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { mergeMap, catchError } from 'rxjs/operators';
 import { ofType } from 'redux-observable';
-import { firebaseAuth } from '../firebase';
+import { auth as firebaseAuth } from '../firebase';
 import { of, from } from "rxjs";
 import API from '../util/api';
 import { push } from 'connected-react-router/immutable';
