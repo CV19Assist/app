@@ -164,7 +164,7 @@ requestsDiscussions = [{
 
 // Public comments about the request, e.g. if a volunteer reaches out to the requestor and has
 // additional details to add.
-requestsComments = [{
+requestsComments_public = [{
   requestId: Joi.string().required(),
   author: {uid, firstName, displayName},
   createdAt: firestore.Timestamp,
