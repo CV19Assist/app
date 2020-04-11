@@ -39,7 +39,6 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.48",
     "@react-google-maps/api": "^1.8.6",
-    "classnames": "^2.2.6",
     "date-fns": "^2.12.0",
     "firebase": "^7.14.0",
     "history": "^4.10.1",
