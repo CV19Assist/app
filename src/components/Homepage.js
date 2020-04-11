@@ -149,9 +149,8 @@ function Homepage() {
                 "at-risk population"
               </a>
               ). It is more important now than ever for us to come together and
-              support our communities, whether it be material support or
-              emotional support. Our goal is to connect those in such high-risk
-              population with those that are able to help.
+              support our communities. Our goal is to connect those in such
+              high-risk population with those that are able to help.
             </Typography>
           </Paper>
         </Container>
@@ -164,8 +163,8 @@ function Homepage() {
             <Paper className={classes.sectionContentPaper}>
               <Typography variant="body2" gutterBottom>
                 We provide free services for the most at-risk community members.
-                Request grocery delivery, prescription pick-up, or a phone call
-                for emotional support. There is no charge for the delivery.
+                Request grocery or prescription delivery, or any other delivery
+                assistance. There is no charge for the delivery.
               </Typography>
               <div className={classes.actionButtons}>
                 <Button
@@ -175,14 +174,6 @@ function Homepage() {
                   color="primary"
                 >
                   {activeCategoryMap["grocery-pickup"].shortDescription}
-                </Button>
-                <Button
-                  component={Link}
-                  to="/request?type=emotional-support"
-                  variant="outlined"
-                  color="primary"
-                >
-                  {activeCategoryMap["emotional-support"].shortDescription}
                 </Button>
                 <Button
                   component={Link}
