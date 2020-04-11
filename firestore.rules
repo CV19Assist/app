@@ -5,6 +5,18 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Private user profiles
+    match /users/{userId} {
+      allow read;
+      allow write: if request.auth.uid == userId;
+    }
+
+    // Public user profiles
+    match /users_public/{userId} {
+      allow read;
+      allow write: if false; // only written to by indexUser cloud function
+    }
+
     match /aggregates/unfulfilledNeedsInfo {
       allow read: if true;
       allow write: if false;

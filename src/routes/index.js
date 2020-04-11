@@ -6,12 +6,12 @@ import { PrivateRoute } from 'utils/router';
 import CoreLayout from '../layouts/CoreLayout';
 import Home from './Home';
 import LoginRoute from './Login';
-import SignupRoute from './Signup';
 import RequestRoute from './Request';
 import ContactRoute from './Contact';
 import AboutRoute from './About';
 import DonateRoute from './Donate';
 import AccountRoute from './Account';
+import SearchRoute from './Search';
 import NotFoundRoute from './NotFound';
 
 export default function createRoutes() {
@@ -27,8 +27,8 @@ export default function createRoutes() {
               RequestRoute,
               DonateRoute,
               ContactRoute,
+              SearchRoute,
               AboutRoute,
-              SignupRoute,
               LoginRoute,
               /* Add More Routes Here */
             ].map((settings) =>

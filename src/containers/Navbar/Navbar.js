@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import { useUser } from 'reactfire';
-import { LIST_PATH, LOGIN_PATH } from 'constants/paths';
+import { LOGIN_PATH } from 'constants/paths';
 import AccountMenu from './AccountMenu';
 import NavbarWithoutAuth from './NavbarWithoutAuth';
 import styles from './Navbar.styles';
@@ -16,7 +16,7 @@ function Navbar() {
   const authExists = !!auth && !!auth.uid;
 
   return (
-    <NavbarWithoutAuth brandPath={authExists ? LIST_PATH : '/'}>
+    <NavbarWithoutAuth brandPath="/">
       {authExists ? (
         <AccountMenu />
       ) : (

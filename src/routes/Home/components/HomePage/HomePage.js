@@ -93,14 +93,6 @@ function Homepage() {
                 </Button>
                 <Button
                   component={Link}
-                  to="/request?type=emotional-support"
-                  variant="outlined"
-                  color="primary"
-                >
-                  emotional-support
-                </Button>
-                <Button
-                  component={Link}
                   to="/request?type=other"
                   variant="outlined"
                   color="primary"
