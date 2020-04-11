@@ -1,4 +1,3 @@
-import { firebase, env as environment } from '../config';
 import { version } from '../../package.json';
 
 let errorHandler; // eslint-disable-line import/no-mutable-exports
@@ -11,8 +10,8 @@ function initStackdriverErrorReporter() {
     window.addEventListener('DOMContentLoaded', () => {
       errorHandler = new window.StackdriverErrorReporter();
       errorHandler.start({
-        key: firebase.apiKey,
-        projectId: firebase.projectId,
+        key: process.env.REACT_APP_FIREBASE_API_KEY,
+        projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
         service: 'app-site',
         version,
       });
@@ -26,7 +25,7 @@ function initStackdriverErrorReporter() {
  * initialized if in production environment.
  */
 export function init() {
-  if (environment !== 'dev') {
+  if (!window.location.hostname.includes('localhost')) {
     initStackdriverErrorReporter();
   } else {
     errorHandler = console.error; // eslint-disable-line no-console
@@ -40,7 +39,7 @@ export function init() {
  * @param {String} auth.uid - User's id
  */
 export function setErrorUser(auth) {
-  if (auth && auth.uid && environment !== 'dev') {
+  if (auth && auth.uid) {
     // Set user within Stackdriver
     if (errorHandler && errorHandler.setUser) {
       errorHandler.setUser(auth.uid);

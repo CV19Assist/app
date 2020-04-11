@@ -27,10 +27,6 @@
     "test:watch": "npm test -- --watch"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "express-validation": "^3.0.2",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0",
     "geofirestore": "^3.4.1",
@@ -42,7 +38,7 @@
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
     "@babel/register": "^7.9.0",
-    "@firebase/testing": "^0.18.1",
+    "@firebase/testing": "^0.19.0",
     "babel-plugin-lodash": "^3.3.4",
     "babel-plugin-module-resolver": "^4.0.0",
     "chai": "^4.2.0",
@@ -62,9 +58,9 @@
     "eslint-plugin-react-hooks": "^3.0.0",
     "eslint-plugin-standard": "^4.0.1",
     "firebase-functions-test": "^0.2.0",
-    "prettier": "^2.0.2",
     "mocha": "^7.1.1",
     "nyc": "^15.0.0",
+    "prettier": "^2.0.2",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.1"
   }

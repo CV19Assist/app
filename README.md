@@ -21,6 +21,7 @@
 
 - node `^10.15.0`
 - npm `^6.0.0`
+- yarn `^1.0.0`
 
 ## Getting Started
 
@@ -29,17 +30,17 @@
 
 While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:
 
-| `yarn <script>`   | Description                                                                                                             |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `start`           | Serves your app at `localhost:3000` with automatic refreshing and hot module replacement                                |
-| `start:dist`      | Builds the application to `./dist` then serves at `localhost:3000` using firebase hosting emulator                      |
-| `start:emulate`   | Same as `start`, but pointed to database emulators (make sure to call `emulators` first to boot up emulators)           |
-| `build`           | Builds the application to `./dist`                                                                                      |
-| `test:ui`         | Runs ui tests with Cypress. See [testing](#testing)                                                                     |
-| `test:ui:open`    | Opens ui tests runner (Cypress Dashboard). See [testing](#testing)                                                      |
-| `test:ui:emulate` | Same as `test:ui:open` but with tests pointed at emulators                                                              |
-| `lint`            | [Lints](http://stackoverflow.com/questions/8503559/what-is-linting) the project for potential errors                    |
-| `lint:fix`        | Lints the project and [fixes all correctable errors](http://eslint.org/docs/user-guide/command-line-interface.html#fix) |
+| `yarn <script>` | Description                                                                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `start`         | Serves your app at `localhost:3000` with automatic refreshing and hot module replacement                                |
+| `start:dist`    | Builds the application to `./dist` then serves at `localhost:3000` using firebase hosting emulator                      |
+| `start:emulate` | Same as `start`, but pointed to database emulators (make sure to call `emulators` first to boot up emulators)           |
+| `build`         | Builds the application to `./dist`                                                                                      |
+| `test`          | Runs ui tests with Cypress. See [testing](#testing)                                                                     |
+| `test:open`     | Opens ui tests runner (Cypress Dashboard). See [testing](#testing)                                                      |
+| `test:emulate`  | Same as `test:ui:open` but with tests pointed at emulators                                                              |
+| `lint`          | [Lints](http://stackoverflow.com/questions/8503559/what-is-linting) the project for potential errors                    |
+| `lint:fix`      | Lints the project and [fixes all correctable errors](http://eslint.org/docs/user-guide/command-line-interface.html#fix) |
 
 [Husky](https://github.com/typicode/husky) is used to enable `prepush` hook capability. The `prepush` script currently runs `eslint`, which will keep you from pushing if there is any lint within your code. If you would like to disable this, remove the `prepush` script from the `package.json`.
 
@@ -47,8 +48,7 @@ While developing, you will probably rely mostly on `yarn start`; however, there 
 
 There are multiple configuration files:
 
-- Firebase Project Configuration (including settings for how `src/config.js` is built on CI) - `.firebaserc`
-- Project Configuration used within source (can change based on environment variables on CI) - `src/config.js`
+- Firebase Project Configuration - `.firebaserc`
 - Cloud Functions Local Configuration - `functions/.runtimeconfig.json`
 
 More details in the [Application Structure Section](#application-structure)
@@ -59,26 +59,19 @@ The application structure presented in this boilerplate is **fractal**, where fu
 
 ```
 ├── public                   # All build-related configuration
-│   ├── index.html           # Main HTML page container for app
-│   ├── scripts              # Scripts used within the building process
-│   │  └── compile.js        # Custom Compiler that calls Webpack compiler
-│   │  └── start.js          # Starts the custom compiler
+│   └── index.html           # Main HTML page container for app
 ├── src                      # Application source code
-│   ├── config.js            # Environment specific config file with settings from Firebase (created by CI)
 │   ├── components           # Global Reusable Presentational Components
 │   ├── constants            # Project constants such as firebase paths and form names
-│   │  ├── formNames.js      # Names of redux forms
 │   │  └── paths.js          # Paths for application routes
-│   ├── containers           # Global Reusable Container Components (connected to redux state)
+│   ├── containers           # Global Reusable Container Components
 │   ├── layouts              # Components that dictate major page structure
-│   │   └── CoreLayout       # Global application layout in which to render routes
+│   │   └── CoreLayout       # Global application layout in which routes are rendered
 │   ├── routes               # Main route definitions and async split points
 │   │   ├── index.js         # Bootstrap main application routes
 │   │   └── Home             # Fractal route
 │   │       ├── index.js     # Route definitions and async split points
-│   │       ├── assets       # Assets required to render components
 │   │       ├── components   # Presentational React Components (state connect and handler logic in enhancers)
-│   │       ├── modules      # Collections of reducers/constants/actions
 │   │       └── routes/**    # Fractal sub-routes (** optional)
 │   ├── static               # Static assets
 │   ├── store                # Redux-specific pieces
@@ -87,16 +80,15 @@ The application structure presented in this boilerplate is **fractal**, where fu
 │   ├── styles               # Application-wide styles (generally settings)
 │   └── utils                # General Utilities (used throughout application)
 │   │   ├── components.js    # Utilities for building/implementing react components (often used in enhancers)
-│   │   ├── form.js          # For forms (often used in enhancers that use redux-form)
+│   │   ├── form.js          # For forms
 │   │   └── router.js        # Utilities for routing such as those that redirect back to home if not logged in
 ├── tests                    # Unit tests
 ├── .env.local               # Environment settings for when running locally
 ├── .eslintignore            # ESLint ignore file
 ├── .eslintrc.js             # ESLint configuration
 ├── .firebaserc              # Firebase Project configuration settings (including ci settings)
-├── database.rules.json      # Rules for Firebase Real Time Database
 ├── firebase.json            # Firebase Service settings (Hosting, Functions, etc)
-├── firestore.indexes.json   # Indexs for Cloud Firestore
+├── firestore.indexes.json   # Indexes for Cloud Firestore
 ├── firestore.rules          # Rules for Cloud Firestore
 └── storage.rules            # Rules for Cloud Storage For Firebase
 ```
@@ -134,6 +126,7 @@ import loadable from "utils/components";
 
 // Async route definition
 export default {
+  path: "*",
   component: loadable(() =>
     import(/* webpackChunkName: 'NotFound' */ "./components/NotFoundPage")
   ),

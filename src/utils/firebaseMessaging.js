@@ -1,5 +1,4 @@
 import firebase from 'firebase/app';
-import { publicVapidKey } from '../config';
 import 'firebase/messaging';
 
 /**
@@ -56,16 +55,16 @@ function getTokenAndWriteToProfile() {
  */
 export default function initializeMessaging() {
   const messaging = firebase.messaging();
-  if (!publicVapidKey) {
+  if (!process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY) {
     /* eslint-disable no-console */
     console.warn(
-      'Skipping messaging initialization, publicVapidKey not set in src/config.js',
+      'Skipping messaging initialization, REACT_APP_FIREBASE_PUBLIC_VAPID_KEY not set in environment',
     );
     /* eslint-enable no-console */
     return;
   }
 
-  messaging.usePublicVapidKey(publicVapidKey);
+  messaging.usePublicVapidKey(process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY);
 
   // Handle Instance ID token updates
   messaging.onTokenRefresh(() => {
