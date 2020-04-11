@@ -8,9 +8,9 @@ import FacebookIcon from '@material-ui/icons/Facebook';
 import { makeStyles } from '@material-ui/core/styles';
 import NavbarWithoutAuth from 'containers/Navbar/NavbarWithoutAuth';
 import Navbar from 'containers/Navbar';
+import { Notifications } from 'modules/notification';
 import styles from './CoreLayout.styles';
 import { version } from '../../../package.json';
-import { Notifications } from 'modules/notification'
 
 const useStyles = makeStyles(styles);
 

@@ -1,10 +1,10 @@
-import React from "react";
-import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
-import HomeIcon from "@material-ui/icons/Home";
-import { Button, Container, Grid, Typography, Paper } from "@material-ui/core";
-import styles from "./NotFoundPage.styles";
+import React from 'react';
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
+import { makeStyles } from '@material-ui/core/styles';
+import HomeIcon from '@material-ui/icons/Home';
+import { Button, Container, Grid, Typography, Paper } from '@material-ui/core';
+import styles from './NotFoundPage.styles';
 
 const useStyles = makeStyles(styles);
 
@@ -22,16 +22,14 @@ function NotFoundPage() {
             variant="h4"
             align="center"
             color="textPrimary"
-            gutterBottom
-          >
+            gutterBottom>
             Page Not Found
           </Typography>
           <Typography
             variant="h5"
             align="center"
             color="textSecondary"
-            paragraph
-          >
+            paragraph>
             The page that you are looking for does not exit.
           </Typography>
           <div className={classes.heroButtons}>
@@ -42,8 +40,7 @@ function NotFoundPage() {
                   to="/"
                   variant="contained"
                   color="primary"
-                  startIcon={<HomeIcon />}
-                >
+                  startIcon={<HomeIcon />}>
                   Home
                 </Button>
               </Grid>
@@ -52,8 +49,7 @@ function NotFoundPage() {
                   component={Link}
                   to="/contact"
                   variant="outlined"
-                  color="primary"
-                >
+                  color="primary">
                   Report
                 </Button>
               </Grid>

@@ -13,10 +13,10 @@ export default (theme) => ({
     flexDirection: 'column',
   },
   progress: {
-    marginBottom: theme.spacing(1)
+    marginBottom: theme.spacing(1),
   },
   infobox: {
     background: '#fff',
     padding: '5px',
-  }
+  },
 });

@@ -21,13 +21,13 @@ export default (theme) => ({
   volunteerContent: {
     display: 'flex',
     flexDirection: 'column',
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   needsMapContainer: {
     display: 'flex',
     // flex: 1,
     height: '40vh',
-    paddingLeft: theme.spacing(2)
+    paddingLeft: theme.spacing(2),
   },
   header: {
     backgroundImage: `url('${process.env.PUBLIC_URL}/background.jpg')`,

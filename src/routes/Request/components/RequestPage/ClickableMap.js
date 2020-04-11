@@ -1,16 +1,22 @@
-import { GoogleMap, LoadScript, InfoWindow, Marker } from "@react-google-maps/api";
-import PropTypes from "prop-types";
-import React, { useState } from "react";
+import {
+  GoogleMap,
+  LoadScript,
+  InfoWindow,
+  Marker,
+} from '@react-google-maps/api';
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import {
   Typography,
   Button,
   CircularProgress,
   Backdrop,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core";
-import { useNotifications } from "modules/notification";
-import styles from "./ClickableMap.styles";
+  makeStyles,
+} from '@material-ui/core';
+
+import { useNotifications } from 'modules/notification';
 import Geocode from 'react-geocode';
+import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
 Geocode.setApiKey(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
@@ -18,27 +24,27 @@ Geocode.setRegion('us');
 
 // Based on https://stackoverflow.com/a/31280435/391230
 function scrambleLocation(center, radiusInMeters) {
-  var y0 = center.lat;
-  var x0 = center.lng;
-  var rd = radiusInMeters / 111300; //about 111300 meters in one degree
+  const y0 = center.lat;
+  const x0 = center.lng;
+  const rd = radiusInMeters / 111300; // about 111300 meters in one degree
 
-  var u = Math.random();
-  var v = Math.random();
+  const u = Math.random();
+  const v = Math.random();
 
-  var w = rd * Math.sqrt(u);
-  var t = 2 * Math.PI * v;
-  var x = w * Math.cos(t);
-  var y = w * Math.sin(t);
+  const w = rd * Math.sqrt(u);
+  const t = 2 * Math.PI * v;
+  const x = w * Math.cos(t);
+  const y = w * Math.sin(t);
 
-  //Adjust the x-coordinate for the shrinking of the east-west distances
-  var xp = x / Math.cos(y0);
+  // Adjust the x-coordinate for the shrinking of the east-west distances
+  const xp = x / Math.cos(y0);
 
-  var newlat = y + y0;
-  var newlon2 = xp + x0;
+  const newlat = y + y0;
+  const newlon2 = xp + x0;
 
   return {
-      lat: Math.round(newlat * 1e5) / 1e5,
-      lng: Math.round(newlon2 * 1e5) / 1e5
+    lat: Math.round(newlat * 1e5) / 1e5,
+    lng: Math.round(newlon2 * 1e5) / 1e5,
   };
 }
 
@@ -48,7 +54,7 @@ function Location(props) {
   const { showSuccess, showError } = useNotifications();
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [markerLocation, setMarkerLocation] = useState(null);
-  const [generalLocationName, setGeneralLocationName] = useState("");
+  const [generalLocationName, setGeneralLocationName] = useState('');
 
   const handleLocationClick = (args) => {
     const newLoc = { lat: args.latLng.lat(), lng: args.latLng.lng() };
@@ -68,15 +74,16 @@ function Location(props) {
       // }
     }
 
-    let scrambledLocation = scrambleLocation(location, 300);  // Roughly within 1,000 feet.
+    const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
 
     // Detect locality.
     try {
       const response = await Geocode.fromLatLng(location.lat, location.lng);
-      if (response.status === "ZERO_RESULTS") {
-        showError("Could not find the locality.");
+      if (response.status === 'ZERO_RESULTS') {
+        showError('Could not find the locality.');
         return;
-      } else if (response.status !== "OK") {
+      }
+      if (response.status !== 'OK') {
         showError(`Geocoding error: ${response.status}`);
         return;
       }
@@ -86,10 +93,10 @@ function Location(props) {
       let locality = null;
       let administrative_area_level_1 = null;
       result.address_components.forEach((addressComp) => {
-        if (addressComp.types.indexOf("locality") !== -1) {
+        if (addressComp.types.indexOf('locality') !== -1) {
           locality = addressComp.long_name;
         }
-        if (addressComp.types.indexOf("administrative_area_level_1") !== -1) {
+        if (addressComp.types.indexOf('administrative_area_level_1') !== -1) {
           administrative_area_level_1 = addressComp.short_name;
         }
       });
@@ -109,7 +116,7 @@ function Location(props) {
         preciseLocation: {
           _latitude: location.lat,
           _longitude: location.lng,
-        }
+        },
       });
       setMarkerLocation(location);
     } catch (err) {
@@ -121,7 +128,7 @@ function Location(props) {
     setDetectingLocation(true);
     if (!navigator.geolocation) {
       showError(
-        "Sorry, your browser does not support detecting your location."
+        'Sorry, your browser does not support detecting your location.',
       );
       setDetectingLocation(false);
       return;
@@ -134,15 +141,15 @@ function Location(props) {
           lng: position.coords.longitude,
         };
         setLocation(loc);
-        showSuccess("Location detected");
+        showSuccess('Location detected');
         setDetectingLocation(false);
       },
       () => {
         showError(
-          "Unable to retrieve your location, please click on your location manually."
+          'Unable to retrieve your location, please click on your location manually.',
         );
         setDetectingLocation(false);
-      }
+      },
     );
   };
 
@@ -150,13 +157,11 @@ function Location(props) {
     <>
       <LoadScript
         id="script-loader"
-        googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-      >
+        googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
         <Backdrop
           open={detectingLocation}
           className={classes.backdrop}
-          color="inherit"
-        >
+          color="inherit">
           <CircularProgress
             color="inherit"
             size="2em"
@@ -174,8 +179,7 @@ function Location(props) {
           center={{ lat: 40.318984, lng: -96.960146 }}
           zoom={4}
           options={{ streetViewControl: false, mapTypeControl: false }}
-          onClick={handleLocationClick}
-        >
+          onClick={handleLocationClick}>
           {markerLocation && (
             <>
               <Marker
@@ -190,8 +194,7 @@ function Location(props) {
                 position={{
                   lat: markerLocation.lat,
                   lng: markerLocation.lng,
-                }}
-              >
+                }}>
                 <div className={classes.infobox}>{generalLocationName}</div>
               </InfoWindow>
               )
@@ -201,12 +204,13 @@ function Location(props) {
         <Button
           variant="outlined"
           onClick={handleDetectLocation}
-          className={classes.detectButton}
-        >
+          className={classes.detectButton}>
           Detect Location
         </Button>
-        {generalLocationName !== "" && (
-          <Typography variant="body2" display="inline">General location: {generalLocationName}</Typography>
+        {generalLocationName !== '' && (
+          <Typography variant="body2" display="inline">
+            General location: {generalLocationName}
+          </Typography>
         )}
       </LoadScript>
     </>

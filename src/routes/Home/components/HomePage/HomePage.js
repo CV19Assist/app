@@ -20,8 +20,8 @@ function Homepage() {
   const user = useUser();
   const firestore = useFirestore();
   const unfulfilledNeedsRef = firestore
-    .collection("aggregates")
-    .doc("unfulfilledNeedsInfo");
+    .collection('aggregates')
+    .doc('unfulfilledNeedsInfo');
   const unfulfilledNeedsInfo = useFirestoreDocData(unfulfilledNeedsRef);
 
   return (
@@ -36,16 +36,14 @@ function Homepage() {
               variant="h5"
               align="center"
               // color="textPrimary"
-              gutterBottom
-            >
+              gutterBottom>
               Welcome to the Volunteer Coronavirus Assistance System
             </Typography>
 
             <Typography
               id="content-homepage"
               variant="subtitle1"
-              align="center"
-            >
+              align="center">
               The spread of COVID19 is having a huge impact on our lives,
               especially older adults and people of any age who have serious
               underlying medical conditions might be at higher risk for severe
@@ -53,8 +51,7 @@ function Homepage() {
               <a
                 href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
                 target="_blank"
-                rel="noopener noreferrer"
-              >
+                rel="noopener noreferrer">
                 &quot;at-risk population&quot;
               </a>
               ). It is more important now than ever for us to come together and
@@ -81,16 +78,14 @@ function Homepage() {
                   component={Link}
                   to="/request?type=grocery-pickup"
                   variant="contained"
-                  color="primary"
-                >
+                  color="primary">
                   Grocery Pick-Up
                 </Button>
                 <Button
                   component={Link}
                   to="/request?type=other"
                   variant="outlined"
-                  color="primary"
-                >
+                  color="primary">
                   Other
                 </Button>
               </div>
@@ -108,9 +103,9 @@ function Homepage() {
               </Typography>
 
               <Typography variant="body2" gutterBottom>
-                Below are a few of the currently open requests. If
-                you are in the request area or know of someone in the request
-                area, please help spread the word and refer them to this site.
+                Below are a few of the currently open requests. If you are in
+                the request area or know of someone in the request area, please
+                help spread the word and refer them to this site.
               </Typography>
 
               <NeedsMap unfulfilledNeedsInfo={unfulfilledNeedsInfo} />
@@ -120,12 +115,10 @@ function Homepage() {
                   component={Link}
                   to="/search"
                   variant="contained"
-                  color="primary"
-                >
-                  {user ? "View Requests for Assistance" : "Sign Up"}
+                  color="primary">
+                  {user ? 'View Requests for Assistance' : 'Sign Up'}
                 </Button>
               </div>
-
             </Paper>
           </Grid>
 
@@ -143,8 +136,7 @@ function Homepage() {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://madison365.com/local-entrepreneur-develops-volunteer-coronavirus-assistance-system-to-connect-those-in-need-with-volunteers/"
-                  >
+                    href="https://madison365.com/local-entrepreneur-develops-volunteer-coronavirus-assistance-system-to-connect-those-in-need-with-volunteers/">
                     Madison 365: Local entrepreneur develops Volunteer
                     Coronavirus Assistance System to connect those in need with
                     volunteers
@@ -154,8 +146,7 @@ function Homepage() {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://wkow.com/2020/04/05/local-developers-create-website-to-link-volunteers-with-people-in-need-of-help/"
-                  >
+                    href="https://wkow.com/2020/04/05/local-developers-create-website-to-link-volunteers-with-people-in-need-of-help/">
                     WKOW: Local developers create website to link volunteers
                     with people in need of help
                   </a>
