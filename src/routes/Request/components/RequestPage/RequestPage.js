@@ -1,28 +1,26 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import {
-  Card,
-  Zoom,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  FormHelperText,
-  makeStyles,
-  FormGroup,
-  Container,
-  Typography,
-  TextField,
-  Paper,
-  Divider,
-  Grid,
-} from '@material-ui/core';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
 import * as Yup from 'yup';
 import { useLocation } from 'react-router-dom';
-import queryString from 'query-string';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useFirestore } from 'reactfire';
+import queryString from 'query-string';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Button from '@material-ui/core/Button';
+import Zoom from '@material-ui/core/Zoom';
+import Card from '@material-ui/core/Card';
+import FormGroup from '@material-ui/core/FormGroup';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
+import Checkbox from '@material-ui/core/Checkbox';
+import Radio from '@material-ui/core/Radio';
+import Container from '@material-ui/core/Container';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import { makeStyles } from '@material-ui/core/styles';
 import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
 import styles from './RequestPage.styles';
@@ -35,7 +33,8 @@ const requestValidationSchema = Yup.object().shape({
   contactInfo: Yup.string().required('Required').min(2, 'Too Short'),
   // shortDescription: Yup.string().required("Required"),
   immediacy: Yup.string().required('Required'),
-  needs: Yup.array().required('Please select at least one support need.'),
+  // needs: Yup.array().required('Please select at least one support need.'),
+  needs: Yup.object().required('Please select at least one support need.'),
   otherComments: Yup.string(),
   needFinancialAssistance: Yup.string(),
 });
@@ -45,66 +44,51 @@ function Request() {
   const location = useLocation();
   const firestore = useFirestore();
   const { FieldValue } = useFirestore;
-  const { type: qsType } = queryString.parse(location.search);
+  const qs = queryString.parse(location.search);
   const { showSuccess, showError } = useNotifications();
-  const defaultValues = {
-    immediacy: '',
-    contactInfo: '',
-    firstName: '',
-    lastName: '',
-    otherDetails: '',
-    needFinancialAssistance: 'false',
-    needs: [],
-  };
-  if (qsType) {
-    defaultValues.needs = { [qsType]: true };
+  const defaultValues = {};
+  // Append needs from query string type
+  if (qs && qs.type) {
+    defaultValues.needs = { [qs.type]: true };
   }
+
   const {
     register,
     handleSubmit,
     errors,
     watch,
-    formState: { isValid, dirtyFields, isSubmitting },
+    control,
+    formState: { isValid, isSubmitting, isSubmitted },
   } = useForm({
     validationSchema: requestValidationSchema,
     defaultValues,
   });
+  const currentNeeds = watch('needs');
 
   async function submitNeed(values) {
-    // console.log(values);
+    const newNeed = {
+      ...values,
+      needFinancialAssistance: Boolean(values.needFinancialAssistance),
+      immediacy: parseInt(values.immediacy, 10),
+      createdAt: FieldValue.serverTimestamp(),
+      //   lastUpdatedAt: FieldValue.serverTimestamp(),
+    };
+    // TODO: Re-enable when map is working again
     // if (!userLocation) {
     //   alert('Please select a location by clicking on the map above.');
     //   return;
     // }
 
     // newNeed.coordinates = userLocation;
-    console.log('Submitting values', values); // eslint-disable-line no-console
+    console.log('Submitting values', newNeed); // eslint-disable-line no-console
     try {
-      await firestore.collection('needs').add({
-        ...values,
-        createdAt: FieldValue.serverTimestamp(),
-        lastUpdatedAt: FieldValue.serverTimestamp(),
-      });
+      await firestore.collection('needs').add(newNeed);
       showSuccess('Request submitted!');
     } catch (err) {
       showError(err.message || 'Error submitting request');
     }
   }
 
-  if (location.search) {
-    const qs = queryString.parse(location.search);
-    if (qs.type) {
-      // Do something here.
-      const specified = qs.type;
-      Object.keys(activeCategoryMap).forEach((key) => {
-        if (key === specified) {
-          defaultValues.needs.push(key);
-        }
-      });
-    }
-  }
-
-  const currentNeeds = watch('needs');
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
   const hasFinancialComponent =
     currentNeeds &&
@@ -138,8 +122,10 @@ function Request() {
                       key={optionKey}
                       control={
                         <Checkbox
-                          name={`needs.${optionKey}`}
                           inputRef={register}
+                          name={`needs.${optionKey}`}
+                          data-test={`need-${optionKey}`}
+                          defaultChecked={defaultValues.needs[optionKey]}
                         />
                       }
                       label={
@@ -190,27 +176,33 @@ function Request() {
                       best to match you with organizations and volunteers who
                       can also provide financial assistance.
                     </Typography>
-                    <RadioGroup
-                      aria-label="Need Financial Assistance"
+                    <Controller
+                      as={
+                        <RadioGroup
+                          aria-label="Need Financial Assistance"
+                          component="fieldset">
+                          <FormControlLabel
+                            value="true"
+                            control={<Radio />}
+                            label="Yes, I can pay and only need help with the delivery."
+                          />
+                          <FormControlLabel
+                            value="false"
+                            control={<Radio />}
+                            label="No, I need help paying for the items."
+                          />
+                        </RadioGroup>
+                      }
+                      control={control}
+                      onChange={([event]) => event.target.value}
                       name="needFinancialAssistance"
-                      component="fieldset">
-                      <FormControlLabel
-                        value="true"
-                        control={<Radio />}
-                        label="Yes, I can pay and only need help with the delivery."
-                      />
-                      <FormControlLabel
-                        value="false"
-                        control={<Radio />}
-                        label="No, I need help paying for the items."
-                      />
-                    </RadioGroup>
-                    {dirtyFields.needFinancialAssistance &&
-                      !!errors.needFinancialAssistance && (
-                        <FormHelperText error>
-                          {errors.needFinancialAssistance}
-                        </FormHelperText>
-                      )}
+                      defaultValue="true"
+                    />
+                    {!!errors.needFinancialAssistance && (
+                      <FormHelperText error>
+                        {errors.needFinancialAssistance}
+                      </FormHelperText>
+                    )}
                   </div>
                 </Zoom>
 
@@ -224,20 +216,32 @@ function Request() {
                   as soon as possible, however, we cannot guarantee anything
                   because we are dependent on volunteer availability.
                 </Typography>
-                <RadioGroup name="immediacy" innerRef={register}>
-                  <FormControlLabel value="1" control={<Radio />} label="Low" />
-                  <FormControlLabel
-                    value="5"
-                    control={<Radio />}
-                    label="Medium - Not very urgent"
-                  />
-                  <FormControlLabel
-                    value="10"
-                    control={<Radio />}
-                    label="High - Urgent"
-                  />
-                </RadioGroup>
-                {dirtyFields.immediacy && !!errors.immediacy && (
+                <Controller
+                  as={
+                    <RadioGroup>
+                      <FormControlLabel
+                        value="1"
+                        control={<Radio />}
+                        label="Low"
+                      />
+                      <FormControlLabel
+                        value="5"
+                        control={<Radio />}
+                        label="Medium - Not very urgent"
+                      />
+                      <FormControlLabel
+                        value="10"
+                        control={<Radio />}
+                        label="High - Urgent"
+                      />
+                    </RadioGroup>
+                  }
+                  control={control}
+                  name="immediacy"
+                  defaultValue="2"
+                />
+
+                {!!errors.immediacy && (
                   <FormHelperText error>
                     Please select an immediacy.
                   </FormHelperText>
@@ -345,7 +349,7 @@ function Request() {
                   }
                 />
 
-                {!isValid && (
+                {!isValid && isSubmitted && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
