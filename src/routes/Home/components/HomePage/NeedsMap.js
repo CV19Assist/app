@@ -2,18 +2,7 @@ import React from 'react';
 // import { Link } from 'react-router-dom';
 import {
   makeStyles,
-//   Typography,
-//   Container,
-//   Grid,
-//   Button,
-//   Paper,
-//   Divider,
-//   List,
-//   ListItem,
-//   ListItemText,
 } from '@material-ui/core';
-// import { format } from 'date-fns';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
 import { GoogleMap, LoadScript, MarkerClusterer, Marker } from '@react-google-maps/api';
 import styles from './NeedsMap.styles';

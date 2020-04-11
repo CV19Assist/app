@@ -7,14 +7,8 @@ import {
   Grid,
   Button,
   Paper,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
-import { format } from 'date-fns';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
 import NeedsMap from './NeedsMap';
 import styles from './HomePage.styles';
@@ -132,74 +126,6 @@ function Homepage() {
                 </Button>
               </div>
 
-              {/* <Divider className={classes.divider} />
-
-              {unfulfilledNeedsInfo.count === 0 ? (
-                <p>All needs have been fulfilled.</p>
-              ) : (
-                <>
-                  <Typography variant="body2" gutterBottom>
-                    Below are a few of the currently open requests. Note that
-                    these are not restricted to any specific geographic location
-                    yet. If you are in the request area or know of someone in
-                    the request area, please help spread the word and refer them
-                    to this site.
-                  </Typography>
-
-                  <TransitionGroup component={List}>
-                    {unfulfilledNeedsInfo.needs.map((item) => (
-                      <CSSTransition
-                        key={item.id}
-                        className="Test"
-                        unmountOnExit
-                        timeout={1000}
-                        classNames={{
-                          enter: classes.listTransitionEnter,
-                          enterActive: classes.listTransitionEnterActive,
-                          exit: classes.listTransitionExit,
-                          exitActive: classes.listTransitionExitActive,
-                        }}
-                      >
-                        <ListItem
-                          button
-                          divider
-                          dense
-                          key={item.id}
-                          component={Link}
-                          to={`/needs/${item.id}`}
-                        >
-                          <ListItemText
-                            primary={format(item.createdAt.toDate(), "PPpp")}
-                            secondary={
-                              <>
-                                <Typography
-                                  component="span"
-                                  variant="body2"
-                                  color="textPrimary"
-                                >
-                                  {item.immediacy === "10" && (
-                                    <>Urgent &ndash; </>
-                                  )}
-                                  {item.firstName}
-                                </Typography>
-                                :{" "}
-                                {item.needs
-                                  .map(
-                                    (title) =>
-                                      allCategoryMap[title].shortDescription,
-                                  )
-                                  .join(', ')}
-                                <br />
-                                {item.location}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      </CSSTransition>
-                    ))}
-                  </TransitionGroup>
-                </>
-              )} */}
             </Paper>
           </Grid>
 
@@ -242,29 +168,6 @@ function Homepage() {
               </Typography>
             </Paper>
           </Grid>
-
-          {/* <Grid item className={classes.sectionContent} xs={12} md={12}>
-            <Typography variant="h6">Quick Info</Typography>
-            <Grid container spacing={1}>
-
-              <Grid item md={3} xs={12}>
-                <Paper className={classes.statBox}>
-                  <Typography variant="h6">Stats</Typography>
-                  <Divider light />
-                  <Box display={"flex"}>
-                    <Box p={1} flex={"auto"}>
-                      <Typography variant="overline">Volunteers</Typography>
-                      <Typography variant="h6">xxx</Typography>
-                    </Box>
-                    <Box p={1} flex={"auto"}>
-                      <Typography variant="overline">Requests</Typography>
-                      <Typography variant="h6">xx</Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Grid> */}
 
           <Grid item md={12}>
             <Typography variant="h6">Note About Financial Need</Typography>

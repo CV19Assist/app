@@ -10,6 +10,7 @@ import NavbarWithoutAuth from 'containers/Navbar/NavbarWithoutAuth';
 import Navbar from 'containers/Navbar';
 import styles from './CoreLayout.styles';
 import { version } from '../../../package.json';
+import { Notifications } from 'modules/notification'
 
 const useStyles = makeStyles(styles);
 
@@ -26,6 +27,7 @@ function CoreLayout({ children }) {
 
   return (
     <div>
+      <Notifications />
       <SuspenseWithPerf fallback={<NavbarWithoutAuth />} traceId="load-navbar">
         <Navbar />
       </SuspenseWithPerf>

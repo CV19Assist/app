@@ -1,40 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
 import { useLocation } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { useFirestore } from 'reactfire';
 import queryString from 'query-string';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Button from '@material-ui/core/Button';
-import Zoom from '@material-ui/core/Zoom';
-import Card from '@material-ui/core/Card';
-import FormGroup from '@material-ui/core/FormGroup';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Checkbox from '@material-ui/core/Checkbox';
-import Radio from '@material-ui/core/Radio';
-import Container from '@material-ui/core/Container';
-import RadioGroup from '@material-ui/core/RadioGroup';
+import {
+  FormHelperText,
+  FormControlLabel,
+  Button,
+  Zoom,
+  Card,
+  FormGroup,
+  Typography,
+  Divider,
+  Paper,
+  Grid,
+  TextField,
+  Checkbox,
+  Radio,
+  Container,
+  RadioGroup,
+} from "@material-ui/core";
 import { makeStyles } from '@material-ui/core/styles';
+import { useFirestore, useUser } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
 import styles from './RequestPage.styles';
+import Location from './ClickableMap';
 
 const useStyles = makeStyles(styles);
 
 const requestValidationSchema = Yup.object().shape({
   firstName: Yup.string().required('Required').min(2, 'Too Short'),
   lastName: Yup.string().required('Required').min(2, 'Too Short'),
-  contactInfo: Yup.string().required('Required').min(2, 'Too Short'),
-  // shortDescription: Yup.string().required("Required"),
-  immediacy: Yup.string().required('Required'),
-  // needs: Yup.array().required('Please select at least one support need.'),
+  immediacy: Yup.string().required('Please select the immediacy.'),
   needs: Yup.object().required('Please select at least one support need.'),
+  phoneNumber: Yup.string().required('Required').min(2, 'Too Short'),
+  email: Yup.string().email().min(2, 'Too Short'),
   otherComments: Yup.string(),
   needFinancialAssistance: Yup.string(),
 });
@@ -43,14 +45,16 @@ function Request() {
   const classes = useStyles();
   const location = useLocation();
   const firestore = useFirestore();
+  const auth = useUser();
   const { FieldValue } = useFirestore;
   const qs = queryString.parse(location.search);
   const { showSuccess, showError } = useNotifications();
-  const defaultValues = {};
+  const defaultValues = {needs: {}};
+  const [userLocation, setUserLocation] = useState(null);
   // Append needs from query string type
   if (qs && qs.type) {
     defaultValues.needs = { [qs.type]: true };
-  }
+  };
 
   const {
     register,
@@ -58,7 +62,7 @@ function Request() {
     errors,
     watch,
     control,
-    formState: { isValid, isSubmitting, isSubmitted },
+    formState: { isValid, isSubmitting },
   } = useForm({
     validationSchema: requestValidationSchema,
     defaultValues,
@@ -66,33 +70,87 @@ function Request() {
   const currentNeeds = watch('needs');
 
   async function submitNeed(values) {
+    if (!userLocation) {
+      alert('Please select a location by clicking on the map above.');
+      return;
+    }
+
     const newNeed = {
       ...values,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
       createdAt: FieldValue.serverTimestamp(),
-      //   lastUpdatedAt: FieldValue.serverTimestamp(),
+      lastUpdatedAt: FieldValue.serverTimestamp(),
+      coordinates: userLocation.generalLocation,
+      generalLocationName: userLocation.generalLocationName,
     };
-    // TODO: Re-enable when map is working again
-    // if (!userLocation) {
-    //   alert('Please select a location by clicking on the map above.');
-    //   return;
-    // }
 
-    // newNeed.coordinates = userLocation;
-    console.log('Submitting values', newNeed); // eslint-disable-line no-console
-    try {
-      await firestore.collection('needs').add(newNeed);
-      showSuccess('Request submitted!');
-    } catch (err) {
-      showError(err.message || 'Error submitting request');
+    const newNeedPrivateData = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+    };
+    delete newNeed.lastName;
+
+    const newNeedSemiPrivateData = {
+      phoneNumber: newNeed.phoneNumber,
+      email: newNeed.email,
+    };
+    delete newNeed.phoneNumber;
+    delete newNeed.email;
+
+    console.log('Submitting values', values); // eslint-disable-line no-console
+
+    newNeed.needs = [];
+    Object.keys(values.needs).forEach(item => {
+      if (values.needs[item]) {
+        newNeed.needs.push(item);
+      }
+    })
+
+    if (!!auth && !!auth.uid) {
+      // TODO: How to get the user profile?  Is that in a context?
+      newNeed.createdBy = {
+        userProfileId: auth.uid,
+        // firstName: 
+        // displayName: 
+      }
     }
+
+    console.log("values");
+    console.log(values);
+    console.log("need");
+    console.log(newNeed);
+    // try {
+    //   let needRef = await firestore
+    //     .collection("needs")
+    //     .add(need);
+
+    //   await needRef.collection('semiPrivateData').add({
+    //     phoneNumber: specialData.phoneNumber,
+    //     email: specialData.email,
+    //     preciseLocaiton: userLocation.preciseLocation
+    //   });
+
+    //   await needRef.collection('privilegedData').add({
+    //     lastName: values.lastName,
+    //     preciseLocation: userLocation.preciseLocation
+    //   });
+
+    //   showSuccess('Request submitted!');
+    // } catch (err) {
+    //   showError(err.message || 'Error submitting request');
+    // }
   }
 
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
-  const hasFinancialComponent =
-    currentNeeds &&
-    (Object.keys(currentNeeds) > 1 || currentNeeds['emotional-support']);
+  // const hasFinancialComponent = true;
+
+  const handleLocationChange = location => {
+    console.log(location);
+    setUserLocation(location);
+  };
+
+
   return (
     <Container maxWidth="md">
       <Helmet>
@@ -105,19 +163,17 @@ function Request() {
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <form onSubmit={handleSubmit(submitNeed)}>
-              {/* {console.log(errors)} */}
+              {console.log(errors)}
               <Container>
                 <FormGroup>
                   <Typography
                     variant="h5"
                     gutterBottom
-                    className={classes.otherComments}>
+                    className={classes.otherComments}
+                  >
                     What do you need help with?
                   </Typography>
-                  {/* <Typography variant="body1" gutterBottom>
-                          If you have multiple needs then please 
-                        </Typography> */}
-                  {Object.keys(activeCategoryMap).map((optionKey) => (
+                  {Object.keys(activeCategoryMap).map((optionKey, index) => (
                     <FormControlLabel
                       key={optionKey}
                       control={
@@ -136,17 +192,23 @@ function Request() {
                     />
                   ))}
                 </FormGroup>
+                {!!errors.needs && (
+                  <FormHelperText error>
+                    {errors.needs.message}
+                  </FormHelperText>
+                )}
 
                 <Typography
                   variant="h5"
                   className={classes.otherComments}
-                  gutterBottom={!groceryPickup}>
+                  gutterBottom={!groceryPickup}
+                >
                   Details
                 </Typography>
                 <Zoom in={groceryPickup} unmountOnExit>
                   <Typography variant="subtitle1" gutterBottom>
                     For grocery pickup, please provide the list of groceries
-                    that you would like the volunteer to purchase. Please be as
+                    that you would like the volunteer to get. Please be as
                     specific as possible.
                   </Typography>
                 </Zoom>
@@ -154,6 +216,7 @@ function Request() {
                   <Grid item xs={12}>
                     <TextField
                       name="otherDetails"
+                      data-test="otherDetails"
                       multiline
                       placeholder="Please be as specific as possible."
                       fullWidth
@@ -164,7 +227,7 @@ function Request() {
                   </Grid>
                 </Grid>
 
-                <Zoom in={hasFinancialComponent} unmountOnExit>
+                {/* <Zoom in={hasFinancialComponent} unmountOnExit> */}
                   <div>
                     <Divider className={classes.optionalDivider} />
                     <Typography variant="h5" gutterBottom>
@@ -204,7 +267,7 @@ function Request() {
                       </FormHelperText>
                     )}
                   </div>
-                </Zoom>
+                {/* </Zoom> */}
 
                 <Divider className={classes.optionalDivider} />
                 <Typography variant="h5" gutterBottom>
@@ -243,7 +306,7 @@ function Request() {
 
                 {!!errors.immediacy && (
                   <FormHelperText error>
-                    Please select an immediacy.
+                    {errors.immediacy.message}
                   </FormHelperText>
                 )}
                 {/* <Grid container spacing={3}>
@@ -292,7 +355,7 @@ function Request() {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Card>
-                      {/* <Location onLocationChange={handleLocationChange} /> */}
+                      <Location onLocationChange={handleLocationChange} />
                     </Card>
                   </Grid>
                 </Grid>
@@ -301,13 +364,13 @@ function Request() {
                   Contact Information
                 </Typography>
 
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                <Grid container spacing={2}>
+                  <Grid item sm={12} md={6}>
                     <TextField
                       name="firstName"
+                      data-test="firstName"
                       type="text"
                       label="First Name"
-                      margin="normal"
                       variant="outlined"
                       inputRef={register}
                       error={!!errors.firstName}
@@ -317,12 +380,12 @@ function Request() {
                       }
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item sm={12} md={6}>
                     <TextField
                       name="lastName"
+                      data-test="lastName"
                       type="text"
                       label="Last Name"
-                      margin="normal"
                       variant="outlined"
                       fullWidth
                       inputRef={register}
@@ -332,24 +395,41 @@ function Request() {
                       }
                     />
                   </Grid>
+                  <Grid item sm={12} md={6}>
+                    <TextField
+                      name="phoneNumber"
+                      data-test="phoneNumber"
+                      type="text"
+                      label="Phone Number"
+                      variant="outlined"
+                      fullWidth
+                      inputRef={register}
+                      error={!!errors.phoneNumber}
+                      helperText={
+                        errors &&
+                        errors.phoneNumber &&
+                        errors.phoneNumber.message
+                      }
+                    />
+                  </Grid>
+                  <Grid item sm={12} md={6}>
+                    <TextField
+                      name="email"
+                      type="text"
+                      data-test="email"
+                      label="Email"
+                      variant="outlined"
+                      fullWidth
+                      inputRef={register}
+                      error={!!errors.email}
+                      helperText={
+                        errors && errors.email && errors.email.message
+                      }
+                    />
+                  </Grid>
                 </Grid>
 
-                <TextField
-                  name="contactInfo"
-                  type="text"
-                  label="Phone or email"
-                  placeholder="Phone number, email address or both"
-                  margin="normal"
-                  variant="outlined"
-                  fullWidth
-                  inputRef={register}
-                  error={!!errors.contactInfo}
-                  helperText={
-                    errors && errors.contactInfo && errors.contactInfo.message
-                  }
-                />
-
-                {!isValid && isSubmitted && (
+                {!isValid && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
@@ -361,7 +441,8 @@ function Request() {
                     variant="contained"
                     color="primary"
                     data-test="submit-request"
-                    disabled={isSubmitting}>
+                    disabled={isSubmitting}
+                  >
                     Submit Request
                   </Button>
                 </div>
