@@ -24,6 +24,8 @@ users = [{
 users_privileged = [{
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
+  displayName: Joi.string().required(),
+
   email: Joi.string().email().required(),
   address1: Joi.string().allow(""),
   address2: Joi.string().allow(""),
@@ -59,6 +61,12 @@ users_public = [{
 requests = [{
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
+  needs: Joi.array().items(Joi.string()),
+
+  // 1 - not urgent
+  // 5 - not very urgent
+  // 10 - urgent
+  immediacy: Joi.number().greater(0).less(11).required(),
   preciseLocation: Joi.object().keys({
     _latitude: Joi.number().greater(-90).less(90),
     _longitude: Joi.number().greater(-180).less(180)
@@ -75,7 +83,7 @@ requests_public = [{
     // 10 - urgent
     immediacy: Joi.number().greater(0).less(11).required(),
   
-    // 4/10/2020: Deprecated in favor of semiPrivateData.phoneNumber & email.
+    // 4/10/2020: Deprecated in favor of semiPrivateData.phone & email.
     // contactInfo: Joi.string().required(),
 
     firstName: Joi.string().required(),
@@ -116,13 +124,13 @@ requests_public = [{
 
 // This data can be shared with any volunteers, but we will first require an entry in the
 // requests_public.usersWithContactInfoAccess collection.
-requestsContactInfo = [{
-  phoneNumber: Joi.string().required(),
+requests_contact = [{
+  phone: Joi.string().required(),
   email: Joi.string().required(),
 }];
 
 // Request actions. Only visible to admins.  No functionatity needed in the UI for now.
-requestsActions = [{
+requests_actions = [{
   requestId: Joi.string().required(),
   action: Joi.number().required(),
   // Possible options:
@@ -147,7 +155,7 @@ requestsActions = [{
 // Private discussion about this specific request between the requestor, volunteer and
 // other privileged users. This will only be displayed to the requestor, volunteer and
 // privileged users (e.g., admins).
-requestsDiscussions = [{
+requests_discussions = [{
     requestId: Joi.string().required(),
     author: {uid, firstName, displayName},
     
@@ -164,7 +172,7 @@ requestsDiscussions = [{
 
 // Public comments about the request, e.g. if a volunteer reaches out to the requestor and has
 // additional details to add.
-requestsComments_public = [{
+requests_comments_public = [{
   requestId: Joi.string().required(),
   author: {uid, firstName, displayName},
   createdAt: firestore.Timestamp,

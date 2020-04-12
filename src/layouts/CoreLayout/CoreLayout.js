@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { SuspenseWithPerf } from 'reactfire';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
@@ -11,6 +12,10 @@ import Navbar from 'containers/Navbar';
 import { Notifications } from 'modules/notification';
 import styles from './CoreLayout.styles';
 import { version } from '../../../package.json';
+import {
+  PRIVACY_POLICY_PATH,
+  TERMS_OF_SERVICE_PATH,
+} from '../../constants/paths';
 
 const useStyles = makeStyles(styles);
 
@@ -52,7 +57,9 @@ function CoreLayout({ children }) {
             target="_blank"
             rel="noopener noreferrer">
             CV19Assist.com
-          </a>
+          </a>{' '}
+          | <Link to={PRIVACY_POLICY_PATH}>Privacy Policy</Link> |{' '}
+          <Link to={TERMS_OF_SERVICE_PATH}>Terms of Service</Link>
         </Typography>
         <Typography variant="body2" color="textSecondary" align="center">
           {version}

@@ -1,25 +1,28 @@
 import React from 'react';
-// import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core';
-// import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
 import {
   GoogleMap,
   LoadScript,
   MarkerClusterer,
   Marker,
 } from '@react-google-maps/api';
+// import { useFirestore, useFirestoreCollection } from 'reactfire';
+// import { getGeofirestore } from 'utils/geofirestore';
+// import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import styles from './NeedsMap.styles';
 
 const useStyles = makeStyles(styles);
 
 function NeedsMap() {
   const classes = useStyles();
-  // const user = useUser();
   // const firestore = useFirestore();
-  // const unfulfilledNeedsRef = firestore
-  //   .collection('aggregates')
-  //   .doc('unfulfilledNeedsInfo');
-  // const unfulfilledNeedsInfo = useFirestoreDocData(unfulfilledNeedsRef);
+  // const geofirestore = getGeofirestore(firestore);
+  // const unfulfilledRequests = useFirestoreCollection(
+  //   geofirestore
+  //     .collection(REQUESTS_PUBLIC_COLLECTION)
+  //     .where('d.status', '==', 1)
+  //     .limit(60),
+  // );
 
   const locations = [
     { lat: 43.063881, lng: -89.433003 },
