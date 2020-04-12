@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import { version } from '../../package.json';
 
 let errorHandler; // eslint-disable-line import/no-mutable-exports
@@ -21,12 +22,29 @@ function initStackdriverErrorReporter() {
 }
 
 /**
+ * Initialize Sentry (reports to sentry.io)
+ */
+function initSentry() {
+  if (process.env.REACT_APP_SENTRY_DSN) {
+    const [, environment] = /cv19assist-(.*)\.web.app/g.exec(
+      window.location.hostname,
+    );
+    Sentry.init({
+      dsn: process.env.REACT_APP_SENTRY_DSN,
+      environment,
+      release: version,
+    });
+  }
+}
+
+/**
  * Initialize client side error reporting. Error handling is only
  * initialized if in production environment.
  */
 export function init() {
   if (!window.location.hostname.includes('localhost')) {
     initStackdriverErrorReporter();
+    initSentry();
   } else {
     errorHandler = console.error; // eslint-disable-line no-console
   }

@@ -48,7 +48,7 @@ function scrambleLocation(center, radiusInMeters) {
   };
 }
 
-function Location(props) {
+function ClickableMap(props) {
   const classes = useStyles();
   const [map, setMap] = useState(null);
   const { showSuccess, showError } = useNotifications();
@@ -217,8 +217,8 @@ function Location(props) {
   );
 }
 
-Location.propTypes = {
+ClickableMap.propTypes = {
   onLocationChange: PropTypes.func.isRequired,
 };
 
-export default Location;
+export default ClickableMap;

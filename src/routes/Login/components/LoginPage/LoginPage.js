@@ -25,7 +25,7 @@ function LoginPage() {
       const { email, displayName, photoURL, providerData } = authState;
       const newProfile = { email, displayName, photoURL };
       if (providerData && providerData.length) {
-        newProfile.providerData = providerData;
+        newProfile.providerData = [{ ...providerData[0] }];
       }
       // Write user profile if it doesn't exist, otherwise redirect to search page
       firestore

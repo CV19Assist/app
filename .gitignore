@@ -9,8 +9,10 @@
 
 # React App
 build
-src/config.js
 .env
+.env.local
+
+.firebase
 
 # Functions
 functions/etc
@@ -25,5 +27,3 @@ cypress/screenshots
 cypress.env.json
 cypress/config.json
 serviceAccount.json
-
-.env.local

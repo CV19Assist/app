@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - generated
+      - next
       - production
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
       - name: Verify App
         run: |
           yarn lint # Check for lint in app code
-          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build; elif [ "$gitBranch" == "generated" ]; then echo build:next; else echo build:staging; fi)
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
           yarn $buildCommand
 
       - name: Verify Functions
