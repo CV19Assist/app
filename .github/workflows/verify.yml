@@ -66,9 +66,16 @@ jobs:
       - name: Get Library Versions For Binary Caching
         id: dep-versions
         run: |
+          echo "::set-output name=dir::$(yarn cache dir)"
           echo "::set-output name=firebase-tools::$(yarn info firebase-tools version --silent)"
           echo "::set-output name=firebase-tools::$(yarn info cypress version --silent)"
 
+      - name: Cache Yarn Dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.cache-settings.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+  
       - name: Cache Firebase Emulator Binaries
         uses: actions/cache@v1
         with:
@@ -81,10 +88,17 @@ jobs:
           path: ~/.cache/Cypress
           key: ${{ runner.os }}-cypress-${{ steps.dep-versions.outputs.cypress }}
 
+      - name: Install Dependencies
+        env:
+          CI: true
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
+        run: |
+          yarn install --frozen-lockfile
+          $(yarn bin)/cypress verify
+
       - name: Set Test Environment Settings
         env:
           SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
-          FIREBASE_APP_NAME: ${{ secrets.FIREBASE_APP_NAME }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF: ${{ github.ref }}
         run: |
@@ -108,8 +122,8 @@ jobs:
           echo "::set-env name=GOOGLE_APPLICATION_CREDENTIALS::$HOME/serviceAccount.json"
 
           # Use firebase SDK API to get the app's configuration and export to CYPRESS. NOTE: databaseURL is intentionally removed
-          firebaseConfig=$(npx firebase --project $GCLOUD_PROJECT apps:sdkconfig WEB \
-            $(npx firebase --project $GCLOUD_PROJECT apps:list WEB | grep $FIREBASE_APP_NAME | awk '{ print $4}') | \
+          firebaseConfig=$($(yarn bin)/firebase --project $GCLOUD_PROJECT apps:sdkconfig WEB \
+            $($(yarn bin)/firebase --project $GCLOUD_PROJECT apps:list WEB | grep $GCLOUD_PROJECT | awk '{ print $4}') | \
               tr '\n' ' ' | \
               sed 's/.*initializeApp(//g' | \
               sed 's/);//g' | \
@@ -137,8 +151,10 @@ jobs:
         uses: cypress-io/github-action@v1
         with:
           record: true
-          group: 'E2E Tests'
-          start: yarn emulate --project $GCLOUD_PROJECT
+          # we have already installed all dependencies above
+          install: false
+          group: 'UI Tests'
+          start: yarn emulators:all --project $GCLOUD_PROJECT
           wait-on: http://localhost:3000
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
