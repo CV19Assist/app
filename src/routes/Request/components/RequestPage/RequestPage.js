@@ -154,10 +154,10 @@ function Request() {
       requestPublicInfo.createdBy = userInfo;
     }
 
-    console.log('values', values);
-    console.log('requestPublicInfo', requestPublicInfo);
-    console.log('requestPrivateInfo', requestPrivateInfo);
-    console.log('requestContactInfo', requestContactInfo);
+    console.log('values', values); // eslint-disable-line no-console
+    console.log('requestPublicInfo', requestPublicInfo); // eslint-disable-line no-console
+    console.log('requestPrivateInfo', requestPrivateInfo); // eslint-disable-line no-console
+    console.log('requestContactInfo', requestContactInfo); // eslint-disable-line no-console
 
     try {
       const requestRef = await firestore

@@ -78,8 +78,7 @@ function RequestSuccessfulPage() {
                   to="/"
                   variant="contained"
                   color="primary"
-                  startIcon={<HomeIcon />}
-                >
+                  startIcon={<HomeIcon />}>
                   Home
                 </Button>
               </Grid>

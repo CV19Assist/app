@@ -1,3 +1,3 @@
-import TermsOfServicePage from './TermsOfServicePage'
+import TermsOfServicePage from './TermsOfServicePage';
 
-export default TermsOfServicePage
+export default TermsOfServicePage;

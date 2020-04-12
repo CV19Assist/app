@@ -23,7 +23,7 @@ function PrivacyPolicyPage() {
         <p>
           Your privacy is important to us. It is CV19 Assist&apos;s policy to
           respect your privacy regarding any information we may collect from you
-          across our website,{" "}
+          across our website,{' '}
           <a href="https://cv19assist.com">https://cv19assist.com</a>, and other
           sites we own and operate.
         </p>

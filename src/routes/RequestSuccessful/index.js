@@ -6,6 +6,6 @@ export default {
   component: loadable(() =>
     import(
       /* webpackChunkName: 'Request Successful' */ './components/RequestSuccessfulPage'
-    )
+    ),
   ),
 };

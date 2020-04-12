@@ -1,3 +1,3 @@
-import RequestSuccessfulPage from './RequestSuccessfulPage'
+import RequestSuccessfulPage from './RequestSuccessfulPage';
 
-export default RequestSuccessfulPage
+export default RequestSuccessfulPage;
