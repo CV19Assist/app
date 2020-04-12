@@ -1,8 +1,22 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+  html {
+    box-sizing: border-box;
+  }
 
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  a {
+    text-decoration: none !important;
+  }
+  *,
+  *:before,
+  *:after {
+    box-sizing: inherit;
+  }
+  /* [type=button]{
+    -webkit-appearance: none !important;
+  } */
