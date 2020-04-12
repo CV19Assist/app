@@ -1,20 +1,58 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner(res) {
+      return res.data.createdBy == request.auth.uid
+    }
+
+    function isOwnerOfRequest() {
+      return get(/databases/$(database)/documents/requests).data.createdBy == request.auth.uid
+    }
+
+    function hasRequestContactAccess() {
+      return get(/databases/$(database)/documents/requests_public).data.usersWithContactInfoAccess == request.auth.uid
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
 
     // Private user profiles
     match /users/{userId} {
-      allow read;
-      allow write: if request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Semi-private User info which can be shared
+    match /users_privileged/{userId} {
+      // TODO: Add read support for sharing this
+      allow read, write: if request.auth.uid == userId;
+      allow write: if false; // only written to by indexUser cloud function
     }
 
     // Public user profiles
     match /users_public/{userId} {
       allow read;
       allow write: if false; // only written to by indexUser cloud function
+    }
+
+    // Private request data
+    match /requests/{userId} {
+      allow create, write: if isOwner(request.resource);
+      // TODO: Make read require data on request
+      // allow read: if isOwner(request.resource);
+      allow read;
+    }
+
+    // Public request data
+    match /requests_public/{userId} {
+      allow create, write: if isOwnerOfRequest();
+      allow read;
+    }
+
+    // Contact info for a request - requires contact info access
+    match /requests_contact/{userId} {
+      allow create, write: if isOwnerOfRequest();
+      allow read: if hasRequestContactAccess();
     }
 
     match /aggregates/unfulfilledNeedsInfo {

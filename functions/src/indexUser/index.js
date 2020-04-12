@@ -13,10 +13,11 @@ import * as functions from 'firebase-functions';
  */
 async function indexUser(change, context) {
   const { userId } = context.params || {};
-  const publicProfileRef = admin
+  const publicProfileRef = admin.firestore().doc(`users_public/${userId}`);
+
+  const privilegedProfileRef = admin
     .firestore()
-    .collection('users_public')
-    .doc(userId);
+    .doc(`users_privileged/${userId}`);
 
   // User Profile being deleted
   if (!change.after.exists) {
@@ -25,6 +26,7 @@ async function indexUser(change, context) {
     );
     try {
       await publicProfileRef.delete();
+      await privilegedProfileRef.delete();
     } catch (nameRemoveErr) {
       console.error(
         'Error running delete promises:',
@@ -47,10 +49,23 @@ async function indexUser(change, context) {
     return null;
   }
   try {
-    // Update displayName within index
+    // Update displayName within public profile
     await publicProfileRef.set(
       {
-        displayName: newData.displayName,
+        d: {
+          // TODO: Copy over coordinates if they exist on user object (make sure to obscurify them)
+          displayName: newData.displayName,
+        },
+      },
+      { merge: true },
+    );
+
+    await privilegedProfileRef.set(
+      {
+        d: {
+          displayName: newData.displayName,
+          email: newData.email,
+        },
       },
       { merge: true },
     );

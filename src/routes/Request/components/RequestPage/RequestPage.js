@@ -20,11 +20,11 @@ import {
   Radio,
   Container,
   RadioGroup,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useUser } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
-import { useNotifications } from 'modules/notification';
+// import { useNotifications } from 'modules/notification';
 import styles from './RequestPage.styles';
 import Location from './ClickableMap';
 
@@ -54,7 +54,7 @@ function Request() {
   // Append needs from query string type
   if (qs && qs.type) {
     defaultValues.needs = { [qs.type]: true };
-  };
+  }
 
   const {
     register,
@@ -71,7 +71,7 @@ function Request() {
 
   async function submitNeed(values) {
     if (!userLocation) {
-      alert('Please select a location by clicking on the map above.');
+      alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
 
@@ -145,11 +145,10 @@ function Request() {
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
   // const hasFinancialComponent = true;
 
-  const handleLocationChange = location => {
-    console.log(location);
-    setUserLocation(location);
+  const handleLocationChange = (changedLocation) => {
+    console.log('location change', changedLocation); // eslint-disable-line no-console
+    setUserLocation(changedLocation);
   };
-
 
   return (
     <Container maxWidth="md">
@@ -169,11 +168,10 @@ function Request() {
                   <Typography
                     variant="h5"
                     gutterBottom
-                    className={classes.otherComments}
-                  >
+                    className={classes.otherComments}>
                     What do you need help with?
                   </Typography>
-                  {Object.keys(activeCategoryMap).map((optionKey, index) => (
+                  {Object.keys(activeCategoryMap).map((optionKey) => (
                     <FormControlLabel
                       key={optionKey}
                       control={
@@ -193,16 +191,13 @@ function Request() {
                   ))}
                 </FormGroup>
                 {!!errors.needs && (
-                  <FormHelperText error>
-                    {errors.needs.message}
-                  </FormHelperText>
+                  <FormHelperText error>{errors.needs.message}</FormHelperText>
                 )}
 
                 <Typography
                   variant="h5"
                   className={classes.otherComments}
-                  gutterBottom={!groceryPickup}
-                >
+                  gutterBottom={!groceryPickup}>
                   Details
                 </Typography>
                 <Zoom in={groceryPickup} unmountOnExit>
@@ -228,45 +223,45 @@ function Request() {
                 </Grid>
 
                 {/* <Zoom in={hasFinancialComponent} unmountOnExit> */}
-                  <div>
-                    <Divider className={classes.optionalDivider} />
-                    <Typography variant="h5" gutterBottom>
-                      Will you be able to pay for your items?
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      This service is free, but the items still cost money. Are
-                      you able to pay for your items? If not, we will do our
-                      best to match you with organizations and volunteers who
-                      can also provide financial assistance.
-                    </Typography>
-                    <Controller
-                      as={
-                        <RadioGroup
-                          aria-label="Need Financial Assistance"
-                          component="fieldset">
-                          <FormControlLabel
-                            value="true"
-                            control={<Radio />}
-                            label="Yes, I can pay and only need help with the delivery."
-                          />
-                          <FormControlLabel
-                            value="false"
-                            control={<Radio />}
-                            label="No, I need help paying for the items."
-                          />
-                        </RadioGroup>
-                      }
-                      control={control}
-                      onChange={([event]) => event.target.value}
-                      name="needFinancialAssistance"
-                      defaultValue="true"
-                    />
-                    {!!errors.needFinancialAssistance && (
-                      <FormHelperText error>
-                        {errors.needFinancialAssistance}
-                      </FormHelperText>
-                    )}
-                  </div>
+                <div>
+                  <Divider className={classes.optionalDivider} />
+                  <Typography variant="h5" gutterBottom>
+                    Will you be able to pay for your items?
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    This service is free, but the items still cost money. Are
+                    you able to pay for your items? If not, we will do our best
+                    to match you with organizations and volunteers who can also
+                    provide financial assistance.
+                  </Typography>
+                  <Controller
+                    as={
+                      <RadioGroup
+                        aria-label="Need Financial Assistance"
+                        component="fieldset">
+                        <FormControlLabel
+                          value="true"
+                          control={<Radio />}
+                          label="Yes, I can pay and only need help with the delivery."
+                        />
+                        <FormControlLabel
+                          value="false"
+                          control={<Radio />}
+                          label="No, I need help paying for the items."
+                        />
+                      </RadioGroup>
+                    }
+                    control={control}
+                    onChange={([event]) => event.target.value}
+                    name="needFinancialAssistance"
+                    defaultValue="true"
+                  />
+                  {!!errors.needFinancialAssistance && (
+                    <FormHelperText error>
+                      {errors.needFinancialAssistance}
+                    </FormHelperText>
+                  )}
+                </div>
                 {/* </Zoom> */}
 
                 <Divider className={classes.optionalDivider} />
@@ -441,8 +436,7 @@ function Request() {
                     variant="contained"
                     color="primary"
                     data-test="submit-request"
-                    disabled={isSubmitting}
-                  >
+                    disabled={isSubmitting}>
                     Submit Request
                   </Button>
                 </div>

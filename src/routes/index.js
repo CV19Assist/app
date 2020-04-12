@@ -11,6 +11,7 @@ import ContactRoute from './Contact';
 import AboutRoute from './About';
 import DonateRoute from './Donate';
 import AccountRoute from './Account';
+import NewUserRoute from './NewUser';
 import SearchRoute from './Search';
 import NotFoundRoute from './NotFound';
 
@@ -28,6 +29,7 @@ export default function createRoutes() {
               DonateRoute,
               ContactRoute,
               SearchRoute,
+              NewUserRoute,
               AboutRoute,
               LoginRoute,
               /* Add More Routes Here */

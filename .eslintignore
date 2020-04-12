@@ -8,3 +8,4 @@ functions/dist/**
 functions/test/mocha.opts
 functions/coverage
 functions/.nyc_output
+dbschema.txt.js
