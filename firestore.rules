@@ -38,6 +38,7 @@ service cloud.firestore {
     // Private request data
     match /requests/{userId} {
       allow create, write: if isOwner(request.resource);
+      allow write: if isOwner(resource);
       // TODO: Make read require data on request
       // allow read: if isOwner(request.resource);
       allow read;

@@ -24,7 +24,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useUser } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
-// import { useNotifications } from 'modules/notification';
+import { useNotifications } from 'modules/notification';
 import styles from './RequestPage.styles';
 import Location from './ClickableMap';
 
@@ -44,11 +44,11 @@ const requestValidationSchema = Yup.object().shape({
 function Request() {
   const classes = useStyles();
   const location = useLocation();
-  // const firestore = useFirestore();
-  const auth = useUser();
+  const firestore = useFirestore();
+  const user = useUser();
   const { FieldValue } = useFirestore;
   const qs = queryString.parse(location.search);
-  // const { showSuccess, showError } = useNotifications();
+  const { showSuccess, showError } = useNotifications();
   const defaultValues = { needs: {} };
   const [userLocation, setUserLocation] = useState(null);
   // Append needs from query string type
@@ -77,6 +77,7 @@ function Request() {
 
     const newNeed = {
       ...values,
+      createdBy: user.uid,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
       createdAt: FieldValue.serverTimestamp(),
@@ -94,7 +95,7 @@ function Request() {
     //   phoneNumber: values.phoneNumber,
     //   email: values.email,
     // };
-    console.log('Submitting values', values); // eslint-disable-line no-console
+    console.log('Submitting values', newNeed); // eslint-disable-line no-console
 
     newNeed.needs = [];
     Object.keys(values.needs).forEach((item) => {
@@ -103,34 +104,25 @@ function Request() {
       }
     });
 
-    if (!!auth && !!auth.uid) {
-      // TODO: How to get the user profile?  Is that in a context?
-      newNeed.createdBy = {
-        userProfileId: auth.uid,
-        // firstName:
-        // displayName:
-      };
+    try {
+      await firestore.collection('requests').add(newNeed);
+      // const needRef = await firestore.collection('requests').add(newNeed);
+
+      // await needRef.collection('semiPrivateData').add({
+      //   phoneNumber: specialData.phoneNumber,
+      //   email: specialData.email,
+      //   preciseLocaiton: userLocation.preciseLocation
+      // });
+
+      // await needRef.collection('privilegedData').add({
+      //   lastName: values.lastName,
+      //   preciseLocation: userLocation.preciseLocation
+      // });
+
+      showSuccess('Request submitted!');
+    } catch (err) {
+      showError(err.message || 'Error submitting request');
     }
-    // try {
-    //   let needRef = await firestore
-    //     .collection("needs")
-    //     .add(need);
-
-    //   await needRef.collection('semiPrivateData').add({
-    //     phoneNumber: specialData.phoneNumber,
-    //     email: specialData.email,
-    //     preciseLocaiton: userLocation.preciseLocation
-    //   });
-
-    //   await needRef.collection('privilegedData').add({
-    //     lastName: values.lastName,
-    //     preciseLocation: userLocation.preciseLocation
-    //   });
-
-    //   showSuccess('Request submitted!');
-    // } catch (err) {
-    //   showError(err.message || 'Error submitting request');
-    // }
   }
 
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];

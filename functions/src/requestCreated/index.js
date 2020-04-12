@@ -15,12 +15,20 @@ async function requestCreatedEvent(snap, context) {
   console.log('requestCreated onCreate event:', snap.data(), { params });
   // const requestData = snap.data()
   // Create Firestore Collection Reference for the response
-  // const collectionRef = admin.database().ref('requests/sendFcm')
+  const collectionRef = admin.database().ref('requests/sendFcm');
   // TODO: Notifiy all users in system_settings document
-
+  const userUids = [
+    '6o5RPH7qy0huwBtafEgfkOYrM3O2',
+    'hvO5z3j4CWXg2vMdBccsH1LYDJL2',
+  ];
   try {
     // Write data to Firestore
     // await collectionRef.push({ userId: requestData.createdBy, message: '' });
+    await Promise.all(
+      userUids.map((userId) =>
+        collectionRef.push({ userId, message: 'Request Created' }),
+      ),
+    );
   } catch (writeErr) {
     // Handle errors writing data to RTDB
     console.error(

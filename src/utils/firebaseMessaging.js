@@ -15,12 +15,15 @@ function updateUserProfileWithToken(messagingToken) {
     .firestore()
     .collection('users')
     .doc(currentUserUid)
-    .update({
-      messaging: {
-        mostRecentToken: messagingToken,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    .set(
+      {
+        messaging: {
+          mostRecentToken: messagingToken,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        },
       },
-    })
+      { merge: true },
+    )
     .catch((err) => {
       /* eslint-disable no-console */
       console.error(
@@ -47,13 +50,15 @@ function getTokenAndWriteToProfile() {
     });
 }
 
+let messagingHasInited = false;
+
 /**
  * Setup Firebase Cloud Messaging. This  requests permission from the
  * user to show browser notifications. If the user approves or if they have
  * approved in the passed, then a Cloud Messaging Token is written to the
  * user's profile.
  */
-export default function initializeMessaging() {
+export default function initializeMessaging({ showSuccess }) {
   const messaging = firebase.messaging();
   if (!process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY) {
     /* eslint-disable no-console */
@@ -63,6 +68,9 @@ export default function initializeMessaging() {
     /* eslint-enable no-console */
     return;
   }
+  if (messagingHasInited) {
+    return;
+  }
 
   messaging.usePublicVapidKey(process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY);
 
@@ -70,7 +78,7 @@ export default function initializeMessaging() {
   messaging.onTokenRefresh(() => {
     getTokenAndWriteToProfile();
   });
-
+  messagingHasInited = true;
   // Handle incoming messages. Called when:
   // - a message is received while the app has focus
   // - the user clicks on an app notification created by a service worker
@@ -78,6 +86,7 @@ export default function initializeMessaging() {
   messaging.onMessage((payload) => {
     // TODO: Wire up notification
     console.log('Message', payload); // eslint-disable-line no-console
+    showSuccess(payload);
   });
 
   // Request permission to setup browser notifications

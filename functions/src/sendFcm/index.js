@@ -14,7 +14,7 @@ async function sendFcmEvent(snap, context) {
   const {
     params: { pushId },
   } = context;
-  const { userId, message = '', title = 'Fireadmin' } = snap.val() || {};
+  const { userId, message = '', title = 'CV19Assist' } = snap.val() || {};
 
   console.log(`FCM request received for: ${userId}`);
 
@@ -48,6 +48,8 @@ async function sendFcmEvent(snap, context) {
     console.error(missingTokenMsg);
     throw new Error(missingTokenMsg);
   }
+
+  console.log(`Token found for user "${userId}", sending message`);
 
   // Send FCM message to client
   const [sendMessageErr] = await to(
