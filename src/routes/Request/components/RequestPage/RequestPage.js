@@ -111,7 +111,7 @@ function Request() {
       // await needRef.collection('semiPrivateData').add({
       //   phoneNumber: specialData.phoneNumber,
       //   email: specialData.email,
-      //   preciseLocaiton: userLocation.preciseLocation
+      //   preciseLocation: userLocation.preciseLocation
       // });
 
       // await needRef.collection('privilegedData').add({

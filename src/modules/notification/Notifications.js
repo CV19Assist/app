@@ -47,7 +47,9 @@ const useStyles = makeStyles((theme) => ({
 export default function Notifications() {
   const classes = useStyles();
   const { allIds, byId, dismissNotification, showSuccess } = useNotifications();
+  // TODO: Look into a better way to init - single init through multiple renders is handled inside
   initializeMessaging({ showSuccess });
+
   // Only render if notifications exist
   if (!allIds || !Object.keys(allIds).length) {
     return null;

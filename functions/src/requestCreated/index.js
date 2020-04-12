@@ -1,8 +1,33 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { to } from 'utils/async';
 
 /**
- *
+ * Send FCM messages to users by calling sendFcm cloud function
+ * @param userUids - Uids of users for which to send messages
+ */
+async function sendFcms(userUids) {
+  const collectionRef = admin.database().ref('requests/sendFcm');
+  const [writeErr] = await to(
+    Promise.all(
+      userUids.map((userId) =>
+        collectionRef.push({ userId, message: 'Request Created' }),
+      ),
+    ),
+  );
+  // Handle errors writing messages to send notifications
+  if (writeErr) {
+    console.error(
+      `Error writing response: ${writeErr.message || ''}`,
+      writeErr,
+    );
+    throw writeErr;
+  }
+}
+
+/**
+ * Send messages for every new request that is created based on settings
+ * in system_settings/notification document in Firestore
  * @param {admin.firestore.DataSnapshot} snap - Data snapshot of the event
  * @param {Function} snap.data - Value of document
  * @param {functions.EventContext} context - Function event context
@@ -11,32 +36,24 @@ import * as admin from 'firebase-admin';
  */
 async function requestCreatedEvent(snap, context) {
   const { params } = context;
-  // const { params, auth, timestamp } = context;
-  console.log('requestCreated onCreate event:', snap.data(), { params });
-  // const requestData = snap.data()
-  // Create Firestore Collection Reference for the response
-  const collectionRef = admin.database().ref('requests/sendFcm');
-  // TODO: Notifiy all users in system_settings document
-  const userUids = [
-    '6o5RPH7qy0huwBtafEgfkOYrM3O2',
-    'hvO5z3j4CWXg2vMdBccsH1LYDJL2',
-  ];
-  try {
-    // Write data to Firestore
-    // await collectionRef.push({ userId: requestData.createdBy, message: '' });
-    await Promise.all(
-      userUids.map((userId) =>
-        collectionRef.push({ userId, message: 'Request Created' }),
-      ),
-    );
-  } catch (writeErr) {
-    // Handle errors writing data to RTDB
+  const requestData = snap.data();
+  console.log('requestCreated onCreate event:', requestData, { params });
+
+  // Load settings doc
+  const settingsRef = admin.firestore().doc('system_settings/notifications');
+  const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
+
+  // Handle errors loading settings docs
+  if (settingsDocErr) {
     console.error(
-      `Error writing response: ${writeErr.message || ''}`,
-      writeErr,
+      `Error loading settings doc: ${settingsDocErr.message || ''}`,
+      settingsDocErr,
     );
-    throw writeErr;
   }
+
+  // Notify all users in newRequests parameter of system_settings/notification document
+  const { newRequests: userUids } = settingsDocSnap.data() || {};
+  await sendFcms(userUids);
 
   // End function execution by returning
   return null;
