@@ -176,19 +176,4 @@ requestsComments_public = [{
 // ==================================== Aggregates ====================================
 // Used for aggregated data that might be displayed across the UI.
 aggregates = {
-  // Unfulfilled requestId displayed on the homepage.
-  unfulfilledRequestsInfo: [
-    {
-      requestId: "",
-      createdAt: "",
-      immediacy: "",
-      needs: ["", ""],
-
-      // The general location.
-      location: Joi.object().keys({
-        _latitude: Joi.number().greater(-90).less(90),
-        _longitude: Joi.number().greater(-180).less(180)
-      }),
-    }
-  ]
 };
