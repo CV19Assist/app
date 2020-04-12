@@ -26,6 +26,7 @@
 ## Getting Started
 
 1. Install app and functions dependencies: `yarn install && yarn install --prefix functions`
+1. Copy settings from one of the `.env.*` files into `.env.local` - this is not tracked by git and will be how your local development project gets Firebase config.
 1. Start Development server: `yarn start`
 
 While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:

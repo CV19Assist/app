@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - generated
       - production
 
 jobs:
@@ -41,7 +42,8 @@ jobs:
       - name: Verify App
         run: |
           yarn lint # Check for lint in app code
-          yarn build # Build app bundles
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build; elif [ "$gitBranch" == "generated" ]; then echo build:next; else echo build:staging; fi)
+          yarn $buildCommand
 
       - name: Verify Functions
         # TODO: Add back functions tests "yarn --cwd functions test:cov"

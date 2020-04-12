@@ -56,13 +56,6 @@ function Location(props) {
   const [markerLocation, setMarkerLocation] = useState(null);
   const [generalLocationName, setGeneralLocationName] = useState('');
 
-  const handleLocationClick = (args) => {
-    const newLoc = { lat: args.latLng.lat(), lng: args.latLng.lng() };
-    // console.log("handle click", args);
-    // console.log("handle click", newLoc);
-    setLocation(newLoc);
-  };
-
   const setLocation = async (location) => {
     // console.log("called", location);
     if (map) {
@@ -91,17 +84,17 @@ function Location(props) {
 
       // Find city and state.
       let locality = null;
-      let administrative_area_level_1 = null;
+      let administrativeAreaLevel1 = null;
       result.address_components.forEach((addressComp) => {
         if (addressComp.types.indexOf('locality') !== -1) {
           locality = addressComp.long_name;
         }
         if (addressComp.types.indexOf('administrative_area_level_1') !== -1) {
-          administrative_area_level_1 = addressComp.short_name;
+          administrativeAreaLevel1 = addressComp.short_name;
         }
       });
 
-      let locationName = `${locality}, ${administrative_area_level_1}`;
+      let locationName = `${locality}, ${administrativeAreaLevel1}`;
       if (!locality) {
         locationName = result.formatted_address;
       }
@@ -122,6 +115,13 @@ function Location(props) {
     } catch (err) {
       showError(err);
     }
+  };
+
+  const handleLocationClick = (args) => {
+    const newLoc = { lat: args.latLng.lat(), lng: args.latLng.lng() };
+    // console.log("handle click", args);
+    // console.log("handle click", newLoc);
+    setLocation(newLoc);
   };
 
   const handleDetectLocation = () => {
@@ -172,8 +172,8 @@ function Location(props) {
           </Typography>
         </Backdrop>
         <GoogleMap
-          onLoad={(map) => {
-            setMap(map);
+          onLoad={(googleMap) => {
+            setMap(googleMap);
           }}
           mapContainerClassName={classes.map}
           center={{ lat: 40.318984, lng: -96.960146 }}

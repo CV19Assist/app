@@ -25,3 +25,5 @@ cypress/screenshots
 cypress.env.json
 cypress/config.json
 serviceAccount.json
+
+.env.local

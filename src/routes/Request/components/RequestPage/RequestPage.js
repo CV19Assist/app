@@ -24,7 +24,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useUser } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
-import { useNotifications } from 'modules/notification';
+// import { useNotifications } from 'modules/notification';
 import styles from './RequestPage.styles';
 import Location from './ClickableMap';
 
@@ -44,11 +44,11 @@ const requestValidationSchema = Yup.object().shape({
 function Request() {
   const classes = useStyles();
   const location = useLocation();
-  const firestore = useFirestore();
+  // const firestore = useFirestore();
   const auth = useUser();
   const { FieldValue } = useFirestore;
   const qs = queryString.parse(location.search);
-  const { showSuccess, showError } = useNotifications();
+  // const { showSuccess, showError } = useNotifications();
   const defaultValues = { needs: {} };
   const [userLocation, setUserLocation] = useState(null);
   // Append needs from query string type
@@ -161,7 +161,7 @@ function Request() {
                     className={classes.otherComments}>
                     What do you need help with?
                   </Typography>
-                  {Object.keys(activeCategoryMap).map((optionKey, index) => (
+                  {Object.keys(activeCategoryMap).map((optionKey) => (
                     <FormControlLabel
                       key={optionKey}
                       control={
