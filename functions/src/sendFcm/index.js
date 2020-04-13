@@ -3,18 +3,41 @@ import * as admin from 'firebase-admin';
 import { get } from 'lodash';
 import { to } from 'utils/async';
 
-const requestPath = 'sendFcm';
+/**
+ * Parse message body from message into JSON handling errors
+ * @param {functions.pubsub.Message} message - Message object from pubsub containing json
+ * parameter with body of message
+ * @returns {object} Parsed message body
+ */
+function parseMessageBody(message) {
+  try {
+    return message.json;
+  } catch (e) {
+    console.error('PubSub message was not JSON and an error was thrown: ', e);
+    return null;
+  }
+}
 
 /**
- * @param {admin.firestore.DataSnapshot} snap - Function event snap
+ * @param {functions.pubsub.Message} pubsubMessage - Message from pubsub onPublish event
  * @param {functions.Context} context - Functions context
  * @returns {Promise} Results of send event
  */
-async function sendFcmEvent(snap, context) {
-  const {
-    params: { pushId },
-  } = context;
-  const { userId, message = '', title = 'CV19Assist' } = snap.val() || {};
+async function sendFcmEvent(pubsubMessage, context) {
+  // Get attributes from message
+  const { attributes } = pubsubMessage || {};
+  // Parse message body from message into JSON
+  const messageBody = parseMessageBody(pubsubMessage);
+  console.log('Pub Sub message: ', { messageBody, attributes, context });
+
+  // Handle message not having a body
+  if (!messageBody) {
+    const noBodyMsg = 'The message does not have a body';
+    console.error(noBodyMsg);
+    throw new Error(noBodyMsg);
+  }
+
+  const { userId, message = '', title = 'CV19Assist' } = messageBody;
 
   console.log(`FCM request received for: ${userId}`);
 
@@ -24,13 +47,9 @@ async function sendFcmEvent(snap, context) {
     throw new Error(missingUserIdErr);
   }
 
-  const responseRef = admin
-    .database()
-    .ref(`responses/${requestPath}/${pushId}`);
-
   // Get user profile
   const [getProfileErr, userProfileSnap] = await to(
-    admin.firestore().collection('users').doc(userId).get(),
+    admin.firestore().doc(`users/${userId}`).get(),
   );
 
   // Handle errors getting user profile
@@ -68,46 +87,20 @@ async function sendFcmEvent(snap, context) {
       `Error writing response: ${sendMessageErr.message || ''}`,
       sendMessageErr,
     );
-
-    // Write error to response
-    const [writeErr] = await to(
-      responseRef.set({
-        complete: true,
-        status: 'error',
-        error: sendMessageErr.message || 'Error',
-        completedAt: admin.database.ServerValue.TIMESTAMP,
-      }),
-    );
-
-    // Log errors writing error to RTDB
-    if (writeErr) {
-      console.error(
-        `Error writing error to RTDB: ${writeErr.message || ''}`,
-        writeErr,
-      );
-    }
-
     throw sendMessageErr;
   }
-
-  // Set response to original sendFcm request
-  const [writeErr] = await to(
-    responseRef.set({
-      complete: true,
-      status: 'success',
-      completedAt: admin.database.ServerValue.TIMESTAMP,
-    }),
-  );
 
   const userAlertsRef = admin.firestore().collection('user_alerts');
 
   // Write to user_alerts collection
-  await userAlertsRef.add({
-    userId,
-    message,
-    title,
-    read: false,
-  });
+  const [writeErr] = await to(
+    userAlertsRef.add({
+      userId,
+      message,
+      title,
+      read: false,
+    }),
+  );
 
   // Handle errors writing response of sendFcm to RTDB
   if (writeErr) {
@@ -122,10 +115,10 @@ async function sendFcmEvent(snap, context) {
 }
 
 /**
+ * Cloud Function triggered by a PubSub message publish
+ *
+ * Trigger: `PubSub - onPublish`
  * @name sendFcm
- * Cloud Function triggered by Real Time Database Create Event
  * @type {functions.CloudFunction}
  */
-export default functions.database
-  .ref(`/requests/${requestPath}/{pushId}`)
-  .onCreate(sendFcmEvent);
+export default functions.pubsub.topic('sendFcm').onPublish(sendFcmEvent);

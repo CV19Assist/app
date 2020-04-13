@@ -88,7 +88,7 @@ function Request() {
 
     const requestPublicInfo = {
       ...values,
-      createdBy: user.uid,
+      createdBy: auth.uid,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
       createdAt: FieldValue.serverTimestamp(),

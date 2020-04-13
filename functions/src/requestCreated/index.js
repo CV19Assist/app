@@ -1,20 +1,27 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { PubSub } from '@google-cloud/pubsub';
 import { to } from 'utils/async';
 
+// Creates a client; cache this for further use
+const pubSubClient = new PubSub();
+
+/**
+ * @param userId
+ */
+async function requestMessageSend(userId) {
+  const messageObject = { userId, message: 'Request Created' };
+  const messageBuffer = Buffer.from(messageObject);
+  const messageId = await pubSubClient.topic('sendFcm').publish(messageBuffer);
+  console.log(`Send request for FCM message: ${messageId}`);
+  return messageId;
+}
 /**
  * Send FCM messages to users by calling sendFcm cloud function
  * @param userUids - Uids of users for which to send messages
  */
 async function sendFcms(userUids) {
-  const collectionRef = admin.database().ref('requests/sendFcm');
-  const [writeErr] = await to(
-    Promise.all(
-      userUids.map((userId) =>
-        collectionRef.push({ userId, message: 'Request Created' }),
-      ),
-    ),
-  );
+  const [writeErr] = await to(Promise.all(userUids.map(requestMessageSend)));
   // Handle errors writing messages to send notifications
   if (writeErr) {
     console.error(
