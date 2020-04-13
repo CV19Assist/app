@@ -60,7 +60,7 @@ service cloud.firestore {
     // Contact info for a request - requires contact info access
     match /requests_contact/{requestId} {
       allow create: if isOwnerOfRequest(request.resource);
-      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(resource);;
+      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(resource);
       allow read: if hasRequestContactAccess(resource);
     }
   }
