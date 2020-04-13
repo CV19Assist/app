@@ -9,7 +9,7 @@ import {
   Paper,
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
-import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
+import { useUser } from 'reactfire';
 import NeedsMap from './NeedsMap';
 import styles from './HomePage.styles';
 
@@ -18,11 +18,6 @@ const useStyles = makeStyles(styles);
 function Homepage() {
   const classes = useStyles();
   const user = useUser();
-  const firestore = useFirestore();
-  const unfulfilledNeedsRef = firestore
-    .collection('aggregates')
-    .doc('unfulfilledNeedsInfo');
-  const unfulfilledNeedsInfo = useFirestoreDocData(unfulfilledNeedsRef);
 
   return (
     <>
@@ -108,7 +103,7 @@ function Homepage() {
                 help spread the word and refer them to this site.
               </Typography>
 
-              <NeedsMap unfulfilledNeedsInfo={unfulfilledNeedsInfo} />
+              <NeedsMap />
 
               <div className={classes.actionButtons}>
                 <Button

@@ -36,34 +36,33 @@ service cloud.firestore {
     }
 
     // Private request data
-    match /requests/{userId} {
-      allow create, write: if isOwner(request.resource);
-      allow write: if isOwner(resource);
+    match /requests/{requestId} {
+      allow create;
+      allow write: if isOwner(request.resource);
       // TODO: Make read require data on request
       // allow read: if isOwner(request.resource);
       allow read;
     }
 
     // Public request data
-    match /requests_public/{userId} {
-      allow create, write: if isOwnerOfRequest();
+    match /requests_public/{requestId} {
+      allow create;
+      allow write: if isOwnerOfRequest();
+      allow read;
+    }
+
+    // Public request actions
+    match /requests_actions/{requestId} {
+      allow create;
+      allow write: if isOwnerOfRequest();
       allow read;
     }
 
     // Contact info for a request - requires contact info access
-    match /requests_contact/{userId} {
-      allow create, write: if isOwnerOfRequest();
+    match /requests_contact/{requestId} {
+      allow create;
+      allow write: if isOwnerOfRequest();
       allow read: if hasRequestContactAccess();
-    }
-
-    match /aggregates/unfulfilledNeedsInfo {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    match /needs/{needId} {
-      allow read: if true;
-      allow write: if true;
     }
   }
 }

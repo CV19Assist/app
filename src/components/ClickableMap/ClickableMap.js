@@ -13,7 +13,6 @@ import {
   Backdrop,
   makeStyles,
 } from '@material-ui/core';
-
 import { useNotifications } from 'modules/notification';
 import Geocode from 'react-geocode';
 import styles from './ClickableMap.styles';
@@ -43,8 +42,8 @@ function scrambleLocation(center, radiusInMeters) {
   const newlon2 = xp + x0;
 
   return {
-    lat: Math.round(newlat * 1e5) / 1e5,
-    lng: Math.round(newlon2 * 1e5) / 1e5,
+    _latitude: Math.round(newlat * 1e5) / 1e5,
+    _longitude: Math.round(newlon2 * 1e5) / 1e5,
   };
 }
 

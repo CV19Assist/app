@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import queryString from 'query-string';
 import {
@@ -25,8 +25,17 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useUser } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
+import {
+  USERS_PRIVILEGED_COLLECTION,
+  REQUESTS_COLLECTION,
+  REQUESTS_PUBLIC_COLLECTION,
+  REQUESTS_CONTACT_INFO_COLLECTION,
+  REQUESTS_ACTIONS_COLLECTION,
+} from 'constants/collections';
+import Location from 'components/ClickableMap';
+import { GeoFirestore } from 'geofirestore';
+import { REQUEST_SUCCESSFUL_PATH } from 'constants/paths';
 import styles from './RequestPage.styles';
-import Location from './ClickableMap';
 
 const useStyles = makeStyles(styles);
 
@@ -35,7 +44,7 @@ const requestValidationSchema = Yup.object().shape({
   lastName: Yup.string().required('Required').min(2, 'Too Short'),
   immediacy: Yup.string().required('Please select the immediacy.'),
   needs: Yup.object().required('Please select at least one support need.'),
-  phoneNumber: Yup.string().required('Required').min(2, 'Too Short'),
+  phone: Yup.string().required('Required').min(2, 'Too Short'),
   email: Yup.string().email().min(2, 'Too Short'),
   otherComments: Yup.string(),
   needFinancialAssistance: Yup.string(),
@@ -44,13 +53,15 @@ const requestValidationSchema = Yup.object().shape({
 function Request() {
   const classes = useStyles();
   const location = useLocation();
+  const history = useHistory();
   const firestore = useFirestore();
-  const user = useUser();
-  const { FieldValue } = useFirestore;
+  const auth = useUser();
+  const { FieldValue, GeoPoint } = useFirestore;
   const qs = queryString.parse(location.search);
   const { showSuccess, showError } = useNotifications();
   const defaultValues = { needs: {} };
   const [userLocation, setUserLocation] = useState(null);
+
   // Append needs from query string type
   if (qs && qs.type) {
     defaultValues.needs = { [qs.type]: true };
@@ -69,57 +80,116 @@ function Request() {
   });
   const currentNeeds = watch('needs');
 
-  async function submitNeed(values) {
+  async function submitRequest(values) {
     if (!userLocation) {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
 
-    const newNeed = {
+    const requestPublicInfo = {
       ...values,
       createdBy: user.uid,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
-      coordinates: userLocation.generalLocation,
+      coordinates: new GeoPoint(
+        /* eslint-disable no-underscore-dangle */
+        userLocation.generalLocation._latitude,
+        userLocation.generalLocation._longitude,
+        /* eslint-enable no-underscore-dangle */
+      ),
       generalLocationName: userLocation.generalLocationName,
     };
 
-    // const newNeedPrivateData = {
-    //   firstName: values.firstName,
-    //   lastName: values.lastName,
-    // };
-
-    // const newNeedSemiPrivateData = {
-    //   phoneNumber: values.phoneNumber,
-    //   email: values.email,
-    // };
-    console.log('Submitting values', newNeed); // eslint-disable-line no-console
-
-    newNeed.needs = [];
+    requestPublicInfo.needs = [];
     Object.keys(values.needs).forEach((item) => {
       if (values.needs[item]) {
-        newNeed.needs.push(item);
+        requestPublicInfo.needs.push(item);
       }
     });
 
+    const requestPrivateInfo = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      immediacy: requestPublicInfo.immediacy,
+      needs: requestPublicInfo.needs,
+      preciseLocation: new GeoPoint(
+        /* eslint-disable no-underscore-dangle */
+        userLocation.preciseLocation._latitude,
+        userLocation.preciseLocation._longitude,
+        /* eslint-enable no-underscore-dangle */
+      ),
+    };
+    delete requestPublicInfo.lastName;
+
+    const requestContactInfo = {
+      phone: requestPublicInfo.phone,
+      email: requestPublicInfo.email,
+    };
+    delete requestPublicInfo.phone;
+    delete requestPublicInfo.email;
+
+    console.log('Submitting values', values); // eslint-disable-line no-console
+
+    let userInfo = null;
+    if (auth) {
+      const userRef = firestore.doc(
+        `${USERS_PRIVILEGED_COLLECTION}/${auth.uid}`,
+      );
+      const user = (await userRef.get()).data();
+      // TODO: Test and verify after confirming the sign-in workflow.
+      const pieces = auth.displayName.split(' ');
+      if (pieces.length < 2) {
+        showError("Temporary name hack didn't work");
+        return;
+      }
+      user.displayName = auth.displayName;
+      [user.firstName, user.lastName] = pieces;
+
+      userInfo = {
+        userProfileId: auth.uid,
+        firstName: user.firstName,
+        displayName: user.displayName,
+      };
+      requestPublicInfo.createdBy = userInfo;
+    }
+
+    console.log('values', values); // eslint-disable-line no-console
+    console.log('requestPublicInfo', requestPublicInfo); // eslint-disable-line no-console
+    console.log('requestPrivateInfo', requestPrivateInfo); // eslint-disable-line no-console
+    console.log('requestContactInfo', requestContactInfo); // eslint-disable-line no-console
+
     try {
-      await firestore.collection('requests').add(newNeed);
-      // const needRef = await firestore.collection('requests').add(newNeed);
+      const requestRef = await firestore
+        .collection(REQUESTS_COLLECTION)
+        .add(requestPrivateInfo);
 
-      // await needRef.collection('semiPrivateData').add({
-      //   phoneNumber: specialData.phoneNumber,
-      //   email: specialData.email,
-      //   preciseLocation: userLocation.preciseLocation
-      // });
+      const action = {
+        requestId: requestRef.id,
+        action: 1, // 1-created
+        createdAt: requestPublicInfo.createdAt,
+        ...userInfo,
+      };
 
-      // await needRef.collection('privilegedData').add({
-      //   lastName: values.lastName,
-      //   preciseLocation: userLocation.preciseLocation
-      // });
+      const geofirestore = new GeoFirestore(firestore);
+      await Promise.all([
+        geofirestore
+          .collection(REQUESTS_PUBLIC_COLLECTION)
+          .doc(requestRef.id)
+          .set(requestPublicInfo),
+        firestore
+          .collection(REQUESTS_CONTACT_INFO_COLLECTION)
+          .doc(requestRef.id)
+          .set(requestContactInfo),
+        firestore
+          .collection(REQUESTS_ACTIONS_COLLECTION)
+          .doc(requestRef.id)
+          .set(action),
+      ]);
 
       showSuccess('Request submitted!');
+      history.replace(REQUEST_SUCCESSFUL_PATH);
     } catch (err) {
       showError(err.message || 'Error submitting request');
     }
@@ -128,9 +198,8 @@ function Request() {
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
   // const hasFinancialComponent = true;
 
-  const handleLocationChange = (changedLocation) => {
-    console.log('location change', changedLocation); // eslint-disable-line no-console
-    setUserLocation(changedLocation);
+  const handleLocationChange = (newLocation) => {
+    setUserLocation(newLocation);
   };
 
   return (
@@ -144,7 +213,8 @@ function Request() {
       <Paper className={classes.paper} data-test="request-form">
         <div className={classes.heroContent}>
           <Container maxWidth="md">
-            <form onSubmit={handleSubmit(submitNeed)}>
+            <form onSubmit={handleSubmit(submitRequest)}>
+              {/* {console.log(errors)} */}
               <Container>
                 <FormGroup>
                   <Typography
@@ -374,18 +444,16 @@ function Request() {
                   </Grid>
                   <Grid item sm={12} md={6}>
                     <TextField
-                      name="phoneNumber"
-                      data-test="phoneNumber"
+                      name="phone"
+                      data-test="phone"
                       type="text"
                       label="Phone Number"
                       variant="outlined"
                       fullWidth
                       inputRef={register}
-                      error={!!errors.phoneNumber}
+                      error={!!errors.phone}
                       helperText={
-                        errors &&
-                        errors.phoneNumber &&
-                        errors.phoneNumber.message
+                        errors && errors.phone && errors.phone.message
                       }
                     />
                   </Grid>

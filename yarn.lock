@@ -1331,6 +1331,17 @@
     retry-request "^4.0.0"
     teeny-request "^6.0.0"
 
+"@google-cloud/firestore@>= 2.0.0":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-3.7.4.tgz#8a9f3ace01d3bf29a8a1bad3c617035eb14b6cc6"
+  integrity sha512-RBMG4uZFHeQPFMHTRFMyQ7LDQTLa0f+U0hLAa/7XWjpZHgxKuOWBonsv+C3geymAwShIZSoV/NpNh9tBK7YF5g==
+  dependencies:
+    deep-equal "^2.0.0"
+    functional-red-black-tree "^1.0.1"
+    google-gax "^1.13.0"
+    readable-stream "^3.4.0"
+    through2 "^3.0.0"
+
 "@google-cloud/firestore@^3.0.0":
   version "3.7.3"
   resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-3.7.3.tgz#b8b69b39912e94ff0034218fdc961dd472ad735a"
@@ -2114,7 +2125,7 @@
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.7.tgz#315d570ccb56c53452ff8638738df60726d5b6ea"
   integrity sha512-NYrtPht0wGzhwe9+/idPaBB+TqkY9AhTvOLMkThm0IoEfLaiVQZwBwyJ5puCkO3AUCWrmcoePjp2mbFocKy4SQ==
 
-"@types/node@*":
+"@types/node@*", "@types/node@>= 8.0.0":
   version "13.11.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.11.1.tgz#49a2a83df9d26daacead30d0ccc8762b128d53c7"
   integrity sha512-eWQGP3qtxwL8FGneRrC5DwrJLGN4/dH1clNTuLfN81HCrxVtxRjygDTUoZJ5ASlDEeo0ppYFQjQIlXhtXpOn6g==
@@ -6241,7 +6252,7 @@ firebase-tools@^8.0.2:
     winston "^3.0.0"
     ws "^7.2.3"
 
-firebase@^7.14.0:
+"firebase@>= 6.0.0", firebase@^7.14.0:
   version "7.14.0"
   resolved "https://registry.yarnpkg.com/firebase/-/firebase-7.14.0.tgz#8a6adfa2fa3200c128bb45e3da029b52917154c8"
   integrity sha512-4QjP8WxVwVh6lvP8I96Wg11coJQ8si093xxUmafdOL7hWzG8u80EdlJOClK9zG8R37OjJRNsmXdslqFiJoGK5g==
@@ -6546,6 +6557,15 @@ gensync@^1.0.0-beta.1:
   version "1.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.1.tgz#58f4361ff987e5ff6e1e7a210827aa371eaac269"
   integrity sha512-r8EC6NO1sngH/zdD9fiRDLdcgnbayXah+mLgManTaIZJqEC1MZstmnox8KpnI2/fxQwrp5OpCOYWLp4rBl4Jcg==
+
+geofirestore@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/geofirestore/-/geofirestore-3.4.1.tgz#e8d6baf6217e7e93f09243796f4c62ccc407c84b"
+  integrity sha512-hSlRkFv+ECWo4VUP/33UXciiooucIxKvr1Zn3Cl9ROfs9DH1eZQT4Nr3utdPR3S2CizkZhrUN0DACqCURWyWDQ==
+  optionalDependencies:
+    "@google-cloud/firestore" ">= 2.0.0"
+    "@types/node" ">= 8.0.0"
+    firebase ">= 6.0.0"
 
 get-caller-file@^1.0.1:
   version "1.0.3"

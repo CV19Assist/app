@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
 import { USERS_COLLECTION } from 'constants/collections';
-import ClickableMap from 'routes/Request/components/RequestPage/ClickableMap';
+import ClickableMap from 'components/ClickableMap';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from 'utils/form';
 import { ACCOUNT_PATH } from 'constants/paths';

@@ -5,6 +5,11 @@ export const allCategoryMap = {
     shortDescription: 'Grocery Pick-up',
     description: 'Food, grocery, or prescription pick-up/delivery',
   },
+  'emotional-support': {
+    active: false,
+    shortDescription: 'Emotional Support',
+    description: 'Emotional support',
+  },
   food: {
     active: false,
     shortDescription: 'Food or Grocery',
