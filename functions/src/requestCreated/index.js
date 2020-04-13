@@ -9,25 +9,33 @@ const pubSubClient = new PubSub();
 /**
  * @param userId
  */
-async function requestMessageSend(userId) {
+async function sendFcmToUser(userId) {
   const messageObject = { userId, message: 'Request Created' };
-  const messageBuffer = Buffer.from(messageObject);
-  const messageId = await pubSubClient.topic('sendFcm').publish(messageBuffer);
-  console.log(`Send request for FCM message: ${messageId}`);
-  return messageId;
+  const messageBuffer = Buffer.from(JSON.stringify(messageObject));
+  try {
+    const messageId = await pubSubClient
+      .topic('sendFcm')
+      .publish(messageBuffer);
+    console.log(
+      `Sent request for FCM message to user ${userId}, messageid: ${messageId}`,
+    );
+    return messageId;
+  } catch (err) {
+    console.error(
+      `Error requesting FCM message send to user ${userId}: ${err.message}`,
+    );
+    throw err;
+  }
 }
 /**
  * Send FCM messages to users by calling sendFcm cloud function
  * @param userUids - Uids of users for which to send messages
  */
 async function sendFcms(userUids) {
-  const [writeErr] = await to(Promise.all(userUids.map(requestMessageSend)));
+  const [writeErr] = await to(Promise.all(userUids.map(sendFcmToUser)));
   // Handle errors writing messages to send notifications
   if (writeErr) {
-    console.error(
-      `Error writing response: ${writeErr.message || ''}`,
-      writeErr,
-    );
+    console.error(`Error requesting FCMs: ${writeErr.message || ''}`, writeErr);
     throw writeErr;
   }
 }
