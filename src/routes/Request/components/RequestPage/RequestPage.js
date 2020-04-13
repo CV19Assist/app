@@ -86,10 +86,14 @@ function Request() {
       return;
     }
 
+    const { lastName, phone, email, ...publicValues } = values;
+
     const requestPublicInfo = {
-      ...values,
+      ...publicValues,
+      firstName: values.firstName,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
+      createdBy: auth.uid,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
       coordinates: new GeoPoint(
@@ -111,8 +115,10 @@ function Request() {
     const requestPrivateInfo = {
       firstName: values.firstName,
       lastName: values.lastName,
-      immediacy: requestPublicInfo.immediacy,
-      needs: requestPublicInfo.needs,
+      immediacy: values.immediacy,
+      needs: values.needs,
+      createdBy: auth.uid,
+      createdAt: FieldValue.serverTimestamp(),
       preciseLocation: new GeoPoint(
         /* eslint-disable no-underscore-dangle */
         userLocation.preciseLocation._latitude,
@@ -120,16 +126,11 @@ function Request() {
         /* eslint-enable no-underscore-dangle */
       ),
     };
-    delete requestPublicInfo.lastName;
 
     const requestContactInfo = {
-      phone: requestPublicInfo.phone,
-      email: requestPublicInfo.email,
+      phone,
+      email,
     };
-    delete requestPublicInfo.phone;
-    delete requestPublicInfo.email;
-
-    console.log('Submitting values', values); // eslint-disable-line no-console
 
     let userInfo = null;
     if (auth) {
@@ -143,15 +144,17 @@ function Request() {
         showError("Temporary name hack didn't work");
         return;
       }
-      user.displayName = auth.displayName;
-      [user.firstName, user.lastName] = pieces;
+      if (user) {
+        user.displayName = auth.displayName;
+        [user.firstName, user.lastName] = pieces;
 
-      userInfo = {
-        userProfileId: auth.uid,
-        firstName: user.firstName,
-        displayName: user.displayName,
-      };
-      requestPublicInfo.createdBy = userInfo;
+        userInfo = {
+          userProfileId: auth.uid,
+          firstName: user.firstName,
+          displayName: user.displayName,
+        };
+        requestPublicInfo.createdByInfo = userInfo;
+      }
     }
 
     console.log('values', values); // eslint-disable-line no-console
