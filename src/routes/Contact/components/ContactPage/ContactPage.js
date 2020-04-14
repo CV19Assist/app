@@ -35,9 +35,11 @@ function ContactPage() {
     try {
       const contactRequest = {
         ...values,
-        createdBy: user.uid || null,
         createdAt: FieldValue.serverTimestamp(),
       };
+      if (user && user.uid) {
+        contactRequest.createdBy = user.uid;
+      }
       await firestore.collection('contacts').add(contactRequest);
       showSuccess('Message submitted!');
     } catch (err) {
@@ -58,20 +60,23 @@ function ContactPage() {
         {isSubmitted ? (
           <Grid container spacing={2} justify="center">
             <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
-              <Typography>
+              <Typography data-test="submitted-message">
                 Your message has been successfully submitted. We will reach out
                 shortly. Thanks!
               </Typography>
             </Grid>
           </Grid>
         ) : (
-          <form onSubmit={handleSubmit(submitContactRequest)}>
+          <form
+            onSubmit={handleSubmit(submitContactRequest)}
+            data-test="contact-form">
             <Grid container spacing={2} justify="center">
               <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
                 <TextField
                   name="name"
                   label="Name"
                   margin="normal"
+                  data-test="name"
                   fullWidth
                   inputRef={register({
                     required: true,
@@ -86,6 +91,7 @@ function ContactPage() {
                   name="email"
                   label="Email"
                   margin="normal"
+                  data-test="email"
                   fullWidth
                   inputRef={register({
                     required: true,
@@ -100,6 +106,7 @@ function ContactPage() {
                   type="phone"
                   name="phone"
                   label="Phone"
+                  data-test="phone"
                   margin="normal"
                   fullWidth
                   inputRef={register}
@@ -111,6 +118,7 @@ function ContactPage() {
                 <TextField
                   name="message"
                   label="Message"
+                  data-test="message"
                   margin="normal"
                   fullWidth
                   inputRef={register}
@@ -119,7 +127,6 @@ function ContactPage() {
                 />
               </Grid>
             </Grid>
-
             <Grid
               container
               spacing={2}
@@ -131,7 +138,8 @@ function ContactPage() {
                   color="primary"
                   type="submit"
                   variant="contained"
-                  disabled={isSubmitting || !dirty}>
+                  disabled={isSubmitting || !dirty}
+                  data-test="submit-contact">
                   {isSubmitting ? 'Loading...' : 'Submit'}
                 </Button>
               </Grid>
