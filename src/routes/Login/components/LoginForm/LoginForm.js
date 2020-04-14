@@ -35,8 +35,9 @@ function LoginForm() {
       <TextField
         type="email"
         name="email"
-        placeholder="email"
+        label="Email"
         margin="normal"
+        autoComplete="email"
         fullWidth
         inputRef={register({
           required: true,
@@ -48,8 +49,9 @@ function LoginForm() {
       <TextField
         type="password"
         name="password"
-        placeholder="password"
+        label="Password"
         margin="normal"
+        autoComplete="current-password"
         fullWidth
         inputRef={register({
           required: true,

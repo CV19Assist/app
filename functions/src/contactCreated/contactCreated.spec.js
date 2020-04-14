@@ -28,7 +28,6 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
   it('writes request to mail collection when contact is created', async () => {
     const eventData = { message: '' };
     const userUid = '123ABC';
-    const userEmail = 'test@test.com';
     // Build onCreate
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       eventData,
@@ -37,10 +36,6 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
     const fakeContext = {
       params: { requestId: '123ASDF' },
     };
-    await adminApp
-      .firestore()
-      .doc(`users/${userUid}`)
-      .set({ email: userEmail });
     await adminApp
       .firestore()
       .doc('system_settings/notifications')
@@ -53,7 +48,7 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
     expect(mailRequestsSnap.docs).to.have.length(1);
     const firstDoc = mailRequestsSnap.docs[0].data();
     expect(firstDoc).to.have.nested.property('template.name', 'contact');
-    expect(firstDoc).to.have.nested.property('to.0', userEmail);
+    expect(firstDoc).to.have.nested.property('toUids.0', userUid);
     // TODO: Uncomment and make an assertion
     // const result = await adminApp.firestore().doc('some/path').get()
     // expect(result).toEqual()
