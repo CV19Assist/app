@@ -94,6 +94,7 @@ function Request() {
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
       createdBy: auth.uid,
+      status: 1, // 1 - new
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
       coordinates: new GeoPoint(

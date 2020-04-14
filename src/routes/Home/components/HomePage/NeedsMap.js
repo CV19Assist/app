@@ -6,32 +6,22 @@ import {
   MarkerClusterer,
   Marker,
 } from '@react-google-maps/api';
-// import { useFirestore, useFirestoreCollection } from 'reactfire';
-// import { getGeofirestore } from 'utils/geofirestore';
-// import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
+import { useFirestore, useFirestoreCollectionData } from 'reactfire';
+import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import styles from './NeedsMap.styles';
 
 const useStyles = makeStyles(styles);
 
 function NeedsMap() {
   const classes = useStyles();
-  // const firestore = useFirestore();
-  // const geofirestore = getGeofirestore(firestore);
-  // const unfulfilledRequests = useFirestoreCollection(
-  //   geofirestore
-  //     .collection(REQUESTS_PUBLIC_COLLECTION)
-  //     .where('d.status', '==', 1)
-  //     .limit(60),
-  // );
-
-  const locations = [
-    { lat: 43.063881, lng: -89.433003 },
-    { lat: 43.63882, lng: -89.443003 },
-    { lat: 43.063881, lng: -89.433007 },
-    { lat: 43.63882, lng: -89.433006 },
-    { lat: 43.063882, lng: -89.433005 },
-    { lat: 43.63882, lng: -89.433004 },
-  ];
+  const firestore = useFirestore();
+  const unfulfilledRequests = useFirestoreCollectionData(
+    firestore
+      .collection(REQUESTS_PUBLIC_COLLECTION)
+      .where('d.status', '==', 1)
+      .limit(60),
+    { idField: 'id' },
+  );
 
   const options = {
     imagePath:
@@ -52,10 +42,13 @@ function NeedsMap() {
           center={{ lat: 40.318984, lng: -96.960146 }}>
           <MarkerClusterer options={options} maxZoom={11}>
             {(clusterer) =>
-              locations.map((location) => (
+              unfulfilledRequests.map((request) => (
                 <Marker
-                  key={`${location.lat}-${location.lng}`}
-                  position={location}
+                  key={`${request.id}`}
+                  position={{
+                    lat: request.d.coordinates.latitude,
+                    lng: request.d.coordinates.longitude,
+                  }}
                   clusterer={clusterer}
                 />
               ))
