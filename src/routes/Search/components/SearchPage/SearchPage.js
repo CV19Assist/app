@@ -15,11 +15,11 @@ import Slider from '@material-ui/core/Slider';
 // import LinearProgress from '@material-ui/core/LinearProgress';
 // import Alert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 // import { allCategoryMap } from '../util/categories';
-import { getGeofirestore } from 'utils/geofirestore';
-import { useFirestore, useFirestoreCollection } from 'reactfire';
-import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
+// import { getGeofirestore } from 'utils/geofirestore';
+// import { useFirestore, useFirestoreCollection } from 'reactfire';
+// import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import styles from './SearchPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -39,24 +39,24 @@ const defaultDistance = 25;
 
 function SearchPage() {
   const classes = useStyles();
-  const location = useLocation();
+  // const location = useLocation();
   const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [distance, setDistance] = useState(defaultDistance);
 
-  const { GeoPoint } = useFirestore;
-  const firestore = useFirestore();
-  const geofirestore = getGeofirestore(firestore);
-  const nearbyRequests = useFirestoreCollection(
-    geofirestore
-      .collection(REQUESTS_PUBLIC_COLLECTION)
-      .near({
-        center: new GeoPoint(42.98964496393556, -87.87518609996089),
-        radius: 1.609344 * 5,
-      })
-      .where('d.status', '==', 1)
-      .limit(60),
-    // { idField: 'id' },
-  );
+  // const { GeoPoint } = useFirestore;
+  // const firestore = useFirestore();
+  // const geofirestore = getGeofirestore(firestore);
+  // const nearbyRequests = useFirestoreCollection(
+  //   geofirestore
+  //     .collection(REQUESTS_PUBLIC_COLLECTION)
+  //     .near({
+  //       center: new GeoPoint(42.98964496393556, -87.87518609996089),
+  //       radius: 1.609344 * 5,
+  //     })
+  //     .where('d.status', '==', 1)
+  //     .limit(60),
+  //   // { idField: 'id' },
+  // );
   console.log('Distance', { distance }); // eslint-disable-line no-console
 
   // const handlePlaceSelect = (event, selection) => {
