@@ -26,7 +26,7 @@ function ContactPage() {
     register,
     handleSubmit,
     errors,
-    formState: { dirty, isSubmitting },
+    formState: { dirty, isSubmitting, isSubmitted },
   } = useForm({
     nativeValidation: false,
   });
@@ -55,78 +55,89 @@ function ContactPage() {
         Contact us
       </Typography>
       <Paper className={classes.paper} data-test="contact-content">
-        <form onSubmit={handleSubmit(submitContactRequest)}>
+        {isSubmitted ? (
           <Grid container spacing={2} justify="center">
             <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
-              <TextField
-                name="name"
-                label="Name"
-                margin="normal"
-                fullWidth
-                inputRef={register({
-                  required: true,
-                })}
-                error={!!errors.name}
-                helperText={errors.name && 'Name must be valid'}
-              />
-            </Grid>
-            <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
-              <TextField
-                type="email"
-                name="email"
-                label="Email"
-                margin="normal"
-                fullWidth
-                inputRef={register({
-                  required: true,
-                  validate: validateEmail,
-                })}
-                error={!!errors.email}
-                helperText={errors.email && 'Email must be valid'}
-              />
-            </Grid>
-            <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
-              <TextField
-                type="phone"
-                name="phone"
-                label="Phone"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.phone}
-                helperText={errors.phone && 'Phone must be valid'}
-              />
-            </Grid>
-            <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
-              <TextField
-                name="message"
-                label="Message"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                multiline
-                rows={4}
-              />
+              <Typography>
+                Your message has been successfully submitted. We will reach out
+                shortly. Thanks!
+              </Typography>
             </Grid>
           </Grid>
+        ) : (
+          <form onSubmit={handleSubmit(submitContactRequest)}>
+            <Grid container spacing={2} justify="center">
+              <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
+                <TextField
+                  name="name"
+                  label="Name"
+                  margin="normal"
+                  fullWidth
+                  inputRef={register({
+                    required: true,
+                  })}
+                  error={!!errors.name}
+                  helperText={errors.name && 'Name must be valid'}
+                />
+              </Grid>
+              <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
+                <TextField
+                  type="email"
+                  name="email"
+                  label="Email"
+                  margin="normal"
+                  fullWidth
+                  inputRef={register({
+                    required: true,
+                    validate: validateEmail,
+                  })}
+                  error={!!errors.email}
+                  helperText={errors.email && 'Email must be valid'}
+                />
+              </Grid>
+              <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
+                <TextField
+                  type="phone"
+                  name="phone"
+                  label="Phone"
+                  margin="normal"
+                  fullWidth
+                  inputRef={register}
+                  error={!!errors.phone}
+                  helperText={errors.phone && 'Phone must be valid'}
+                />
+              </Grid>
+              <Grid item xs={12} md={10} lg={8} className={classes.gridItem}>
+                <TextField
+                  name="message"
+                  label="Message"
+                  margin="normal"
+                  fullWidth
+                  inputRef={register}
+                  multiline
+                  rows={4}
+                />
+              </Grid>
+            </Grid>
 
-          <Grid
-            container
-            spacing={2}
-            justify="center"
-            alignContent="center"
-            margin="normal">
-            <Grid item xs={2} md={2} lg={2} className={classes.gridItem}>
-              <Button
-                color="primary"
-                type="submit"
-                variant="contained"
-                disabled={isSubmitting || !dirty}>
-                {isSubmitting ? 'Loading...' : 'Submit'}
-              </Button>
+            <Grid
+              container
+              spacing={2}
+              justify="center"
+              alignContent="center"
+              margin="normal">
+              <Grid item xs={2} md={2} lg={2} className={classes.gridItem}>
+                <Button
+                  color="primary"
+                  type="submit"
+                  variant="contained"
+                  disabled={isSubmitting || !dirty}>
+                  {isSubmitting ? 'Loading...' : 'Submit'}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </form>
+          </form>
+        )}
       </Paper>
     </Container>
   );

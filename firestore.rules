@@ -68,8 +68,8 @@ service cloud.firestore {
     }
 
     // Contact requests
-    match /contact/{requestId} {
-      allow create: request.time == request.resource.data.createdAt;
+    match /contacts/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt;
       allow read: if false;
     }
   }
