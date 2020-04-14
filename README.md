@@ -1,5 +1,7 @@
 # COVID-19 Assist app
 
+## Please note that all new development is now being done on the [`next branch`](/CV19Assist/app/tree/next) which will be going live in the coming days.
+
 ## Firebase Deployment Notes
 
 * View Environments: `firebase use`
