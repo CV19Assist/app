@@ -49,9 +49,5 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
     const firstDoc = mailRequestsSnap.docs[0].data();
     expect(firstDoc).to.have.nested.property('template.name', 'contact');
     expect(firstDoc).to.have.nested.property('toUids.0', userUid);
-    // TODO: Uncomment and make an assertion
-    // const result = await adminApp.firestore().doc('some/path').get()
-    // expect(result).toEqual()
-    // const fakeEvent = functionsTest.firestore.makeDocumentSnapshot({foo: 'bar'}, 'document/path');
   });
 });
