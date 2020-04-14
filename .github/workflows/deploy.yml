@@ -46,9 +46,9 @@ jobs:
           yarn $buildCommand
 
       - name: Verify Functions
-        # TODO: Add back functions tests "yarn --cwd functions test:cov"
         run: |
-          yarn --cwd functions build
+          yarn functions:build
+          yarn functions:test:cov
 
       - name: Archive Build Artifact
         uses: actions/upload-artifact@master

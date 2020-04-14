@@ -19,6 +19,7 @@
     "functions:watch": "npm run watch --prefix functions",
     "functions:build": "npm run build --prefix functions",
     "functions:test": "npm run test --prefix functions",
+    "functions:test:cov": "npm run test:cov --prefix functions",
     "test": "cypress run",
     "test:open": "cypress open",
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
