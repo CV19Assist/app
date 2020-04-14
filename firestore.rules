@@ -38,7 +38,8 @@ service cloud.firestore {
 
     // Private request data
     match /requests/{requestId} {
-      allow create: if isOwner(request.resource) && request.time == request.resource.data.createdAt;
+      allow create: if isOwner(request.resource)
+        && request.time == request.resource.data.createdAt; // createdAt is created timestamp
       allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
       // TODO: Make read require data on request
       // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isOwner(resource)
@@ -48,6 +49,8 @@ service cloud.firestore {
     // Public request data
     match /requests_public/{requestId} {
       allow create: if isOwnerOfRequest(request.resource);
+        // && request.resource.data.d.status == 1;
+      allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
       allow read;
     }
 

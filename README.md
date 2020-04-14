@@ -59,6 +59,11 @@ More details in the [Application Structure Section](#application-structure)
 The application structure presented in this boilerplate is **fractal**, where functionality is grouped primarily by feature rather than file type. Please note, however, that this structure is only meant to serve as a guide, it is by no means prescriptive. That said, it aims to represent generally accepted guidelines and patterns for building scalable applications.
 
 ```
+├── .github                  # Github Settings + Github Actions Workflows
+│   ├── deploy.yml           # Deploy workflow (called on merges to "master" and "production" branches)
+│   └── verify.yml           # Verify workflow (run when PR is created)
+├── cypress                  # UI Tests
+│   └── index.html           # Main HTML page container for app
 ├── public                   # All build-related configuration
 │   └── index.html           # Main HTML page container for app
 ├── src                      # Application source code
@@ -83,15 +88,17 @@ The application structure presented in this boilerplate is **fractal**, where fu
 │   │   ├── components.js    # Utilities for building/implementing react components (often used in enhancers)
 │   │   ├── form.js          # For forms
 │   │   └── router.js        # Utilities for routing such as those that redirect back to home if not logged in
-├── tests                    # Unit tests
 ├── .env.local               # Environment settings for when running locally
 ├── .eslintignore            # ESLint ignore file
 ├── .eslintrc.js             # ESLint configuration
 ├── .firebaserc              # Firebase Project configuration settings (including ci settings)
+├── cypress.json             # Cypress project settings
+├── database.rules.json      # Security Rules for Firebase Real Time Database
+├── dbschema.txt.js          # File outlining planned database schema
 ├── firebase.json            # Firebase Service settings (Hosting, Functions, etc)
 ├── firestore.indexes.json   # Indexes for Cloud Firestore
-├── firestore.rules          # Rules for Cloud Firestore
-└── storage.rules            # Rules for Cloud Storage For Firebase
+├── firestore.rules          # Security Rules for Cloud Firestore
+└── storage.rules            # Security Rules for Cloud Storage For Firebase
 ```
 
 ## Routing
@@ -198,13 +205,13 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 
 [Cloud Functions runtime runs on `10`](https://cloud.google.com/functions/docs/writing/#the_cloud_functions_runtime), which is why that is what is used for the CI build version.
 
-[build-status-image]: https://img.shields.io/github/workflow/status/thebitguru/app/Verify?style=flat-square
-[build-status-url]: https://github.com/thebitguru/app/actions
-[climate-image]: https://img.shields.io/codeclimate/github/thebitguru/app.svg?style=flat-square
-[climate-url]: https://codeclimate.com/github/thebitguru/app
-[coverage-image]: https://img.shields.io/codeclimate/coverage/github/thebitguru/app.svg?style=flat-square
-[coverage-url]: https://codeclimate.com/github/thebitguru/app
-[license-image]: https://img.shields.io/npm/l/app.svg?style=flat-square
-[license-url]: https://github.com/thebitguru/app/blob/master/LICENSE
-[code-style-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
-[code-style-url]: http://standardjs.com/
+[build-status-image]: https://img.shields.io/github/workflow/status/CV19Assist/app/Deploy?style=flat-square
+[build-status-url]: https://github.com/CV19Assist/app/actions
+[climate-image]: https://img.shields.io/codeclimate/github/CV19Assist/app.svg?style=flat-square
+[climate-url]: https://codeclimate.com/github/CV19Assist/app
+[coverage-image]: https://img.shields.io/codeclimate/coverage/github/CV19Assist/app.svg?style=flat-square
+[coverage-url]: https://codeclimate.com/github/CV19Assist/app
+[license-image]: https://img.shields.io/badge/MIT-blue.svg?style=flat-square
+[license-url]: https://github.com/CV19Assist/app/blob/master/LICENSE
+[code-style-image]: https://img.shields.io/badge/code%20style-airbnb-blue.svg?style=flat-square
+[code-style-url]: http://airbnb.io/javascript/
