@@ -47,8 +47,8 @@ jobs:
 
       - name: Verify Functions
         run: |
-          yarn --cwd functions build
-          yarn --cwd functions test:cov
+          yarn functions:build
+          yarn functions:test:cov
 
       - name: Archive Build Artifact
         uses: actions/upload-artifact@master

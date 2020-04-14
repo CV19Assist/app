@@ -15,14 +15,22 @@ jobs:
         with:
           node-version: 10
 
-      - name: Get yarn cache
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Get Library Versions For Binary Caching
+        id: cache-settings
+        run: |
+          echo "::set-output name=dir::$(yarn cache dir)"
+          echo "::set-output name=firebase-tools::$(yarn info firebase-tools version --silent)"
+
+      - name: Cache Firebase Emulator Binaries
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-${{ steps.cache-settings.outputs.firebase-tools }}
 
       - name: Cache App Dependencies
         uses: actions/cache@v1
         with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
+          path: ${{ steps.cache-settings.outputs.dir }}
           key: ${{ runner.os }}-app-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Dependencies
@@ -47,8 +55,8 @@ jobs:
 
       - name: Verify Functions
         run: |
-          yarn --cwd functions build
-          yarn --cwd functions test:cov
+          yarn functions:build
+          yarn functions:test:cov
 
       - name: Archive Build Artifact
         uses: actions/upload-artifact@master
