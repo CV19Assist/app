@@ -1,5 +1,7 @@
 # app
 
+## Please note that all new development is now being done on the [`next branch`](/CV19Assist/app/tree/next) which will be going live in the coming days.
+
 [![Build Status][build-status-image]][build-status-url]
 [![License][license-image]][license-url]
 [![Code Style][code-style-image]][code-style-url]
@@ -27,7 +29,21 @@
 
 1. Install app and functions dependencies: `yarn install && yarn install --prefix functions`
 1. Copy settings from one of the `.env.*` files into `.env.local` - this is not tracked by git and will be how your local development project gets Firebase config.
+1. Add the following to `functions/.runtimeconfig.json`:
+
+```json
+"frontend": {
+  "url": "https://cv19assist-dev.web.app"
+}
+```
+
 1. Start Development server: `yarn start`
+
+If setting up a new environment, make sure to set the following to your functions config:
+
+```bash
+firebase functions:config:set frontend.url=https://cv19assist-dev.web.app
+```
 
 While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:
 
@@ -39,7 +55,7 @@ While developing, you will probably rely mostly on `yarn start`; however, there 
 | `build`         | Builds the application to `./dist`                                                                                      |
 | `test`          | Runs ui tests with Cypress. See [testing](#testing)                                                                     |
 | `test:open`     | Opens ui tests runner (Cypress Dashboard). See [testing](#testing)                                                      |
-| `test:emulate`  | Same as `test:ui:open` but with tests pointed at emulators                                                              |
+| `test:emulate`  | Same as `test:open` but with tests pointed at emulators                                                                 |
 | `lint`          | [Lints](http://stackoverflow.com/questions/8503559/what-is-linting) the project for potential errors                    |
 | `lint:fix`      | Lints the project and [fixes all correctable errors](http://eslint.org/docs/user-guide/command-line-interface.html#fix) |
 
