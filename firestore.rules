@@ -66,5 +66,11 @@ service cloud.firestore {
       allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(resource);
       allow read: if hasRequestContactAccess(resource);
     }
+
+    // Contact requests
+    match /contacts/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt;
+      allow read: if false;
+    }
   }
 }

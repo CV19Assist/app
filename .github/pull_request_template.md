@@ -2,6 +2,6 @@
 
 ### Relevant Tickets (Please add `closes`, `refs`, etc)
 
-- closes [#](https://github.com/CV19Assist/issues/#)
+- closes #
 
 ### Screenshots (if appropriate)
