@@ -11,7 +11,7 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import { validateEmail } from 'utils/form';
 import useNotifications from 'modules/notification/useNotifications';
-import { showSuccess } from 'modules/notification/actions';
+import { CONTACT_COLLECTION } from 'constants/collections';
 import styles from './ContactPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -21,7 +21,7 @@ function ContactPage() {
   const user = useUser();
   const firestore = useFirestore();
   const { FieldValue } = useFirestore;
-  const { showError } = useNotifications();
+  const { showError, showSuccess } = useNotifications();
   const {
     register,
     handleSubmit,
@@ -40,7 +40,7 @@ function ContactPage() {
       if (user && user.uid) {
         contactRequest.createdBy = user.uid;
       }
-      await firestore.collection('contacts').add(contactRequest);
+      await firestore.collection(CONTACT_COLLECTION).add(contactRequest);
       showSuccess('Message submitted!');
     } catch (err) {
       console.error('Error submiting contact request', err.message) // eslint-disable-line

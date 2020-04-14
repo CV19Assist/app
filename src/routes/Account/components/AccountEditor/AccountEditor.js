@@ -11,19 +11,26 @@ const useStyles = makeStyles(styles);
 function AccountEditor() {
   const classes = useStyles();
   const firestore = useFirestore();
-  const auth = useUser();
-  const accountRef = firestore.doc(`users/${auth.uid}`);
+  const user = useUser();
+  const accountRef = firestore.doc(`users/${user.uid}`);
   const profileSnap = useFirestoreDoc(accountRef);
   const profile = profileSnap.data();
 
-  function updateAccount(newAccount) {
-    return auth
-      .updateProfile(newAccount)
-      .then(() => accountRef.set(newAccount, { merge: true }))
-      .catch((error) => {
-        console.error('Error updating profile', error.message || error); // eslint-disable-line no-console
-        return Promise.reject(error);
-      });
+  async function updateAccount(changedAccount) {
+    try {
+      // Update auth profile (displayName, photoURL, etc)
+      await user.updateProfile(changedAccount);
+      // Update auth email if it is being changed
+      if (user.email !== changedAccount.email) {
+        await user.updateEmail(changedAccount.email);
+      }
+      // Update user document in Firestore
+      await accountRef.set(changedAccount, { merge: true });
+      return user;
+    } catch (error) {
+      console.error('Error updating profile', error.message || error); // eslint-disable-line no-console
+      throw error;
+    }
   }
 
   return (
@@ -31,7 +38,7 @@ function AccountEditor() {
       <Grid item xs={12} md={6} lg={6} className={classes.gridItem}>
         <img
           className={classes.avatarCurrent}
-          src={(profile && profile.avatarUrl) || defaultUserImageUrl}
+          src={(profile && profile.photoURL) || defaultUserImageUrl}
           alt=""
         />
       </Grid>

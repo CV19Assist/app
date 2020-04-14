@@ -28,39 +28,20 @@ async function contactCreatedEvent(snap, context) {
     );
   }
 
-  // Notify all users in newRequests parameter of system_settings/notification document
-  const { newContacts: userUids } = settingsDocSnap.data() || {};
+  // Get UIDs from newContacts parameter of system_settings/notification document
+  const { newContacts: toUids } = settingsDocSnap.data() || {};
 
   // Exit if there are no uids
-  if (!userUids) {
+  if (!toUids) {
     console.log('No user uids found for new contacts, exiting...');
     return null;
   }
 
-  const [getUserEmailErrors, userEmails] = await to(
-    Promise.all(
-      userUids.map((userId) =>
-        admin
-          .firestore()
-          .doc(`users/${userId}`)
-          .get()
-          .then((userSnap) => userSnap.data().email || null),
-      ),
-    ),
-  );
-
-  if (getUserEmailErrors) {
-    console.error(`Error getting user emails: ${getUserEmailErrors.message}`);
-    throw getUserEmailErrors;
-  }
-
-  // Create Firestore Collection Reference for the response
-  const mailCollection = admin.firestore().collection('mail');
-
   // Request contact email send to emails from settings collection
+  const mailCollection = admin.firestore().collection('mail');
   const [writeErr] = await to(
     mailCollection.add({
-      to: userEmails,
+      toUids,
       template: {
         name: 'contact',
         data: {
@@ -73,8 +54,8 @@ async function contactCreatedEvent(snap, context) {
     }),
   );
 
+  // Handle errors writing mail request to Firestore
   if (writeErr) {
-    // Handle errors writing data to RTDB
     console.error(
       `Error writing request to send emails: ${writeErr.message || ''}`,
       writeErr,
