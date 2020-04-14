@@ -6,6 +6,7 @@ import sinon from 'sinon';
 
 process.env.NODE_ENV = 'test';
 const projectId = 'unit-test-project';
+process.env.PUBSUB_PROJECT_ID = projectId;
 const {
   FIREBASE_DATABASE_EMULATOR_HOST,
   FIRESTORE_EMULATOR_HOST,

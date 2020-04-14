@@ -46,9 +46,9 @@ jobs:
           yarn build:staging # Build app bundles
 
       - name: Verify Functions
-      # TODO: Add back functions tests "yarn --cwd functions test:cov"
         run: |
           yarn --cwd functions build
+          yarn --cwd functions test:cov
 
       - name: Archive Build Artifact
         uses: actions/upload-artifact@master

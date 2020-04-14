@@ -7,7 +7,8 @@ import { to } from 'utils/async';
 const pubSubClient = new PubSub();
 
 /**
- * @param userId
+ * Send FCM message to user about request being created
+ * @param {string} userId - Id of user to send FCM message
  */
 async function sendFcmToUser(userId) {
   const messageObject = { userId, message: 'Request Created' };
@@ -17,7 +18,7 @@ async function sendFcmToUser(userId) {
       .topic('sendFcm')
       .publish(messageBuffer);
     console.log(
-      `Sent request for FCM message to user ${userId}, messageid: ${messageId}`,
+      `Sent request for FCM message to user ${userId}, messageId: ${messageId}`,
     );
     return messageId;
   } catch (err) {
@@ -29,7 +30,7 @@ async function sendFcmToUser(userId) {
 }
 /**
  * Send FCM messages to users by calling sendFcm cloud function
- * @param userUids - Uids of users for which to send messages
+ * @param {Array} userUids - Uids of users for which to send messages
  */
 async function sendFcms(userUids) {
   const [writeErr] = await to(Promise.all(userUids.map(sendFcmToUser)));

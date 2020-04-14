@@ -38,16 +38,8 @@ async function indexUser(change, context) {
     return null;
   }
 
-  const previousData = change.before.data();
+  // const previousData = change.before.data();
   const newData = change.after.data();
-
-  // Check to see if displayName has changed
-  if (previousData && previousData.displayName === newData.displayName) {
-    console.log(
-      `displayName parameter did not change for user with id: ${userId}, no need to update index. Exiting...`,
-    );
-    return null;
-  }
   try {
     // Update displayName within public profile
     await publicProfileRef.set(
@@ -62,10 +54,8 @@ async function indexUser(change, context) {
 
     await privilegedProfileRef.set(
       {
-        d: {
-          displayName: newData.displayName,
-          email: newData.email,
-        },
+        displayName: newData.displayName,
+        email: newData.email || '',
       },
       { merge: true },
     );
