@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useFirestore, useUser, useFirestoreDoc } from 'reactfire';
+import { useFirestore, useUser } from 'reactfire';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
@@ -56,35 +56,51 @@ function SearchPage() {
   // State
   const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [nearbyRequests, setNearbyRequests] = useState(null);
+  const [currentLatLong, setCurrentLatLong] = useState({
+    latitude: DEFAULT_LATITUDE,
+    longitude: DEFAULT_LONGITUDE,
+  });
   const [distance, setDistance] = useState(defaultDistance);
 
   // Data
   const user = useUser();
   const firestore = useFirestore();
   const { GeoPoint } = useFirestore;
-  const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
-  const profileSnap = useFirestoreDoc(profileRef);
 
-  console.log('Search page state:', { distance, nearbyRequests, profileSnap }); // eslint-disable-line no-console
+  useEffect(() => {
+    async function loadLatLongFromProfile() {
+      // Set lat/long from profile or fallback to defaults
+      if (user && user.uid) {
+        const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
+        const profileSnap = await profileRef.get();
+        const geopoint = profileSnap.get('preciseLocation');
+        const { latitude, longitude } = geopoint;
+        setCurrentLatLong({ latitude, longitude });
+      }
+    }
+    // NOTE: useEffect is used to load data so it can be done conditionally based
+    // on whether current user is logged in
+    loadLatLongFromProfile();
+  }, [user, firestore]);
 
-  // Use lat/long from profile or fallback to defaults
-  const lat = profileSnap.get('preciseLocation._latitude') || DEFAULT_LATITUDE;
-  const long =
-    profileSnap.get('preciseLocation._longitude') || DEFAULT_LONGITUDE;
+  console.log('Search page state:', { distance, nearbyRequests }); // eslint-disable-line no-console
 
   async function searchForNearbyRequests() {
-    const geofirestore = new GeoFirestore(firestore);
-    const nearbyRequestsRef = geofirestore
-      .collection(REQUESTS_PUBLIC_COLLECTION)
-      .near({
-        center: new GeoPoint(lat, long),
-        radius: KM_TO_MILES * distance,
-      })
-      // NOTE: Queries d.status on object thanks to geofirestore
-      .where('status', '==', 1)
-      .limit(60);
+    // Use lat/long set to state (either from profile or default)
+    const { latitude, longitude } = currentLatLong;
     try {
-      const nearbyRequestsSnap = await nearbyRequestsRef.get();
+      // Query for nearby requests
+      const geofirestore = new GeoFirestore(firestore);
+      const nearbyRequestsSnap = await geofirestore
+        .collection(REQUESTS_PUBLIC_COLLECTION)
+        .near({
+          center: new GeoPoint(latitude, longitude),
+          radius: KM_TO_MILES * distance,
+        })
+        // NOTE: Queries d.status on object thanks to geofirestore
+        .where('status', '==', 1)
+        .limit(60)
+        .get();
       setNearbyRequests(
         nearbyRequestsSnap.docs.map((docSnap) => ({
           ...docSnap.data(),
@@ -232,8 +248,8 @@ function SearchPage() {
                     {distanceBetweenPoints(
                       result.coordinates.latitude,
                       result.coordinates.longitude,
-                      lat,
-                      long,
+                      currentLatLong.latitude,
+                      currentLatLong.longitude,
                     ).toFixed(2)}{' '}
                     miles
                   </Typography>
