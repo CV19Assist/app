@@ -1,6 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { to } from 'utils/async';
+import {
+  NOTIFICATIONS_SETTINGS_DOC,
+  MAIL_COLLECTION,
+} from 'constants/firestorePaths';
 
 /**
  *
@@ -11,9 +15,6 @@ import { to } from 'utils/async';
 async function morningEmailCentralTzEvent(context) {
   const { timestamp } = context;
   console.log('This will be run every day at 9:00 AM Central!');
-
-  // Create RTDB for response
-  const mailRef = admin.firestore().collection('mail');
 
   // Query for unclaimed requests
   const [requestsErr, unclaimedRequestsSnap] = await to(
@@ -37,11 +38,8 @@ async function morningEmailCentralTzEvent(context) {
   });
 
   // Load notification settings
-  const notificationsSettingsRef = admin
-    .firestore()
-    .doc('system_settings/notification');
   const [settingsErr, notificationsSettingsSnap] = await to(
-    notificationsSettingsRef.get(),
+    admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC).get(),
   );
 
   // Handle errors getting settings
@@ -55,17 +53,22 @@ async function morningEmailCentralTzEvent(context) {
   // Get list of UIDs to email based on notifications settings doc
   // TODO: Email volunteers within proximity instead of all within system_settings/notifications doc
   const toUids = notificationsSettingsSnap.get('morningEmail');
+
+  // Create RTDB for response
   const [sendMailRequestsErr] = await to(
-    mailRef.add({
-      toUids,
-      template: {
-        name: 'morning-unclaimed',
-        data: {
-          unclaimedRequests,
-          timestamp,
+    admin
+      .firestore()
+      .collection(MAIL_COLLECTION)
+      .add({
+        toUids,
+        template: {
+          name: 'morning-unclaimed',
+          data: {
+            unclaimedRequests,
+            timestamp,
+          },
         },
-      },
-    }),
+      }),
   );
 
   // Handle errors writing requests to send mail

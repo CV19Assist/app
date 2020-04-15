@@ -2,6 +2,10 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { get } from 'lodash';
 import { to } from 'utils/async';
+import {
+  USERS_COLLECTION,
+  USERS_NOTIFICATIONS_SUBCOLLECTION,
+} from 'constants/firestorePaths';
 
 /**
  * Parse message body from message into JSON handling errors
@@ -49,7 +53,7 @@ async function sendFcmEvent(pubsubMessage, context) {
 
   // Get user profile
   const [getProfileErr, userProfileSnap] = await to(
-    admin.firestore().doc(`users/${userId}`).get(),
+    admin.firestore().doc(`${USERS_COLLECTION}/${userId}`).get(),
   );
 
   // Handle errors getting user profile
@@ -90,16 +94,19 @@ async function sendFcmEvent(pubsubMessage, context) {
     throw sendMessageErr;
   }
 
-  const userAlertsRef = admin.firestore().collection('user_alerts');
-
-  // Write to user_alerts collection
+  // Write to users/$userId/user_alerts collection
   const [writeErr] = await to(
-    userAlertsRef.add({
-      userId,
-      message,
-      title,
-      read: false,
-    }),
+    admin
+      .firestore()
+      .collection(
+        `${USERS_COLLECTION}/${userId}/${USERS_NOTIFICATIONS_SUBCOLLECTION}`,
+      )
+      .add({
+        userId,
+        message,
+        title,
+        read: false,
+      }),
   );
 
   // Handle errors writing response of sendFcm to RTDB
