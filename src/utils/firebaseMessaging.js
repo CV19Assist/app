@@ -51,7 +51,7 @@ function getTokenAndWriteToProfile() {
     });
 }
 
-let messagingHasInited = false;
+let messagingInitialized = false;
 
 /**
  * Setup Firebase Cloud Messaging. This  requests permission from the
@@ -60,7 +60,17 @@ let messagingHasInited = false;
  * user's profile.
  */
 export default function initializeMessaging({ showSuccess }) {
-  const messaging = firebase.messaging();
+  // Exit if browser does not support messaging
+  if (!firebase.messaging.isSupported()) {
+    /* eslint-disable no-console */
+    console.warn(
+      'Skipping messaging initialization, browser does not support FCM',
+    );
+    /* eslint-enable no-console */
+    return;
+  }
+
+  // Exit if public vapid key is not set
   if (!process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY) {
     /* eslint-disable no-console */
     console.warn(
@@ -69,9 +79,10 @@ export default function initializeMessaging({ showSuccess }) {
     /* eslint-enable no-console */
     return;
   }
-  if (messagingHasInited) {
+  if (messagingInitialized) {
     return;
   }
+  const messaging = firebase.messaging();
 
   messaging.usePublicVapidKey(process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY);
 
@@ -79,7 +90,7 @@ export default function initializeMessaging({ showSuccess }) {
   messaging.onTokenRefresh(() => {
     getTokenAndWriteToProfile();
   });
-  messagingHasInited = true;
+  messagingInitialized = true;
   // Handle incoming messages. Called when:
   // - a message is received while the app has focus
   // - the user clicks on an app notification created by a service worker
