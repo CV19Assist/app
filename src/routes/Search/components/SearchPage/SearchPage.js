@@ -2,24 +2,28 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-// import Grid from '@material-ui/core/Grid';
+import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
-// import Card from '@material-ui/core/Card';
+import Card from '@material-ui/core/Card';
 import Paper from '@material-ui/core/Paper';
 // import TextField from '@material-ui/core/TextField';
-// import CardContent from '@material-ui/core/CardContent';
+import CardContent from '@material-ui/core/CardContent';
 import Slider from '@material-ui/core/Slider';
-// import Chip from '@material-ui/core/Chip';
+import Chip from '@material-ui/core/Chip';
 // import Autocomplete from '@material-ui/lab/Autocomplete';
 // import LinearProgress from '@material-ui/core/LinearProgress';
-// import Alert from '@material-ui/lab/Alert';
+import Alert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
-// import { useLocation } from 'react-router-dom';
-// import { allCategoryMap } from '../util/categories';
-// import { getGeofirestore } from 'utils/geofirestore';
-// import { useFirestore, useFirestoreCollection } from 'reactfire';
-// import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
+import { useLocation } from 'react-router-dom';
+import { getGeofirestore } from 'utils/geofirestore';
+import { format } from 'date-fns';
+import { useFirestore, useUser, useFirestoreDocData } from 'reactfire';
+import {
+  REQUESTS_PUBLIC_COLLECTION,
+  USERS_COLLECTION,
+} from 'constants/collections';
+import { allCategoryMap } from 'constants/categories';
 import styles from './SearchPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -36,33 +40,60 @@ const markValues = [
 
 // Default distance in miles.
 const defaultDistance = 25;
+const KM_TO_MILES = 1.609344;
+
+function distanceBetweenPoints(lat1, lon1, lat2, lon2, unit) {
+  if (lat1 === lat2 && lon1 === lon2) {
+    return 0;
+  }
+
+  const radlat1 = (Math.PI * lat1) / 180;
+  const radlat2 = (Math.PI * lat2) / 180;
+  const theta = lon1 - lon2;
+  const radtheta = (Math.PI * theta) / 180;
+  let dist =
+    Math.sin(radlat1) * Math.sin(radlat2) +
+    Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+  if (dist > 1) {
+    dist = 1;
+  }
+  dist = Math.acos(dist);
+  dist = (dist * 180) / Math.PI;
+  dist = dist * 60 * 1.1515;
+  if (unit === 'K') {
+    dist *= 1.609344;
+  }
+  if (unit === 'N') {
+    dist *= 0.8684;
+  }
+  return dist;
+}
 
 function SearchPage() {
   const classes = useStyles();
-  // const location = useLocation();
+  const location = useLocation();
   const [showAddressPicker, setShowAddressPicker] = useState(false);
+  const [nearbyRequests, setCloseBy] = useState([]);
   const [distance, setDistance] = useState(defaultDistance);
-
-  // const { GeoPoint } = useFirestore;
-  // const firestore = useFirestore();
-  // const geofirestore = getGeofirestore(firestore);
-  // const nearbyRequests = useFirestoreCollection(
-  //   geofirestore
-  //     .collection(REQUESTS_PUBLIC_COLLECTION)
-  //     .near({
-  //       center: new GeoPoint(42.98964496393556, -87.87518609996089),
-  //       radius: 1.609344 * 5,
-  //     })
-  //     .where('d.status', '==', 1)
-  //     .limit(60),
-  //   // { idField: 'id' },
-  // );
-  console.log('Distance', { distance }); // eslint-disable-line no-console
+  const user = useUser();
+  const { GeoPoint } = useFirestore;
+  const firestore = useFirestore();
+  const geofirestore = getGeofirestore(firestore);
+  const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
+  const profile = useFirestoreDocData(profileRef);
+  //   const nearbyRequests = useFirestoreCollection(
+  // ,
+  //     { idField: 'id' },
+  //   );
+  console.log('Distance', { distance, nearbyRequests }); // eslint-disable-line no-console
 
   // const handlePlaceSelect = (event, selection) => {
   //   console.log('Place select', { event, selection }); // eslint-disable-line no-console
   // };
-
+  // TODO: Use lat/long from profile instead of having hardcoded
+  console.log('Profile', profile); // eslint-disable-line no-console
+  const lat = 40.747633;
+  const long = -73.956525;
   const handleTriggerSearchResults = () => {
     console.log('handleTriggerSearchResults'); // eslint-disable-line no-console
     // const filter = {
@@ -71,16 +102,34 @@ function SearchPage() {
     //   distance: distance,
     //   units: "mi"
     // };
+
+    const nearbyRequestsRef = geofirestore
+      .collection(REQUESTS_PUBLIC_COLLECTION)
+      .near({
+        center: new GeoPoint(lat, long),
+        radius: KM_TO_MILES * distance,
+      })
+      // NOTE: Queries d.status on object thanks to geofirestore
+      .where('status', '==', 1)
+      .limit(60);
+
+    nearbyRequestsRef.get().then((resultSnap) => {
+      const values = resultSnap.docs.map((docSnap) => ({
+        ...docSnap.data(),
+        id: docSnap.id,
+      }));
+      setCloseBy(values);
+    });
   };
 
-  // const handleCopyNeedLink = (id) => {
-  //   const el = document.createElement('textarea');
-  //   document.body.appendChild(el);
-  //   el.value = `${location.origin}/needs/${id}`;
-  //   el.select();
-  //   document.execCommand('copy');
-  //   document.body.removeChild(el);
-  // };
+  const handleCopyNeedLink = (id) => {
+    const el = document.createElement('textarea');
+    document.body.appendChild(el);
+    el.value = `${location.origin}/needs/${id}`;
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  };
 
   return (
     <Container maxWidth="md">
@@ -137,8 +186,8 @@ function SearchPage() {
             <Typography>No results.</Typography>
           </CardContent>
         </Card>
-      )}
-      {results !== null && results.length === 0 && (
+      )} */}
+      {nearbyRequests.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
             <Typography>
@@ -146,15 +195,15 @@ function SearchPage() {
             </Typography>
           </CardContent>
         </Card>
-      )} */}
-      {/* {results &&
-        results.map((result) => (
+      )}
+      {nearbyRequests &&
+        nearbyRequests.map((result) => (
           <Card key={result.id} className={classes.cards}>
             <Container maxWidth="lg" className={classes.TaskContainer}>
               <Grid container>
                 <Grid item xs={9}>
                   <Typography variant="caption" gutterBottom>
-                    ADDED {result.createdAt.format('llll')}
+                    ADDED {format(result.createdAt.toDate(), 'p - PPPP')}
                   </Typography>
                   <Typography
                     variant="h5"
@@ -166,7 +215,8 @@ function SearchPage() {
                           <Chip label={allCategoryMap[item].shortDescription} />
                         ) : (
                           <Alert severity="error">
-                            Could not find '{item}' in all category map.
+                            Could not find &apos;{item}&apos; in all category
+                            map.
                           </Alert>
                         )}
                         <br />
@@ -175,7 +225,7 @@ function SearchPage() {
                   </Typography>
                 </Grid>
 
-                {parseInt(result.immediacy) > 5 && (
+                {parseInt(result.immediacy, 10) > 5 && (
                   <Grid item xs={3}>
                     <img
                       align="right"
@@ -205,7 +255,13 @@ function SearchPage() {
                     align="right"
                     variant="h5"
                     className={classes.TaskTitle}>
-                    {(result.distance * 0.62137).toFixed(2)} miles
+                    {distanceBetweenPoints(
+                      result.coordinates.latitude,
+                      result.coordinates.longitude,
+                      lat,
+                      long,
+                    ).toFixed(2)}{' '}
+                    miles
                   </Typography>
                 </Grid>
 
@@ -242,7 +298,7 @@ function SearchPage() {
               </Grid>
             </Container>
           </Card>
-        ))} */}
+        ))}
       {/* <Grid container>
         <Grid item xs className={classes.center}>
           <Button variant="contained" className={classes.arrows}>

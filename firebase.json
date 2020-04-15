@@ -36,7 +36,8 @@
       "src",
       "scripts/**",
       "jsconfig.json"
-    ]
+    ],
+    "source": "functions"
   },
   "emulators": {
     "firestore": {
