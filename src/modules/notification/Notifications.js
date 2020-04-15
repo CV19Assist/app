@@ -10,7 +10,6 @@ import green from '@material-ui/core/colors/green';
 import amber from '@material-ui/core/colors/amber';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import WarningIcon from '@material-ui/icons/Warning';
-import initializeMessaging from 'utils/firebaseMessaging';
 import useNotifications from './useNotifications';
 
 const variantIcon = {
@@ -46,9 +45,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Notifications() {
   const classes = useStyles();
-  const { allIds, byId, dismissNotification, showSuccess } = useNotifications();
-  // TODO: Look into a better way to init - single init through multiple renders is handled inside
-  initializeMessaging({ showSuccess });
+  const { allIds, byId, dismissNotification } = useNotifications();
 
   // Only render if notifications exist
   if (!allIds || !Object.keys(allIds).length) {

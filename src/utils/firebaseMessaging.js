@@ -59,7 +59,7 @@ let messagingInitialized = false;
  * approved in the passed, then a Cloud Messaging Token is written to the
  * user's profile.
  */
-export default function initializeMessaging({ showSuccess }) {
+export default function initializeMessaging({ messaging, showSuccess }) {
   // Exit if browser does not support messaging
   if (!firebase.messaging.isSupported()) {
     /* eslint-disable no-console */
@@ -82,7 +82,6 @@ export default function initializeMessaging({ showSuccess }) {
   if (messagingInitialized) {
     return;
   }
-  const messaging = firebase.messaging();
 
   messaging.usePublicVapidKey(process.env.REACT_APP_FIREBASE_PUBLIC_VAPID_KEY);
 
@@ -96,7 +95,6 @@ export default function initializeMessaging({ showSuccess }) {
   // - the user clicks on an app notification created by a service worker
   //   `messaging.setBackgroundMessageHandler` handler.
   messaging.onMessage((payload) => {
-    // TODO: Wire up notification
     console.log('Message', payload); // eslint-disable-line no-console
     showSuccess(payload);
   });
