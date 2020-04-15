@@ -79,6 +79,7 @@ function Request() {
     defaultValues,
   });
   const currentNeeds = watch('needs');
+  const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
 
   async function submitRequest(values) {
     if (!userLocation) {
@@ -198,12 +199,9 @@ function Request() {
     }
   }
 
-  const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
-  // const hasFinancialComponent = true;
-
-  const handleLocationChange = (newLocation) => {
+  function handleLocationChange(newLocation) {
     setUserLocation(newLocation);
-  };
+  }
 
   return (
     <Container maxWidth="md">

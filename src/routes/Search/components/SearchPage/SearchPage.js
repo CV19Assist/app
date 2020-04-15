@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
+import { format } from 'date-fns';
+import { useFirestore, useUser, useFirestoreDoc } from 'reactfire';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
@@ -7,23 +10,27 @@ import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import Card from '@material-ui/core/Card';
 import Paper from '@material-ui/core/Paper';
-// import TextField from '@material-ui/core/TextField';
 import CardContent from '@material-ui/core/CardContent';
 import Slider from '@material-ui/core/Slider';
 import Chip from '@material-ui/core/Chip';
+import Alert from '@material-ui/lab/Alert';
+// import TextField from '@material-ui/core/TextField';
 // import Autocomplete from '@material-ui/lab/Autocomplete';
 // import LinearProgress from '@material-ui/core/LinearProgress';
-import Alert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
-import { useLocation } from 'react-router-dom';
-import { getGeofirestore } from 'utils/geofirestore';
-import { format } from 'date-fns';
-import { useFirestore, useUser, useFirestoreDocData } from 'reactfire';
+import { GeoFirestore } from 'geofirestore';
+import { distanceBetweenPoints } from 'utils/geo';
+import { useNotifications } from 'modules/notification';
 import {
   REQUESTS_PUBLIC_COLLECTION,
   USERS_COLLECTION,
 } from 'constants/collections';
 import { allCategoryMap } from 'constants/categories';
+import {
+  KM_TO_MILES,
+  DEFAULT_LATITUDE,
+  DEFAULT_LONGITUDE,
+} from 'constants/geo';
 import styles from './SearchPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -40,69 +47,33 @@ const markValues = [
 
 // Default distance in miles.
 const defaultDistance = 25;
-const KM_TO_MILES = 1.609344;
-
-function distanceBetweenPoints(lat1, lon1, lat2, lon2, unit) {
-  if (lat1 === lat2 && lon1 === lon2) {
-    return 0;
-  }
-
-  const radlat1 = (Math.PI * lat1) / 180;
-  const radlat2 = (Math.PI * lat2) / 180;
-  const theta = lon1 - lon2;
-  const radtheta = (Math.PI * theta) / 180;
-  let dist =
-    Math.sin(radlat1) * Math.sin(radlat2) +
-    Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-  if (dist > 1) {
-    dist = 1;
-  }
-  dist = Math.acos(dist);
-  dist = (dist * 180) / Math.PI;
-  dist = dist * 60 * 1.1515;
-  if (unit === 'K') {
-    dist *= 1.609344;
-  }
-  if (unit === 'N') {
-    dist *= 0.8684;
-  }
-  return dist;
-}
 
 function SearchPage() {
   const classes = useStyles();
   const location = useLocation();
+  const { showError } = useNotifications();
+
+  // State
   const [showAddressPicker, setShowAddressPicker] = useState(false);
-  const [nearbyRequests, setCloseBy] = useState([]);
+  const [nearbyRequests, setNearbyRequests] = useState(null);
   const [distance, setDistance] = useState(defaultDistance);
+
+  // Data
   const user = useUser();
-  const { GeoPoint } = useFirestore;
   const firestore = useFirestore();
-  const geofirestore = getGeofirestore(firestore);
+  const { GeoPoint } = useFirestore;
   const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
-  const profile = useFirestoreDocData(profileRef);
-  //   const nearbyRequests = useFirestoreCollection(
-  // ,
-  //     { idField: 'id' },
-  //   );
-  console.log('Distance', { distance, nearbyRequests }); // eslint-disable-line no-console
+  const profileSnap = useFirestoreDoc(profileRef);
 
-  // const handlePlaceSelect = (event, selection) => {
-  //   console.log('Place select', { event, selection }); // eslint-disable-line no-console
-  // };
-  // TODO: Use lat/long from profile instead of having hardcoded
-  console.log('Profile', profile); // eslint-disable-line no-console
-  const lat = 40.747633;
-  const long = -73.956525;
-  const handleTriggerSearchResults = () => {
-    console.log('handleTriggerSearchResults'); // eslint-disable-line no-console
-    // const filter = {
-    //   lat: currentPlaceLatLng.lat,
-    //   lng: currentPlaceLatLng.lng,
-    //   distance: distance,
-    //   units: "mi"
-    // };
+  console.log('Search page state:', { distance, nearbyRequests, profileSnap }); // eslint-disable-line no-console
 
+  // Use lat/long from profile or fallback to defaults
+  const lat = profileSnap.get('preciseLocation._latitude') || DEFAULT_LATITUDE;
+  const long =
+    profileSnap.get('preciseLocation._longitude') || DEFAULT_LONGITUDE;
+
+  async function searchForNearbyRequests() {
+    const geofirestore = new GeoFirestore(firestore);
     const nearbyRequestsRef = geofirestore
       .collection(REQUESTS_PUBLIC_COLLECTION)
       .near({
@@ -112,24 +83,27 @@ function SearchPage() {
       // NOTE: Queries d.status on object thanks to geofirestore
       .where('status', '==', 1)
       .limit(60);
+    try {
+      const nearbyRequestsSnap = await nearbyRequestsRef.get();
+      setNearbyRequests(
+        nearbyRequestsSnap.docs.map((docSnap) => ({
+          ...docSnap.data(),
+          id: docSnap.id,
+        })),
+      );
+    } catch (err) {
+      showError('Error searching for nearby requests');
+    }
+  }
 
-    nearbyRequestsRef.get().then((resultSnap) => {
-      const values = resultSnap.docs.map((docSnap) => ({
-        ...docSnap.data(),
-        id: docSnap.id,
-      }));
-      setCloseBy(values);
-    });
-  };
-
-  const handleCopyNeedLink = (id) => {
+  function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
     document.body.appendChild(el);
     el.value = `${location.origin}/needs/${id}`;
     el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
-  };
+  }
 
   return (
     <Container maxWidth="md">
@@ -169,7 +143,7 @@ function SearchPage() {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleTriggerSearchResults}>
+          onClick={searchForNearbyRequests}>
           Search
         </Button>
       </Paper>
@@ -187,7 +161,7 @@ function SearchPage() {
           </CardContent>
         </Card>
       )} */}
-      {nearbyRequests.length === 0 && (
+      {nearbyRequests && nearbyRequests.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
             <Typography>
