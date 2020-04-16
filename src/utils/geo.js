@@ -1,10 +1,3 @@
-import { GeoFirestore } from 'geofirestore';
-
-// eslint-disable-next-line import/prefer-default-export
-export function getGeofirestore(firestore) {
-  return new GeoFirestore(firestore);
-}
-
 /**
  * Calculates the distance between two points (given the latitude/longitude of those points).
  * From https://www.geodatasource.com/developers/javascript.
@@ -40,4 +33,36 @@ export function distanceBetweenPoints(lat1, lon1, lat2, lon2, unit) {
     dist *= 0.8684;
   }
   return dist;
+}
+
+/**
+ * Scrable specific location to a location nearby
+ * Based on https://stackoverflow.com/a/31280435/391230
+ * @see https://stackoverflow.com/a/31280435/391230
+ * @param {Object} center - Center of scramble radius
+ * @param {Number} radiusInMeters - Radius from original point to scramble
+ */
+export function scrambleLocation(center, radiusInMeters) {
+  const y0 = center.lat;
+  const x0 = center.lng;
+  const rd = radiusInMeters / 111300; // about 111300 meters in one degree
+
+  const u = Math.random();
+  const v = Math.random();
+
+  const w = rd * Math.sqrt(u);
+  const t = 2 * Math.PI * v;
+  const x = w * Math.cos(t);
+  const y = w * Math.sin(t);
+
+  // Adjust the x-coordinate for the shrinking of the east-west distances
+  const xp = x / Math.cos(y0);
+
+  const newlat = y + y0;
+  const newlon2 = xp + x0;
+
+  return {
+    _latitude: Math.round(newlat * 1e5) / 1e5,
+    _longitude: Math.round(newlon2 * 1e5) / 1e5,
+  };
 }
