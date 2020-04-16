@@ -54,7 +54,7 @@ function CoreLayout({ children }) {
   return (
     <div>
       <Notifications />
-      <SuspenseWithPerf>
+      <SuspenseWithPerf traceId="setup-firestore">
         <SetupFirestore />
       </SuspenseWithPerf>
       <SuspenseWithPerf fallback={<NavbarWithoutAuth />} traceId="load-navbar">

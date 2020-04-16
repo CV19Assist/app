@@ -1,15 +1,8 @@
 import { createSelector } from '../utils';
 
-const requestId = '123ABC';
-const firstName = 'some';
-const lastName = 'last';
-const requestObj = { immediacy: '1', firstName, lastName };
-describe('Request Page', () => {
+describe('New Request Page', () => {
   beforeEach(() => {
-    cy.callFirestore('set', `requests/${requestId}`, requestObj, {
-      withMeta: true,
-    });
-    cy.visit(`/request/${requestId}`);
+    cy.visit('/new-request');
   });
 
   it('Shows request form', () => {

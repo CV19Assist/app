@@ -14,6 +14,7 @@ import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { NEW_REQUEST_PATH } from 'constants/paths';
 import styles from './Navbar.styles';
 
 const useStyles = makeStyles(styles);
@@ -61,7 +62,7 @@ function NavbarWithoutAuth({ children }) {
             <List>
               <ListItem
                 onClick={() => {
-                  launchURL('/request');
+                  launchURL(NEW_REQUEST_PATH);
                 }}>
                 <ListItemText primary="Request Assistance" />
               </ListItem>
@@ -108,7 +109,7 @@ function NavbarWithoutAuth({ children }) {
         <Hidden only={['sm', 'xs']}>
           <Button
             component={Link}
-            to="/request"
+            to={NEW_REQUEST_PATH}
             color="inherit"
             variant="outlined">
             Request Assistance
