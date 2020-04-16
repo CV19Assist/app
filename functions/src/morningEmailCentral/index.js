@@ -38,9 +38,10 @@ async function morningEmailCentralEvent(context) {
 
   // Map doc snaps into an array of doc values
   const requests = unclaimedRequestsSnap.docs.map((docSnap) => {
+    const requestData = docSnap.get('d') || {};
     return {
       id: docSnap.id,
-      ...docSnap.data(),
+      ...requestData,
     };
   });
 
