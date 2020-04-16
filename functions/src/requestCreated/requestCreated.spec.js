@@ -1,4 +1,5 @@
 import * as firebaseTesting from '@firebase/testing';
+import functionsTestSetup from 'firebase-functions-test';
 import { PubSub } from '@google-cloud/pubsub';
 import requestCreatedOriginal from './index';
 
@@ -7,7 +8,12 @@ const USER_UID = '123ABC';
 const context = {
   params: { userId: USER_UID },
 };
-
+// Setup firebase-functions-tests to online mode (will communicate with emulators)
+const functionsTest = functionsTestSetup({
+  databaseURL: `https://${projectId}.firebaseio.com`, // Can not be emulator
+  storageBucket: `${projectId}.appspot.com`,
+  projectId,
+});
 const requestCreated = functionsTest.wrap(requestCreatedOriginal);
 const topic = pubSubClient.topic('sendFcm').subscription('asdf');
 
@@ -26,9 +32,8 @@ describe.skip('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   });
 
   after(async () => {
-    functionsTest.cleanup();
     // Cleanup all apps (keeps active listeners from preventing JS from exiting)
-    await Promise.all(firebaseTesting.apps().map((app) => app.delete()));
+    // await Promise.all(firebaseTesting.apps().map((app) => app.delete()));
     topic.removeListener('message', messageHandler);
   });
 

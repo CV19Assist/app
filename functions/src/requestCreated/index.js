@@ -2,6 +2,10 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { PubSub } from '@google-cloud/pubsub';
 import { to } from 'utils/async';
+import {
+  REQUESTS_COLLECTION,
+  NOTIFICATIONS_SETTINGS_DOC,
+} from 'constants/firestorePaths';
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
@@ -56,7 +60,7 @@ async function requestCreatedEvent(snap, context) {
   console.log('requestCreated onCreate event:', requestData, { params });
 
   // Load settings doc
-  const settingsRef = admin.firestore().doc('system_settings/notifications');
+  const settingsRef = admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC);
   const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
 
   // Handle errors loading settings docs
@@ -81,5 +85,5 @@ async function requestCreatedEvent(snap, context) {
  * @type {functions.CloudFunction}
  */
 export default functions.firestore
-  .document('requests/{docId}')
+  .document(`${REQUESTS_COLLECTION}/{docId}`)
   .onCreate(requestCreatedEvent);
