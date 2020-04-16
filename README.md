@@ -29,21 +29,7 @@
 
 1. Install app and functions dependencies: `yarn install && yarn install --prefix functions`
 1. Copy settings from one of the `.env.*` files into `.env.local` - this is not tracked by git and will be how your local development project gets Firebase config.
-1. Add the following to `functions/.runtimeconfig.json`:
-
-```json
-"frontend": {
-  "url": "https://cv19assist-dev.web.app"
-}
-```
-
 1. Start Development server: `yarn start`
-
-If setting up a new environment, make sure to set the following to your functions config:
-
-```bash
-firebase functions:config:set frontend.url=https://cv19assist-dev.web.app
-```
 
 While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:
 
@@ -167,14 +153,14 @@ More about how routing works is available in [the react-router-dom docs](https:/
 
 Cypress is used to write and run UI tests which live in the `cypress` folder. The following npm scripts can be used to run tests:
 
-- Run using Cypress run: `npm run test:ui`
-- Open Test Runner UI (`cypress open`): `npm run test:ui:open`
+- Run using Cypress run: `npm run test`
+- Open Test Runner UI (`cypress open`): `npm run test:open`
 
 To run tests against emulators:
 
 1. Start database emulators: `npm run emulate`
 1. Start React app pointed at emulators: `npm run start:emulate`
-1. Open Cypress test runner with test utils pointed at emulators: `npm run test:ui:emulate`
+1. Open Cypress test runner with test utils pointed at emulators: `npm run test:emulate`
 
 To Run tests in CI add the following environment variables within your CI provider:
 
@@ -204,16 +190,10 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 #### Manual deploy
 
 1. Run `firebase:login`
-1. Initialize project with `firebase init` then answer:
-   - What file should be used for Database Rules? -> `database.rules.json`
-   - What do you want to use as your public directory? -> `build`
-   - Configure as a single-page app (rewrite all urls to /index.html)? -> `Yes`
-   - What Firebase project do you want to associate as default? -> **your Firebase project name**
 1. Build Project: `npm run build`
-1. Confirm Firebase config by running locally: `firebase serve`
 1. Deploy to Firebase (everything including Hosting and Functions): `firebase deploy`
 
-**NOTE:** You can use `firebase serve` to test how your application will work when deployed to Firebase, but make sure you run `npm run build` first.
+**NOTE:** You can use `npm start:dist` to test how your application will work when deployed to Firebase.
 
 ## FAQ
 

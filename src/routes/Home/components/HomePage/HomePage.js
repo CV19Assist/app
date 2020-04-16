@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import { useUser } from 'reactfire';
+import { NEW_REQUEST_PATH } from 'constants/paths';
 import NeedsMap from './NeedsMap';
 import styles from './HomePage.styles';
 
@@ -71,14 +72,14 @@ function Homepage() {
               <div className={classes.actionButtons}>
                 <Button
                   component={Link}
-                  to="/request?type=grocery-pickup"
+                  to={`${NEW_REQUEST_PATH}?type=grocery-pickup`}
                   variant="contained"
                   color="primary">
                   Grocery Pick-Up
                 </Button>
                 <Button
                   component={Link}
-                  to="/request?type=other"
+                  to={`${NEW_REQUEST_PATH}?type=other`}
                   variant="outlined"
                   color="primary">
                   Other

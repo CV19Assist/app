@@ -29,15 +29,6 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --single-quote --no-semi --trailing-comma none --write \"src/**/*.js\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thebitguru/app.git"
-  },
-  "engines": {
-    "node": ">=10.15.0"
-  },
-  "author": "thebitguru (https://github.com/thebitguru)",
-  "license": "MIT",
   "dependencies": {
     "@material-ui/core": "^4.9.8",
     "@material-ui/icons": "^4.9.1",
@@ -91,6 +82,15 @@
   "eslintConfig": {
     "extends": "./eslintrc.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CV19Assist/app.git"
+  },
+  "engines": {
+    "node": ">=10.15.0"
+  },
+  "author": "CV19Assist (https://github.com/CV19Assist)",
+  "license": "MIT",
   "browserslist": {
     "production": [
       ">0.2%",

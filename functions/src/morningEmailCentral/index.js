@@ -6,6 +6,7 @@ import {
   MAIL_COLLECTION,
   REQUESTS_PUBLIC_COLLECTION,
 } from 'constants/firestorePaths';
+import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
 
 /**
  * Sends email to all users which UIDs are in morningEmail parameter of the
@@ -36,7 +37,7 @@ async function morningEmailCentralEvent(context) {
   }
 
   // Map doc snaps into an array of doc values
-  const unclaimedRequests = unclaimedRequestsSnap.docs.map((docSnap) => {
+  const requests = unclaimedRequestsSnap.docs.map((docSnap) => {
     return {
       id: docSnap.id,
       ...docSnap.data(),
@@ -60,6 +61,10 @@ async function morningEmailCentralEvent(context) {
   // TODO: Email volunteers within proximity instead of all within system_settings/notifications doc
   const toUids = notificationsSettingsSnap.get('morningEmail');
 
+  const projectId = getFirebaseConfig('projectId');
+  // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
+  const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
+
   // Write request to mail collection of Firestore
   const [sendMailRequestsErr] = await to(
     admin
@@ -70,7 +75,8 @@ async function morningEmailCentralEvent(context) {
         template: {
           name: 'morning-unclaimed',
           data: {
-            unclaimedRequests,
+            requests,
+            projectDomain,
             timestamp,
           },
         },
