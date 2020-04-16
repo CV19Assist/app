@@ -32,7 +32,7 @@ module.exports = {
       }
     },
     {
-      files: ['scripts/testSetup.js'],
+      files: ['scripts/**.js'],
       env: {
         mocha: true
       },
