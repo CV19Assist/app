@@ -4,6 +4,7 @@ import { to } from 'utils/async';
 import {
   NOTIFICATIONS_SETTINGS_DOC,
   MAIL_COLLECTION,
+  REQUESTS_PUBLIC_COLLECTION,
 } from 'constants/firestorePaths';
 
 /**
@@ -12,13 +13,17 @@ import {
  * @param {object} context.auth - Authentication information for the user that triggered the function
  * @returns {Promise} Resolves after handling event
  */
-async function morningEmailCentralTzEvent(context) {
+async function morningEmailCentralEvent(context) {
   const { timestamp } = context;
   console.log('This will be run every day at 9:00 AM Central!');
 
   // Query for unclaimed requests
   const [requestsErr, unclaimedRequestsSnap] = await to(
-    admin.firestore().collection('requests').where('status', '<', 10).get(),
+    admin
+      .firestore()
+      .collection(REQUESTS_PUBLIC_COLLECTION)
+      .where('d.status', '<', 10)
+      .get(),
   );
 
   // Handle errors querying for unclaimed requests
@@ -84,13 +89,13 @@ async function morningEmailCentralTzEvent(context) {
 }
 
 /**
- * Cloud Function that is called every time new data is created in Firebase Realtime Database.
+ * Cloud Function that is called every 9AM in central timezone
  *
- * Trigger: `RTDB - onCreate - '/requests/morningEmailCentralTz/{pushId}'`
- * @name morningEmailCentralTz
+ * Trigger: `PubSub - onPublish - 0 9 * * *`
+ * @name morningEmailCentral
  * @type {functions.CloudFunction}
  */
 export default functions.pubsub
   .schedule('0 9 * * *')
   .timeZone('US/Central') // Central Timezone
-  .onRun(morningEmailCentralTzEvent);
+  .onRun(morningEmailCentralEvent);
