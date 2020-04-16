@@ -8,7 +8,8 @@ import {
 } from 'constants/firestorePaths';
 
 /**
- *
+ * Sends email to all users which UIDs are in morningEmail parameter of the
+ * system_settings/notification document.
  * @param {functions.EventContext} context - Function event context
  * @param {object} context.auth - Authentication information for the user that triggered the function
  * @returns {Promise} Resolves after handling event
@@ -59,7 +60,7 @@ async function morningEmailCentralEvent(context) {
   // TODO: Email volunteers within proximity instead of all within system_settings/notifications doc
   const toUids = notificationsSettingsSnap.get('morningEmail');
 
-  // Create RTDB for response
+  // Write request to mail collection of Firestore
   const [sendMailRequestsErr] = await to(
     admin
       .firestore()
