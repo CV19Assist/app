@@ -1,20 +1,26 @@
 import React from 'react';
 import { useMessaging, useUser } from 'reactfire';
-import { useNotifications } from 'modules/notification';
-import initializeMessaging from 'utils/firebaseMessaging';
+import useSetupMessaging from './useSetupMessaging';
 
 function LoadMessaging() {
-  const messaging = useMessaging();
-  const { showSuccess } = useNotifications();
-  initializeMessaging({ showSuccess, messaging });
+  const { isSupported } = useMessaging;
+  const { initializeMessaging } = useSetupMessaging();
+  // Only initialize messaging for browsers which have support
+  if (isSupported()) {
+    initializeMessaging();
+  }
   return null;
 }
 
 function SetupMessaging() {
   const user = useUser();
+
+  // Render nothing if user is not logged in
   if (!user || !user.uid) {
     return null;
   }
+
+  // Load messaging if user is logged in
   return <LoadMessaging />;
 }
 
