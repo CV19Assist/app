@@ -37,16 +37,11 @@ describe('New Request Page', () => {
     //   expect(lastRequest).to.have.property('createdAt');
     // });
   });
-
-  it('Checks the needed type checkbox from query param', () => {
-    it('Sets needs from the type query param', () => {
-      cy.visit('/request?type=grocery-pickup');
-      cy.get(createSelector('need-other'))
-        .find('input')
-        .should('not.be.checked');
-      cy.get(createSelector('need-grocery-pickup'))
-        .find('input')
-        .should('be.checked');
-    });
+  it('Sets needs from the type query param', () => {
+    cy.visit('/new-request?type=grocery-pickup');
+    cy.get(createSelector('need-other')).find('input').should('not.be.checked');
+    cy.get(createSelector('need-grocery-pickup'))
+      .find('input')
+      .should('be.checked');
   });
 });

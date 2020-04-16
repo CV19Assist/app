@@ -71,7 +71,7 @@ function RequestPage({ hideActionButtons }) {
       <Helmet>
         <title>Details</title>
       </Helmet>
-      <Paper className={classes.paper}>
+      <Paper className={classes.paper} data-test="request-info">
         <img
           style={{ float: 'right' }}
           alt="Request's location"
