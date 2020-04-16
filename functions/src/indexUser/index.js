@@ -1,5 +1,10 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import {
+  USERS_PUBLIC_COLLECTION,
+  USERS_PRIVILEGED_COLLECTION,
+  USERS_COLLECTION,
+} from 'constants/firestorePaths';
 
 /**
  * Index user's by placing their displayName into the users_public collection
@@ -13,11 +18,13 @@ import * as functions from 'firebase-functions';
  */
 async function indexUser(change, context) {
   const { userId } = context.params || {};
-  const publicProfileRef = admin.firestore().doc(`users_public/${userId}`);
+  const publicProfileRef = admin
+    .firestore()
+    .doc(`${USERS_PUBLIC_COLLECTION}/${userId}`);
 
   const privilegedProfileRef = admin
     .firestore()
-    .doc(`users_privileged/${userId}`);
+    .doc(`${USERS_PRIVILEGED_COLLECTION}/${userId}`);
 
   // User Profile being deleted
   if (!change.after.exists) {
@@ -76,5 +83,5 @@ async function indexUser(change, context) {
  * @type {functions.CloudFunction}
  */
 export default functions.firestore
-  .document('/users/{userId}')
+  .document(`/${USERS_COLLECTION}/{userId}`)
   .onWrite(indexUser);

@@ -56,6 +56,12 @@ module.exports = {
        'no-restricted-globals': 0,
         'no-console': 0
       }
+    },
+    {
+      files: ['./bin/**'],
+      rules: {
+       'import/no-extraneous-dependencies': 0
+      }
     }
   ]
 }

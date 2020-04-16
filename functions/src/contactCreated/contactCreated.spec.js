@@ -18,13 +18,6 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
     });
   });
 
-  after(async () => {
-    // Restoring stubs to the original methods
-    functionsTest.cleanup();
-    // Cleanup all apps (keeps active listeners from preventing JS from exiting)
-    await Promise.all(firebaseTesting.apps().map((app) => app.delete()));
-  });
-
   it('writes request to mail collection when contact is created', async () => {
     const eventData = { message: '' };
     const userUid = '123ABC';
@@ -39,7 +32,7 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
     await adminApp
       .firestore()
       .doc('system_settings/notifications')
-      .set({ newContacts: [userUid] });
+      .set({ newContacts: [userUid] }, { merge: true });
     await contactCreated(snap, fakeContext);
     const mailRequestsSnap = await adminApp
       .firestore()

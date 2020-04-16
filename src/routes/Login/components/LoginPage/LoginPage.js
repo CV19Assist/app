@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import firebase from 'firebase/app'; // imported for auth provider
 import { useAuth, useFirestore } from 'reactfire';
@@ -8,6 +8,7 @@ import GoogleButton from 'react-google-button';
 import { NEW_USER_PATH, SEARCH_PATH } from 'constants/paths';
 import { USERS_COLLECTION } from 'constants/collections';
 import useNotifications from 'modules/notification/useNotifications';
+import LoadingSpinner from 'components/LoadingSpinner';
 import LoginForm from '../LoginForm';
 import styles from './LoginPage.styles';
 
@@ -18,6 +19,7 @@ function LoginPage() {
   const auth = useAuth();
   const history = useHistory();
   const firestore = useFirestore();
+  const [isLoading, setLoadingState] = useState(false);
   const { showError } = useNotifications();
 
   auth.onAuthStateChanged((authState) => {
@@ -34,32 +36,50 @@ function LoginPage() {
         // eslint-disable-next-line consistent-return
         .then((userSnap) => {
           if (!userSnap.exists) {
-            return userSnap.ref.set(newProfile, { merge: true });
+            return userSnap.ref.set(newProfile, { merge: true }).then(() => {
+              history.replace(NEW_USER_PATH);
+            });
           }
           history.replace(SEARCH_PATH);
-        })
-        .then(() => {
-          history.replace(NEW_USER_PATH);
         });
     }
   });
 
   function googleLogin() {
+    setLoadingState(true);
     const provider = new firebase.auth.GoogleAuthProvider();
-    return auth
-      .signInWithPopup(provider)
-      .catch((err) => showError(err.message));
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(
+      window.navigator.userAgent,
+    );
+    // Use redirect on mobile
+    if (isMobile) {
+      return auth.signInWithRedirect(provider).catch((err) => {
+        setLoadingState(false);
+        showError(err.message);
+      });
+    }
+    return auth.signInWithPopup(provider).catch((err) => {
+      setLoadingState(false);
+      showError(err.message);
+    });
   }
 
   return (
     <div className={classes.root}>
       <Paper className={classes.panel}>
-        <LoginForm />
+        {isLoading ? <LoadingSpinner /> : <LoginForm />}
       </Paper>
-      <div className={classes.orLabel}>or</div>
-      <div className={classes.providers}>
-        <GoogleButton onClick={googleLogin} data-test="google-auth-button" />
-      </div>
+      {isLoading ? null : (
+        <>
+          <div className={classes.orLabel}>or</div>
+          <div className={classes.providers}>
+            <GoogleButton
+              onClick={googleLogin}
+              data-test="google-auth-button"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
