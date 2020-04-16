@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { SuspenseWithPerf } from 'reactfire';
+import { SuspenseWithPerf, useFirestore } from 'reactfire';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import TwitterIcon from '@material-ui/icons/Twitter';
@@ -19,6 +19,27 @@ import {
 
 const useStyles = makeStyles(styles);
 
+function SetupFirestore() {
+  const firestore = useFirestore();
+  if (process.env.REACT_APP_FIRESTORE_EMULATOR_HOST) {
+    const firestoreSettings = {
+      host: process.env.REACT_APP_FIRESTORE_EMULATOR_HOST,
+      ssl: false,
+    };
+    if (window.Cypress) {
+      // Needed for Firestore support in Cypress (see https://github.com/cypress-io/cypress/issues/6350)
+      firestoreSettings.experimentalForceLongPolling = true;
+    }
+
+    firestore.settings(firestoreSettings);
+    // eslint-disable-next-line no-console
+    console.log(
+      `Firestore emulator enabled: ${process.env.REACT_APP_FIRESTORE_EMULATOR_HOST}`,
+    );
+  }
+  return null;
+}
+
 function CoreLayout({ children }) {
   const classes = useStyles();
 
@@ -33,6 +54,9 @@ function CoreLayout({ children }) {
   return (
     <div>
       <Notifications />
+      <SuspenseWithPerf>
+        <SetupFirestore />
+      </SuspenseWithPerf>
       <SuspenseWithPerf fallback={<NavbarWithoutAuth />} traceId="load-navbar">
         <Navbar />
       </SuspenseWithPerf>

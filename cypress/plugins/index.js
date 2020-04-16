@@ -8,17 +8,20 @@
 // https://on.cypress.io/plugins-guide
 // ***********************************************************
 // TODO: Add back for cy.login and cy.callFirestore
-// const cypressFirebasePlugin = require('cypress-firebase').plugin;
-// const admin = require('firebase-admin');
+const cypressFirebasePlugin = require('cypress-firebase').plugin;
+const admin = require('firebase-admin');
 
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   // Extends with config from .firebaserc
   // TODO: Add back for cy.login and cy.callFirestore
-  // return cypressFirebasePlugin(on, config, admin);
-  return {
-    ...config,
-    baseUrl: 'http://localhost:3000',
-  };
+  return cypressFirebasePlugin(
+    on,
+    {
+      ...config,
+      baseUrl: 'http://localhost:3000',
+    },
+    admin,
+  );
 };

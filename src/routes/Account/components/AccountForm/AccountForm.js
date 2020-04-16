@@ -37,7 +37,7 @@ function AccountForm({ account, onSubmit }) {
         <TextField
           type="email"
           name="email"
-          placeholder="email"
+          label="Email"
           margin="normal"
           fullWidth
           inputRef={register({
@@ -48,7 +48,7 @@ function AccountForm({ account, onSubmit }) {
           helperText={errors.email && 'Email must be valid'}
         />
         <TextField
-          name="avatarUrl"
+          name="photoURL"
           label="Avatar Url"
           margin="normal"
           inputRef={register}

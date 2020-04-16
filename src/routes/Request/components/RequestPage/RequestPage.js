@@ -87,6 +87,11 @@ function Request() {
       return;
     }
 
+    if (!auth || !auth.uid) {
+      showError('You must be logged in to create a request');
+      return;
+    }
+
     const { lastName, phone, email, ...publicValues } = values;
 
     const requestPublicInfo = {

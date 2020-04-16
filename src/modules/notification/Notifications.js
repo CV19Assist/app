@@ -46,6 +46,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Notifications() {
   const classes = useStyles();
   const { allIds, byId, dismissNotification } = useNotifications();
+
   // Only render if notifications exist
   if (!allIds || !Object.keys(allIds).length) {
     return null;

@@ -145,7 +145,7 @@ function NewUser() {
                 <TextField
                   type="email"
                   name="email"
-                  placeholder="email"
+                  label="Email"
                   margin="normal"
                   fullWidth
                   inputRef={register({

@@ -8,8 +8,8 @@ on:
       - production
 
 jobs:
-  build:
-    name: Build
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -40,15 +40,18 @@ jobs:
           yarn --cwd functions install --frozen-lockfile
 
       - name: Verify App
+        env:
+          GITHUB_REF: ${{ github.ref }}
         run: |
           yarn lint # Check for lint in app code
+          gitBranch=${GITHUB_REF##*/}
           buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
           yarn $buildCommand
 
       - name: Verify Functions
-        # TODO: Add back functions tests "yarn --cwd functions test:cov"
         run: |
-          yarn --cwd functions build
+          yarn functions:build
+          yarn functions:test:cov
 
       - name: Archive Build Artifact
         uses: actions/upload-artifact@master

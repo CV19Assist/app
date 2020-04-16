@@ -5,3 +5,4 @@ export const REQUESTS_COLLECTION = 'requests';
 export const REQUESTS_PUBLIC_COLLECTION = 'requests_public';
 export const REQUESTS_ACTIONS_COLLECTION = 'requests_actions';
 export const REQUESTS_CONTACT_INFO_COLLECTION = 'requests_contact';
+export const CONTACT_COLLECTION = 'contacts';

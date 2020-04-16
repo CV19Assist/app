@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FirebaseAppProvider } from 'reactfire';
+import { FirebaseAppProvider, SuspenseWithPerf } from 'reactfire';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NotificationsProvider from 'modules/notification/NotificationsProvider';
+import SetupMessaging from 'components/SetupMessaging';
 import ThemeSettings from '../../theme';
 
 const theme = createMuiTheme(ThemeSettings);
@@ -31,12 +32,14 @@ function App({ routes }) {
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
       <FirebaseAppProvider firebaseConfig={firebaseConfig} initPerformance>
-        <>
-          <NotificationsProvider>
+        <NotificationsProvider>
+          <>
             <Router>{routes}</Router>
-          </NotificationsProvider>
-          <CssBaseline />
-        </>
+            <SuspenseWithPerf traceId="load-messaging">
+              <SetupMessaging />
+            </SuspenseWithPerf>
+          </>
+        </NotificationsProvider>
       </FirebaseAppProvider>
     </MuiThemeProvider>
   );
