@@ -33,8 +33,18 @@ function RequestPage({ hideActionButtons }) {
 
   const requestRef = firestore.doc(`${REQUESTS_COLLECTION}/${requestId}`);
   const requestSnap = useFirestoreDoc(requestRef);
+
   if (!requestSnap.exists) {
-    return <div>Not Found</div>;
+    return (
+      <Container>
+        <Helmet>
+          <title>Request Not Found</title>
+        </Helmet>
+        <Paper className={classes.paper} data-test="request-not-found">
+          Request Not Found
+        </Paper>
+      </Container>
+    );
   }
   function handleCompletion() {
     // dispatch(completeNeedAssignment(id));

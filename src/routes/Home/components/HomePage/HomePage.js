@@ -32,7 +32,8 @@ function Homepage() {
               variant="h5"
               align="center"
               // color="textPrimary"
-              gutterBottom>
+              gutterBottom
+              data-test="welcome-banner">
               Welcome to the Volunteer Coronavirus Assistance System
             </Typography>
 

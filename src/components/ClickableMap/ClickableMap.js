@@ -25,12 +25,14 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
     latitude: lat,
     longitude: lng,
     generalLocationName: defaultGeneralLocationName,
-  } = defaultLocation;
+  } = defaultLocation || {};
   const classes = useStyles();
   const [map, setMap] = useState(null);
   const { showSuccess, showError } = useNotifications();
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [markerLocation, setMarkerLocation] = useState({ lat, lng } || null);
+  const [markerLocation, setMarkerLocation] = useState(
+    lat && lng ? { lat, lng } : null,
+  );
   const [generalLocationName, setGeneralLocationName] = useState(
     defaultGeneralLocationName || '',
   );
@@ -206,10 +208,6 @@ ClickableMap.propTypes = {
     longitude: PropTypes.number,
     generalLocationName: PropTypes.string,
   }),
-};
-
-ClickableMap.defaultProps = {
-  defaultLocation: {},
 };
 
 export default ClickableMap;

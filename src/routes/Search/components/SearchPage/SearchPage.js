@@ -139,7 +139,7 @@ function SearchPage() {
   }
 
   // Gets the lat/lng for the selected address.
-  const handlePlaceSelect = (_event, selection) => {
+  function handlePlaceSelect(_event, selection) {
     if (!selection) return;
     geocodeByAddress(selection.description)
       .then((results) => getLatLng(results[0]))
@@ -151,11 +151,11 @@ function SearchPage() {
         // eslint-disable-next-line no-console
         console.error('Error', error);
       });
-  };
+  }
 
-  const handlePlaceChange = (address) => {
+  function handlePlaceChange(address) {
     setCurrentPlaceLabel(address);
-  };
+  }
 
   return (
     <Container maxWidth="md">
