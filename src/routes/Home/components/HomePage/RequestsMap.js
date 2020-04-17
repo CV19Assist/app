@@ -4,7 +4,7 @@ import { GoogleMap, LoadScript, MarkerClusterer } from '@react-google-maps/api';
 import { useFirestore, useFirestoreCollectionData } from 'reactfire';
 import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import MapMarker from './MapMarker';
-import styles from './NeedsMap.styles';
+import styles from './RequestsMap.styles';
 
 const useStyles = makeStyles(styles);
 
@@ -50,7 +50,6 @@ function NeedsMap() {
               ))
             }
           </MarkerClusterer>
-          <MapMarker />
         </GoogleMap>
       </LoadScript>
     </>

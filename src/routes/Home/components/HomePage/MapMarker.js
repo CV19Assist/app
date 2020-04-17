@@ -33,7 +33,7 @@ function MapMarker(props) {
     return (
       <InfoWindow anchor={mapMarker}>
         <div>
-          <Typography variant="h6">
+          <Typography variant="subtitle2">
             {request.d.firstName} &ndash; {request.d.generalLocationName}
           </Typography>
           <Typography variant="body2">

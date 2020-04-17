@@ -1,3 +1,5 @@
+import { KM_TO_MILES } from 'constants/geo';
+
 /**
  * Calculates the distance between two points (given the latitude/longitude of those points).
  * From https://www.geodatasource.com/developers/javascript.
@@ -65,4 +67,12 @@ export function scrambleLocation(center, radiusInMeters) {
     _latitude: Math.round(newlat * 1e5) / 1e5,
     _longitude: Math.round(newlon2 * 1e5) / 1e5,
   };
+}
+
+/**
+ * Converts the given Kilometer value to Miles.
+ * @param {Number} km - Kilometers to convert.
+ */
+export function kmToMiles(km) {
+  return km / KM_TO_MILES;
 }

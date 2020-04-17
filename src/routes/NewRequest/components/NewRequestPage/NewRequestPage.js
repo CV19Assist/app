@@ -101,6 +101,7 @@ function NewRequestPage() {
       createdBy: auth.uid,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
+      status: 1,
       coordinates: new GeoPoint(
         /* eslint-disable no-underscore-dangle */
         userLocation.generalLocation._latitude,
