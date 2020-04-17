@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
 import { useLocation, useHistory } from 'react-router-dom';
@@ -27,14 +27,16 @@ import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
 import {
   USERS_PRIVILEGED_COLLECTION,
+  USERS_COLLECTION,
   REQUESTS_COLLECTION,
   REQUESTS_PUBLIC_COLLECTION,
   REQUESTS_CONTACT_INFO_COLLECTION,
   REQUESTS_ACTIONS_COLLECTION,
 } from 'constants/collections';
-import Location from 'components/ClickableMap';
+import ClickableMap from 'components/ClickableMap';
 import { GeoFirestore } from 'geofirestore';
 import { REQUEST_SUCCESSFUL_PATH } from 'constants/paths';
+import LoadingSpinner from 'components/LoadingSpinner';
 import styles from './NewRequestPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -50,43 +52,53 @@ const requestValidationSchema = Yup.object().shape({
   needFinancialAssistance: Yup.string(),
 });
 
-function NewRequestPage() {
-  const classes = useStyles();
-  const location = useLocation();
+function useNewRequestPage() {
   const history = useHistory();
   const firestore = useFirestore();
-  const auth = useUser();
+  const user = useUser();
   const { FieldValue, GeoPoint } = useFirestore;
-  const qs = queryString.parse(location.search);
   const { showSuccess, showError } = useNotifications();
-  const defaultValues = { needs: {} };
   const [userLocation, setUserLocation] = useState(null);
+  const [userLocationLoading, setLocationLoading] = useState(true);
 
-  // Append needs from query string type
-  if (qs && qs.type) {
-    defaultValues.needs = { [qs.type]: true };
-  }
+  // Conditionally load Profile (only if current auth user exists)
+  useEffect(() => {
+    async function loadLatLongFromProfile() {
+      // Set lat/long from user object if they exist
+      if (user && user.uid) {
+        const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
+        const profileSnap = await profileRef.get();
+        const geopoint = profileSnap.get('preciseLocation');
+        if (geopoint) {
+          const { latitude, longitude } = geopoint;
+          const newUserLocation = { latitude, longitude };
+          const generalLocationName = profileSnap.get('preciseLocationName');
+          if (generalLocationName) {
+            newUserLocation.generalLocationName = generalLocationName;
+          }
+          setUserLocation(newUserLocation);
+        }
+        setLocationLoading(false);
+      } else {
+        setLocationLoading(false);
+      }
+    }
+    // NOTE: useEffect is used to load data so it can be done conditionally based
+    // on whether current user is logged in
+    loadLatLongFromProfile();
+  }, [user, firestore]);
 
-  const {
-    register,
-    handleSubmit,
-    errors,
-    watch,
-    control,
-    formState: { isValid, isSubmitting },
-  } = useForm({
-    validationSchema: requestValidationSchema,
-    defaultValues,
-  });
-  const currentNeeds = watch('needs');
-
+  /**
+   * Submit help request
+   * @param {Object} values - Form values
+   */
   async function submitRequest(values) {
     if (!userLocation) {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
 
-    if (!auth || !auth.uid) {
+    if (!user || !user.uid) {
       showError('You must be logged in to create a request');
       return;
     }
@@ -98,7 +110,7 @@ function NewRequestPage() {
       firstName: values.firstName,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
-      createdBy: auth.uid,
+      createdBy: user.uid,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
       status: 1,
@@ -111,6 +123,7 @@ function NewRequestPage() {
       generalLocationName: userLocation.generalLocationName,
     };
 
+    // Convert needs to an array
     requestPublicInfo.needs = [];
     Object.keys(values.needs).forEach((item) => {
       if (values.needs[item]) {
@@ -118,12 +131,42 @@ function NewRequestPage() {
       }
     });
 
+    const requestContactInfo = {
+      phone,
+      email,
+    };
+
+    let userInfo = null;
+    if (user && user.uid) {
+      const userRef = firestore.doc(
+        `${USERS_PRIVILEGED_COLLECTION}/${user.uid}`,
+      );
+      const profile = (await userRef.get()).data();
+      // TODO: Test and verify after confirming the sign-in workflow.
+      const pieces = user.displayName.split(' ');
+      if (pieces.length < 2) {
+        showError("Temporary name hack didn't work");
+        return;
+      }
+      if (profile) {
+        profile.displayName = user.displayName;
+        [profile.firstName, profile.lastName] = pieces;
+
+        userInfo = {
+          userProfileId: user.uid,
+          firstName: profile.firstName,
+          displayName: profile.displayName,
+        };
+        requestPublicInfo.createdByInfo = userInfo;
+      }
+    }
+
     const requestPrivateInfo = {
       firstName: values.firstName,
       lastName: values.lastName,
       immediacy: values.immediacy,
       needs: values.needs,
-      createdBy: auth.uid,
+      createdBy: user.uid,
       createdAt: FieldValue.serverTimestamp(),
       preciseLocation: new GeoPoint(
         /* eslint-disable no-underscore-dangle */
@@ -132,41 +175,13 @@ function NewRequestPage() {
         /* eslint-enable no-underscore-dangle */
       ),
     };
-
-    const requestContactInfo = {
-      phone,
-      email,
-    };
-
-    let userInfo = null;
-    if (auth) {
-      const userRef = firestore.doc(
-        `${USERS_PRIVILEGED_COLLECTION}/${auth.uid}`,
-      );
-      const user = (await userRef.get()).data();
-      // TODO: Test and verify after confirming the sign-in workflow.
-      const pieces = auth.displayName.split(' ');
-      if (pieces.length < 2) {
-        showError("Temporary name hack didn't work");
-        return;
-      }
-      if (user) {
-        user.displayName = auth.displayName;
-        [user.firstName, user.lastName] = pieces;
-
-        userInfo = {
-          userProfileId: auth.uid,
-          firstName: user.firstName,
-          displayName: user.displayName,
-        };
-        requestPublicInfo.createdByInfo = userInfo;
-      }
-    }
-
-    console.log('values', values); // eslint-disable-line no-console
-    console.log('requestPublicInfo', requestPublicInfo); // eslint-disable-line no-console
-    console.log('requestPrivateInfo', requestPrivateInfo); // eslint-disable-line no-console
-    console.log('requestContactInfo', requestContactInfo); // eslint-disable-line no-console
+    /* eslint-disable no-console */
+    console.log('Writing values to Firestore:', {
+      requestPublicInfo,
+      requestPrivateInfo,
+      requestContactInfo,
+    });
+    /* eslint-enable no-console */
 
     try {
       const requestRef = await firestore
@@ -202,13 +217,72 @@ function NewRequestPage() {
       showError(err.message || 'Error submitting request');
     }
   }
+  /**
+   * Update state and profile with location once selected in ClickableMap
+   * @param {Object} newLocation - New location object from ClickableMap
+   */
+  async function handleLocationChange(newLocation) {
+    // Set location to form
+    setUserLocation(newLocation);
+    // Update user profile with location selected for their request
+    if (user.uid) {
+      const {
+        preciseLocation,
+        generalLocationName: preciseLocationName,
+      } = newLocation;
+      await firestore.doc(`${USERS_COLLECTION}/${user.uid}`).set(
+        {
+          preciseLocation: new GeoPoint(
+            /* eslint-disable no-underscore-dangle */
+            preciseLocation._latitude,
+            preciseLocation._longitude,
+            /* eslint-enable no-underscore-dangle */
+          ),
+          preciseLocationName,
+        },
+        { merge: true },
+      );
+    }
+  }
+  return {
+    submitRequest,
+    handleLocationChange,
+    userLocation,
+    userLocationLoading,
+  };
+}
 
+function NewRequestPage() {
+  const classes = useStyles();
+  const location = useLocation();
+  const qs = queryString.parse(location.search);
+  const defaultValues = { needs: {} };
+
+  // Append needs from query string type
+  if (qs && qs.type) {
+    defaultValues.needs = { [qs.type]: true };
+  }
+
+  const {
+    register,
+    handleSubmit,
+    errors,
+    watch,
+    control,
+    formState: { isValid, isSubmitting, dirty },
+  } = useForm({
+    validationSchema: requestValidationSchema,
+    defaultValues,
+  });
+  const {
+    submitRequest,
+    handleLocationChange,
+    userLocation,
+    userLocationLoading,
+  } = useNewRequestPage();
+  const currentNeeds = watch('needs');
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
   // const hasFinancialComponent = true;
-
-  const handleLocationChange = (newLocation) => {
-    setUserLocation(newLocation);
-  };
 
   return (
     <Container maxWidth="md">
@@ -410,7 +484,14 @@ function NewRequestPage() {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Card>
-                      <Location onLocationChange={handleLocationChange} />
+                      {userLocationLoading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <ClickableMap
+                          defaultLocation={userLocation}
+                          onLocationChange={handleLocationChange}
+                        />
+                      )}
                     </Card>
                   </Grid>
                 </Grid>
@@ -482,7 +563,7 @@ function NewRequestPage() {
                   </Grid>
                 </Grid>
 
-                {!isValid && (
+                {dirty && Object.keys(dirty).length && !isValid && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
