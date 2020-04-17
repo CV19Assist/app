@@ -111,8 +111,10 @@ function SearchPage() {
         const profileSnap = await profileRef.get();
         const geopoint = profileSnap.get('preciseLocation');
         const preciseLocationName = profileSnap.get('preciseLocationName');
-        const { latitude, longitude } = geopoint;
-        setCurrentLatLong({ latitude, longitude });
+        if (geopoint) {
+          const { latitude, longitude } = geopoint;
+          setCurrentLatLong({ latitude, longitude });
+        }
         // TODO: Remove this once preciseLocationName is being set during sign up.
         setCurrentPlaceLabel(
           preciseLocationName || 'Using your default location',
