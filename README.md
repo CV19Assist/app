@@ -8,12 +8,10 @@
 
 ## Table of Contents
 
-1. [Features](#features)
 1. [Requirements](#requirements)
 1. [Getting Started](#getting-started)
 1. [Application Structure](#application-structure)
-1. [Development](#development)
-   1. [Routing](#routing)
+1. [Routing](#routing)
 1. [Testing](#testing)
 1. [Configuration](#configuration)
 1. [Production](#production)

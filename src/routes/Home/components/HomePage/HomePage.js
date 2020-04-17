@@ -11,7 +11,7 @@ import {
 import { Helmet } from 'react-helmet';
 import { useUser } from 'reactfire';
 import { NEW_REQUEST_PATH } from 'constants/paths';
-import NeedsMap from './NeedsMap';
+import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
 
 const useStyles = makeStyles(styles);
@@ -104,7 +104,7 @@ function Homepage() {
                 help spread the word and refer them to this site.
               </Typography>
 
-              <NeedsMap />
+              <RequestsMap />
 
               <div className={classes.actionButtons}>
                 <Button

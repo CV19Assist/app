@@ -16,6 +16,8 @@ Please check your code using `npm run lint` before submitting your pull requests
 
 ### Commit Message Format
 
+This project uses the [`semantic-release`](https://semantic-release.gitbook.io/semantic-release/#commit-message-format) recommended [Angular commit guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines). Below is a summary.
+
 Each commit message should include a **type**, a **scope** and a **subject**:
 
 ```
