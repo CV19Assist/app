@@ -5,10 +5,6 @@ describe('Search Page', () => {
     cy.visit('/search');
   });
 
-  it('Empty results', () => {
-    cy.get(createSelector('no-requests-found')).should('exist');
-  });
-
   it('Shows places dropdown and shows no results', () => {
     cy.get(createSelector('new-location-button')).should('exist');
     cy.get(createSelector('new-location-button')).click();
@@ -31,10 +27,16 @@ describe('Search Page', () => {
     cy.get('.MuiAutocomplete-listbox')
       .find('li')
       .its('length')
-      .should('be.gte', 3);
+      .should('be.gte', 1);
+    cy.get('.MuiAutocomplete-noOptions').should('not.exist');
 
     cy.get('.MuiAutocomplete-listbox').find('li').first().click();
   });
 
   // TODO: Add more tests that check actual results.
+
+  // TODO: Decide how best to test the empty results.
+  // it('Empty results', () => {
+  //   cy.get(createSelector('no-requests-found')).should('exist');
+  // });
 });
