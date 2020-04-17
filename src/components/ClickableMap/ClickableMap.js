@@ -20,13 +20,22 @@ import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
 
-function ClickableMap({ onLocationChange }) {
+function ClickableMap({ onLocationChange, defaultLocation }) {
+  const {
+    latitude: lat,
+    longitude: lng,
+    generalLocationName: defaultGeneralLocationName,
+  } = defaultLocation || {};
   const classes = useStyles();
   const [map, setMap] = useState(null);
   const { showSuccess, showError } = useNotifications();
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [markerLocation, setMarkerLocation] = useState(null);
-  const [generalLocationName, setGeneralLocationName] = useState('');
+  const [markerLocation, setMarkerLocation] = useState(
+    lat && lng ? { lat, lng } : null,
+  );
+  const [generalLocationName, setGeneralLocationName] = useState(
+    defaultGeneralLocationName || '',
+  );
 
   async function setLocation(location) {
     // console.log('setLocation called:', location);
@@ -194,6 +203,11 @@ function ClickableMap({ onLocationChange }) {
 
 ClickableMap.propTypes = {
   onLocationChange: PropTypes.func.isRequired,
+  defaultLocation: PropTypes.shape({
+    latitude: PropTypes.number,
+    longitude: PropTypes.number,
+    generalLocationName: PropTypes.string,
+  }),
 };
 
 export default ClickableMap;

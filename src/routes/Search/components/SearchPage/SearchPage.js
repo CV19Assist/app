@@ -74,7 +74,7 @@ function SearchPage() {
   const firestore = useFirestore();
   const { GeoPoint } = useFirestore;
 
-  const searchForNearbyRequests = async () => {
+  async function searchForNearbyRequests() {
     // Use lat/long set to state (either from profile or default)
     const { latitude, longitude } = currentLatLong;
     try {
@@ -101,7 +101,7 @@ function SearchPage() {
       // eslint-disable-next-line no-console
       console.log(err);
     }
-  };
+  }
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
@@ -111,8 +111,10 @@ function SearchPage() {
         const profileSnap = await profileRef.get();
         const geopoint = profileSnap.get('preciseLocation');
         const preciseLocationName = profileSnap.get('preciseLocationName');
-        const { latitude, longitude } = geopoint;
-        setCurrentLatLong({ latitude, longitude });
+        if (geopoint) {
+          const { latitude, longitude } = geopoint;
+          setCurrentLatLong({ latitude, longitude });
+        }
         // TODO: Remove this once preciseLocationName is being set during sign up.
         setCurrentPlaceLabel(
           preciseLocationName || 'Using your default location',
@@ -137,7 +139,7 @@ function SearchPage() {
   }
 
   // Gets the lat/lng for the selected address.
-  const handlePlaceSelect = (_event, selection) => {
+  function handlePlaceSelect(_event, selection) {
     if (!selection) return;
     geocodeByAddress(selection.description)
       .then((results) => getLatLng(results[0]))
@@ -149,11 +151,11 @@ function SearchPage() {
         // eslint-disable-next-line no-console
         console.error('Error', error);
       });
-  };
+  }
 
-  const handlePlaceChange = (address) => {
+  function handlePlaceChange(address) {
     setCurrentPlaceLabel(address);
-  };
+  }
 
   return (
     <Container maxWidth="md">
