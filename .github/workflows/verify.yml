@@ -167,7 +167,7 @@ jobs:
           # we have already installed all dependencies above
           install: false
           group: 'UI Tests'
-          start: yarn emulators:all --project $GCLOUD_PROJECT
+          start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
           wait-on: http://localhost:3000
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
@@ -175,6 +175,6 @@ jobs:
           CI: true
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_KEY }}
-          SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF: ${{ github.ref }}
