@@ -16,6 +16,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  LinearProgress,
 } from '@material-ui/core';
 import { Autocomplete, Alert } from '@material-ui/lab';
 import PlacesAutocomplete, {
@@ -34,6 +35,7 @@ import {
   KM_TO_MILES,
   DEFAULT_LATITUDE,
   DEFAULT_LONGITUDE,
+  DEFAULT_LOCATION_NAME,
   USED_GOOGLE_MAPS_LIBRARIES,
 } from 'constants/geo';
 import { makeStyles } from '@material-ui/core/styles';
@@ -67,44 +69,59 @@ function SearchPage() {
     longitude: DEFAULT_LONGITUDE,
   });
   const [distance, setDistance] = useState(defaultDistance);
-  const [currentPlaceLabel, setCurrentPlaceLabel] = React.useState('');
+  const [searching, setSearching] = useState(false);
+  const [currentPlaceLabel, setCurrentPlaceLabel] = React.useState(
+    `Using default location: ${DEFAULT_LOCATION_NAME}`,
+  );
 
   // Data
   const user = useUser();
   const firestore = useFirestore();
   const { GeoPoint } = useFirestore;
 
-  const searchForNearbyRequests = async () => {
-    // Use lat/long set to state (either from profile or default)
-    const { latitude, longitude } = currentLatLong;
-    try {
-      // Query for nearby requests
-      const geofirestore = new GeoFirestore(firestore);
-      const nearbyRequestsSnap = await geofirestore
-        .collection(REQUESTS_PUBLIC_COLLECTION)
-        .near({
-          center: new GeoPoint(latitude, longitude),
-          radius: KM_TO_MILES * distance,
-        })
-        .where('status', '==', 1)
-        .limit(60)
-        .get();
-      setNearbyRequests(
-        nearbyRequestsSnap.docs.map((docSnap) => ({
-          ...docSnap.data(),
-          id: docSnap.id,
-          distance: kmToMiles(docSnap.distance).toFixed(2),
-        })),
-      );
-    } catch (err) {
-      showError('Error searching for nearby requests');
-      // eslint-disable-next-line no-console
-      console.log(err);
+  useEffect(() => {
+    async function searchForNearbyRequests() {
+      // Use lat/long set to state (either from profile or default)
+      const { latitude, longitude } = currentLatLong;
+      setSearching(true);
+      try {
+        // Query for nearby requests
+        const geofirestore = new GeoFirestore(firestore);
+        const nearbyRequestsSnap = await geofirestore
+          .collection(REQUESTS_PUBLIC_COLLECTION)
+          .near({
+            center: new GeoPoint(latitude, longitude),
+            radius: KM_TO_MILES * distance,
+          })
+          .where('status', '==', 1)
+          .limit(30)
+          .get();
+        const sortedByDistance = nearbyRequestsSnap.docs.sort(
+          (a, b) => a.distance - b.distance,
+        );
+        setNearbyRequests(
+          sortedByDistance.map((docSnap) => ({
+            ...docSnap.data(),
+            id: docSnap.id,
+            distance: kmToMiles(docSnap.distance).toFixed(2),
+          })),
+        );
+        setSearching(false);
+      } catch (err) {
+        showError('Error searching for nearby requests');
+        // eslint-disable-next-line no-console
+        console.log(err);
+        setSearching(false);
+      }
     }
-  };
+    searchForNearbyRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, currentLatLong, distance]);
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
+      // TODO: Search is triggered twice when the user is logged in. Once with the first render,
+      //       and then again when the user is assigned.  Need to fix this behavior.
       // Set lat/long from profile or fallback to defaults
       if (user && user.uid) {
         const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
@@ -117,15 +134,17 @@ function SearchPage() {
         setCurrentPlaceLabel(
           preciseLocationName || 'Using your default location',
         );
-
-        await searchForNearbyRequests();
+      } else {
+        setCurrentPlaceLabel(
+          `Using default location: ${DEFAULT_LOCATION_NAME}`,
+        );
       }
     }
     // NOTE: useEffect is used to load data so it can be done conditionally based
     // on whether current user is logged in
     loadLatLongFromProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
@@ -163,18 +182,21 @@ function SearchPage() {
       <Typography variant="h6">Search Criteria</Typography>
       <Paper className={classes.filterPaper}>
         {!showAddressPicker && (
-          <Typography id="continuous-slider" gutterBottom>
-            {currentPlaceLabel}
-            <Button onClick={() => setShowAddressPicker(true)}>
+          <div className={classes.searchLocation}>
+            <Typography id="continuous-slider">{currentPlaceLabel}</Typography>
+            <Button
+              data-test="new-location-button"
+              onClick={() => setShowAddressPicker(true)}
+              className={classes.enterAddressButton}>
               Select new location
             </Button>
-          </Typography>
+          </div>
         )}
         {showAddressPicker && (
           <LoadScript
             id="script-loader"
             libraries={USED_GOOGLE_MAPS_LIBRARIES}
-            googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
+            googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
             <PlacesAutocomplete
               value={currentPlaceLabel}
               onChange={handlePlaceChange}>
@@ -182,6 +204,7 @@ function SearchPage() {
                 <>
                   {/* {console.log(suggestions)} */}
                   <Autocomplete
+                    data-test="places-autocomplete"
                     onChange={handlePlaceSelect}
                     options={suggestions}
                     loading={loading}
@@ -189,6 +212,7 @@ function SearchPage() {
                     noOptionsText="No matches"
                     renderInput={(params) => (
                       <TextField
+                        data-test="address-entry"
                         {...getInputProps({
                           ...params,
                           label: 'Address',
@@ -229,27 +253,28 @@ function SearchPage() {
             max={markValues[markValues.length - 1].value}
           />
         </div>
-
+        {/* 
         <Divider className={classes.divider} />
         <Button
           variant="contained"
           color="primary"
           onClick={searchForNearbyRequests}>
           Search
-        </Button>
+        </Button> */}
       </Paper>
-      {/* {searchStatus === 'loading' && (
+      {searching && (
         <Card className={classes.cards}>
           <CardContent>
             <LinearProgress />
           </CardContent>
         </Card>
-      )} */}
+      )}
       {nearbyRequests && nearbyRequests.length === 0 && (
         <Card className={classes.cards}>
           <CardContent>
-            <Typography>
-              No requests found. You can try expanding the search area.
+            <Typography data-test="no-requests-found">
+              No requests found. You can try expanding the search area or try
+              entering a new location.
             </Typography>
           </CardContent>
         </Card>

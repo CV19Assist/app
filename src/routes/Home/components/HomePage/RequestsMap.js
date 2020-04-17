@@ -8,6 +8,9 @@ import styles from './RequestsMap.styles';
 
 const useStyles = makeStyles(styles);
 
+// A random location to get the US map to center.
+const centeralUS = { lat: 40.318984, lng: -96.960146 };
+
 function NeedsMap() {
   const classes = useStyles();
   const firestore = useFirestore();
@@ -28,13 +31,13 @@ function NeedsMap() {
     <>
       <LoadScript
         id="script-header"
-        googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
+        googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
         <GoogleMap
           id="requests-map"
           mapContainerClassName={classes.requestsMap}
           options={{ streetViewControl: false, mapTypeControl: false }}
           zoom={4}
-          center={{ lat: 40.318984, lng: -96.960146 }}>
+          center={centeralUS}>
           <MarkerClusterer options={options} maxZoom={11}>
             {(clusterer) =>
               unfulfilledRequests.map((request) => (

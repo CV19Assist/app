@@ -42,7 +42,7 @@ function ClickableMap({ onLocationChange }) {
     const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
     // Detect locality
     try {
-      Geocode.setApiKey(process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
+      Geocode.setApiKey(process.env.REACT_APP_FIREBASE_API_KEY);
       Geocode.setRegion('us');
       const response = await Geocode.fromLatLng(location.lat, location.lng);
       if (response.status === 'ZERO_RESULTS') {
@@ -132,7 +132,7 @@ function ClickableMap({ onLocationChange }) {
     <>
       <LoadScript
         id="script-loader"
-        googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
+        googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
         <Backdrop
           open={detectingLocation}
           className={classes.backdrop}
