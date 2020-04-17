@@ -112,7 +112,7 @@ jobs:
 
       - name: Set Test Environment Settings
         env:
-          SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
           NEXT_TEST_UID: ${{ secrets.NEXT_TEST_UID }}
           MASTER_TEST_UID: ${{ secrets.MASTER_TEST_UID }}
           PRODUCTION_TEST_UID: ${{ secrets.PRODUCTION_TEST_UID }}
