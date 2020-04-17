@@ -115,6 +115,6 @@ jobs:
           # Get value of Service Account associated with branch (i.e. STAGE_SERVICE_ACCOUNT)
           serviceAccountKey="${secretsPrefix}_SERVICE_ACCOUNT"
           branchServiceAccount=$(eval echo \$${serviceAccountKey})
-          serviceAccount=$(if [ ! -z "${branchServiceAccount}" ]; then echo $branchServiceAccount; else echo $MASTER_SERVICE_ACCOUNT; fi;)
-          echo "::set-env name=SERVICE_ACCOUNT::$serviceAccount"
+          export SERVICE_ACCOUNT=$(if [ ! -z "${branchServiceAccount}" ]; then echo $branchServiceAccount; else echo $MASTER_SERVICE_ACCOUNT; fi;)
+          echo "Service Account selected for projectId '$(echo $serviceAccount | jq .project_id)'"
           bin/updateEmailTemplates.js

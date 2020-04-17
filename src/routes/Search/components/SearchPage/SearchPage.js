@@ -74,7 +74,7 @@ function SearchPage() {
   const firestore = useFirestore();
   const { GeoPoint } = useFirestore;
 
-  const searchForNearbyRequests = async () => {
+  async function searchForNearbyRequests() {
     // Use lat/long set to state (either from profile or default)
     const { latitude, longitude } = currentLatLong;
     try {
@@ -101,7 +101,7 @@ function SearchPage() {
       // eslint-disable-next-line no-console
       console.log(err);
     }
-  };
+  }
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
