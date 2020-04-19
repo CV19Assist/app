@@ -60,7 +60,31 @@ async function convertRequests() {
       );
     });
     await batch.commit();
-    console.log('Successfully converted requests');
+    console.log(
+      'Successfully converted needs -> requests, copying needs/$needId/history...',
+    );
+
+    // Copy needs/$needId/history -> requests/$requestId/actions
+    // Batch copy of all actions for a single need
+    await Promise.all(
+      needsSnap.docs.map(async (needSnap) => {
+        const needActionsRef = admin
+          .firestore()
+          .collection(`needs/${needSnap.id}/history`);
+        const actionsBatch = admin.firestore().batch();
+        const needActionsSnap = await needActionsRef.get();
+        needActionsSnap.forEach((needActionSnap) => {
+          actionsBatch.set(
+            admin.firestore().doc(`requests/${needSnap.id}/actions`),
+            needActionSnap,
+          );
+        });
+        await actionsBatch.commit();
+      }),
+    );
+    console.log(
+      'Successfully copied needs/$needId/history -> requests/$requestId/actions',
+    );
   } catch (err) {
     console.log(`Error converting needs -> requests: ${err.message}`);
     throw err;
@@ -124,6 +148,7 @@ async function convertUsers() {
         },
       );
     });
+
     await batch.commit();
     console.log('Successfully converted users');
   } catch (err) {
