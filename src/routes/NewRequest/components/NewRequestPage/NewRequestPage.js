@@ -113,6 +113,7 @@ function useNewRequestPage() {
       createdBy: user.uid,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
+      usersWithContactInfoAccess: [],
       status: 1,
       coordinates: new GeoPoint(
         /* eslint-disable no-underscore-dangle */

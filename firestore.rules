@@ -10,7 +10,7 @@ service cloud.firestore {
     }
 
     function hasRequestContactAccess(res) {
-      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(res.id)).data.usersWithContactInfoAccess
+      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(res.id)).data.d.usersWithContactInfoAccess
     }
 
     match /{document=**} {
@@ -50,7 +50,13 @@ service cloud.firestore {
     match /requests_public/{requestId} {
       allow create: if isOwnerOfRequest(request.resource);
         // && request.resource.data.d.status == 1;
-      allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
+      allow update: if request.auth.uid != null &&
+        // If user requesting contact info.
+        // TODO: How do we prevent a user from requesting on someone else's behalf?
+        request.resource.data.d.usersWithContactInfoAccess.hasAll(resource.data.d.usersWithContactInfoAccess) &&
+        request.resource.data.d.usersWithContactInfoAccess.hasAll([request.auth.uid]) &&
+        request.resource.data.d.usersWithContactInfoAccess.size() == resource.data.d.usersWithContactInfoAccess.size() + 1
+      allow write: if isOwnerOfRequest(resource) && request.time == request.resource.data.d.lastUpdatedAt;
       allow read;
     }
 
