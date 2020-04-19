@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, generatePath } from 'react-router-dom';
 import { Marker, InfoWindow } from '@react-google-maps/api';
 import PropTypes from 'prop-types';
 import { makeStyles, Button, Typography, Divider } from '@material-ui/core';
 import { allCategoryMap } from 'constants/categories';
 import immediacyMap from 'constants/immediacy';
 import { format } from 'date-fns';
+import { REQUEST_PATH } from 'constants/paths';
 import styles from './MapMarker.styles';
 
 const useStyles = makeStyles(styles);
@@ -54,7 +55,7 @@ function MapMarker(props) {
             size="small"
             color="primary"
             component={Link}
-            to={`/needs/${request.id}`}>
+            to={generatePath(REQUEST_PATH, { requestId: request.id })}>
             Details...
           </Button>
         </div>

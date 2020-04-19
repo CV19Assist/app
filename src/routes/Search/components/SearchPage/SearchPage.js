@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
+import { generatePath } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFirestore, useUser } from 'reactfire';
 import {
@@ -14,6 +14,7 @@ import {
   Chip,
   TextField,
   Card,
+  CardActions,
   CardContent,
   CircularProgress,
   LinearProgress,
@@ -38,6 +39,7 @@ import {
   DEFAULT_LOCATION_NAME,
   USED_GOOGLE_MAPS_LIBRARIES,
 } from 'constants/geo';
+import { REQUEST_PATH } from 'constants/paths';
 import { makeStyles } from '@material-ui/core/styles';
 import { LoadScript } from '@react-google-maps/api';
 import {
@@ -58,7 +60,6 @@ const defaultDistance = 25;
 
 function SearchPage() {
   const classes = useStyles();
-  const location = useLocation();
   const { showError } = useNotifications();
 
   // State
@@ -151,7 +152,9 @@ function SearchPage() {
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
     document.body.appendChild(el);
-    el.value = `${location.origin}/requests/${id}`;
+    el.value = `${window.location.origin}${generatePath(REQUEST_PATH, {
+      requestId: id,
+    })}`;
     el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
@@ -272,7 +275,7 @@ function SearchPage() {
         </Card>
       )}
       {nearbyRequests && nearbyRequests.length === 0 && (
-        <Card className={classes.cards}>
+        <Card className={classes.cards} elevation={1}>
           <CardContent>
             <Typography data-test="no-requests-found">
               No requests found. You can try expanding the search area or try
@@ -283,12 +286,31 @@ function SearchPage() {
       )}
       {nearbyRequests &&
         nearbyRequests.map((result) => (
-          <Card key={result.id} className={classes.cards}>
+          <Card key={result.id} className={classes.cards} elevation={1}>
             <Container maxWidth="lg" className={classes.TaskContainer}>
               <Grid container>
-                <Grid item xs={9}>
+                <Grid item xs={12}>
+                  {parseInt(result.immediacy, 10) > 5 && (
+                    <img
+                      align="right"
+                      src="/taskIcon.png"
+                      width="50px"
+                      height="50px"
+                      alt="Urgent"
+                      title="Urgent"
+                    />
+                  )}
                   <Typography variant="caption" gutterBottom>
-                    ADDED {format(result.createdAt.toDate(), 'p - PPPP')}
+                    REQUESTOR
+                  </Typography>
+                  <Typography variant="h6">
+                    {result.name ? result.name : result.firstName}
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="caption" gutterBottom>
+                    {format(result.createdAt.toDate(), 'p - PPPP')}
                   </Typography>
                   <Typography
                     variant="h5"
@@ -298,6 +320,7 @@ function SearchPage() {
                       <React.Fragment key={item}>
                         {allCategoryMap[item] ? (
                           <Chip
+                            size="small"
                             variant="outlined"
                             icon={
                               item === 'grocery-pickup' ? <GroceryIcon /> : null
@@ -315,6 +338,7 @@ function SearchPage() {
                     {result.needFinancialAssistance && (
                       <Chip
                         variant="outlined"
+                        size="small"
                         icon={<FinancialAssitanceIcon />}
                         label="Need financial assistance"
                       />
@@ -322,32 +346,7 @@ function SearchPage() {
                   </Typography>
                 </Grid>
 
-                {parseInt(result.immediacy, 10) > 5 && (
-                  <Grid item xs={3}>
-                    <img
-                      align="right"
-                      src="/taskIcon.png"
-                      width="50px"
-                      height="50px"
-                      alt="Urgent"
-                      title="Urgent"
-                    />
-                  </Grid>
-                )}
-
                 <Grid item xs={12}>
-                  <Typography variant="caption" gutterBottom>
-                    REQUESTOR
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6}>
-                  <Typography variant="h6">
-                    {result.name ? result.name : result.firstName}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6}>
                   <Typography
                     align="right"
                     variant="h5"
@@ -355,43 +354,54 @@ function SearchPage() {
                     {result.distance} miles
                   </Typography>
                 </Grid>
-
-                <Grid
-                  className={classes.DetailsButton}
-                  align="right"
-                  item
-                  xs={12}>
-                  {navigator.share ? (
-                    <Button
-                      color="primary"
-                      variant="outlined"
-                      onClick={() => {
-                        navigator.share({
-                          title: 'CV19 Assist Need Link',
-                          text: 'CV19 Assist Need Link',
-                          url: `${location.origin}/needs/${result.id}`,
-                        });
-                      }}>
-                      SHARE
-                    </Button>
-                  ) : (
-                    <Button
-                      color="primary"
-                      variant="outlined"
-                      onClick={() => handleCopyNeedLink(result.id)}>
-                      COPY LINK FOR SHARING
-                    </Button>
-                  )}{' '}
-                  <Button variant="contained" color="primary" disableElevation>
-                    DETAILS...
-                  </Button>
-                </Grid>
               </Grid>
             </Container>
+            <CardActions>
+              {navigator.share ? (
+                <Button
+                  size="small"
+                  onClick={() => {
+                    navigator.share({
+                      title: 'CV19 Assist Need Link',
+                      text: 'CV19 Assist Need Link',
+                      url: `${window.location.origin}${generatePath(
+                        REQUEST_PATH,
+                        {
+                          requestId: result.id,
+                        },
+                      )}`,
+                    });
+                  }}>
+                  SHARE
+                </Button>
+              ) : (
+                <Button
+                  size="small"
+                  onClick={() => handleCopyNeedLink(result.id)}>
+                  COPY LINK FOR SHARING
+                </Button>
+              )}{' '}
+              <Button
+                size="small"
+                variant="contained"
+                color="primary"
+                disableElevation>
+                DETAILS...
+              </Button>
+            </CardActions>
           </Card>
         ))}
     </Container>
   );
 }
 
-export default SearchPage;
+function testWrapper() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <SearchPage />
+    </Suspense>
+  );
+}
+
+// export default SearchPage;
+export default testWrapper;
