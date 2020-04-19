@@ -101,8 +101,8 @@ function Homepage() {
 
               <Typography variant="body2" gutterBottom>
                 Below are a few of the currently open requests. If you are in
-                the request area or know of someone in the request area, please
-                help spread the word and refer them to this site.
+                the area with or know of someone there, please help spread the
+                word and refer them to this site.
               </Typography>
 
               <RequestsMap />

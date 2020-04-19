@@ -29,6 +29,13 @@ export default (theme) => ({
   filterPaper: {
     padding: theme.spacing(2),
   },
+  searchLocation: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  enterAddressButton: {
+    marginLeft: 'auto',
+  },
   searchInput: {
     paddingBottom: theme.spacing(3),
   },

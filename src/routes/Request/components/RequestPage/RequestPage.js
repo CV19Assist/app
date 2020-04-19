@@ -85,7 +85,7 @@ function RequestPage({ hideActionButtons }) {
         <img
           style={{ float: 'right' }}
           alt="Request's location"
-          src={`https://maps.googleapis.com/maps/api/staticmap?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&center=${latitude},${longitude}&markers=${latitude},${longitude}&size=280x280&zoom=10`}
+          src={`https://maps.googleapis.com/maps/api/staticmap?key=${process.env.REACT_APP_FIREBASE_API_KEY}&center=${latitude},${longitude}&markers=${latitude},${longitude}&size=280x280&zoom=10`}
         />
 
         {/* <Typography variant="caption" gutterBottom>
