@@ -1,30 +1,35 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { generatePath } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFirestore, useUser } from 'reactfire';
-import {
-  Typography,
-  Container,
-  Grid,
-  Button,
-  Divider,
-  Paper,
-  Slider,
-  Chip,
-  TextField,
-  Card,
-  CardActions,
-  CardContent,
-  CircularProgress,
-  LinearProgress,
-} from '@material-ui/core';
-import { Autocomplete, Alert } from '@material-ui/lab';
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from 'react-places-autocomplete';
 import { GeoFirestore } from 'geofirestore';
+import Typography from '@material-ui/core/Typography';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
+import Slider from '@material-ui/core/Slider';
+import Chip from '@material-ui/core/Chip';
+import TextField from '@material-ui/core/TextField';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Alert from '@material-ui/lab/Alert';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import { makeStyles } from '@material-ui/core/styles';
+import { LoadScript } from '@react-google-maps/api';
+import {
+  ShoppingBasket as GroceryIcon,
+  AttachMoney as FinancialAssitanceIcon,
+} from '@material-ui/icons';
 import { kmToMiles } from 'utils/geo';
 import { useNotifications } from 'modules/notification';
 import {
@@ -40,12 +45,6 @@ import {
   USED_GOOGLE_MAPS_LIBRARIES,
 } from 'constants/geo';
 import { REQUEST_PATH } from 'constants/paths';
-import { makeStyles } from '@material-ui/core/styles';
-import { LoadScript } from '@react-google-maps/api';
-import {
-  ShoppingBasket as GroceryIcon,
-  AttachMoney as FinancialAssitanceIcon,
-} from '@material-ui/icons';
 import styles from './SearchPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -79,45 +78,40 @@ function SearchPage() {
   const user = useUser();
   const firestore = useFirestore();
   const { GeoPoint } = useFirestore;
-
-  useEffect(() => {
-    async function searchForNearbyRequests() {
-      // Use lat/long set to state (either from profile or default)
-      const { latitude, longitude } = currentLatLong;
-      setSearching(true);
-      try {
-        // Query for nearby requests
-        const geofirestore = new GeoFirestore(firestore);
-        const nearbyRequestsSnap = await geofirestore
-          .collection(REQUESTS_PUBLIC_COLLECTION)
-          .near({
-            center: new GeoPoint(latitude, longitude),
-            radius: KM_TO_MILES * distance,
-          })
-          .where('status', '==', 1)
-          .limit(30)
-          .get();
-        const sortedByDistance = nearbyRequestsSnap.docs.sort(
-          (a, b) => a.distance - b.distance,
-        );
-        setNearbyRequests(
-          sortedByDistance.map((docSnap) => ({
-            ...docSnap.data(),
-            id: docSnap.id,
-            distance: kmToMiles(docSnap.distance).toFixed(2),
-          })),
-        );
-        setSearching(false);
-      } catch (err) {
-        showError('Error searching for nearby requests');
-        // eslint-disable-next-line no-console
-        console.log(err);
-        setSearching(false);
-      }
+  async function searchForNearbyRequests() {
+    // Use lat/long set to state (either from profile or default)
+    const { latitude, longitude } = currentLatLong;
+    setSearching(true);
+    try {
+      // Query for nearby requests
+      const geofirestore = new GeoFirestore(firestore);
+      const nearbyRequestsSnap = await geofirestore
+        .collection(REQUESTS_PUBLIC_COLLECTION)
+        .near({
+          center: new GeoPoint(latitude, longitude),
+          radius: KM_TO_MILES * distance,
+        })
+        .where('status', '==', 1)
+        .limit(30)
+        .get();
+      const sortedByDistance = nearbyRequestsSnap.docs.sort(
+        (a, b) => a.distance - b.distance,
+      );
+      setNearbyRequests(
+        sortedByDistance.map((docSnap) => ({
+          ...docSnap.data(),
+          id: docSnap.id,
+          distance: kmToMiles(docSnap.distance).toFixed(2),
+        })),
+      );
+      setSearching(false);
+    } catch (err) {
+      showError('Error searching for nearby requests');
+      // eslint-disable-next-line no-console
+      console.log(err);
+      setSearching(false);
     }
-    searchForNearbyRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentLatLong, distance]);
+  }
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
@@ -142,12 +136,13 @@ function SearchPage() {
           `Using default location: ${DEFAULT_LOCATION_NAME}`,
         );
       }
+      searchForNearbyRequests();
     }
     // NOTE: useEffect is used to load data so it can be done conditionally based
     // on whether current user is logged in
     loadLatLongFromProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, []);
 
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
@@ -395,13 +390,5 @@ function SearchPage() {
   );
 }
 
-function testWrapper() {
-  return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <SearchPage />
-    </Suspense>
-  );
-}
-
 // export default SearchPage;
-export default testWrapper;
+export default SearchPage;
