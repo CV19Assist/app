@@ -10,6 +10,7 @@ export default (theme) => ({
   },
   paper: {
     padding: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   container: {
     padding: theme.spacing(3),
@@ -28,5 +29,8 @@ export default (theme) => ({
   },
   needChip: {
     marginRight: theme.spacing(1),
+  },
+  noDetails: {
+    fontStyle: 'italic',
   },
 });

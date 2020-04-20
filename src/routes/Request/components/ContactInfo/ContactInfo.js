@@ -1,6 +1,7 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useFirestoreDoc, useFirestore, useUser } from 'reactfire';
+import { Link } from 'react-router-dom';
 import {
   REQUESTS_PUBLIC_COLLECTION,
   REQUESTS_CONTACT_INFO_COLLECTION,
@@ -17,6 +18,7 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
+import { LOGIN_PATH } from 'constants/paths';
 import styles from './ContactInfo.styles';
 
 const useStyles = makeStyles(styles);
@@ -57,6 +59,7 @@ function useContactInfo(requestId) {
   );
 
   hasAccess =
+    user != null &&
     usersWithContactInfoAccess != null &&
     usersWithContactInfoAccess.indexOf(user.uid) > -1;
 
@@ -145,6 +148,7 @@ ContactDetails.propTypes = {
 
 function ContactInfo({ requestId }) {
   const classes = useStyles();
+  const user = useUser();
   const [
     hasAccess,
     requestAccess,
@@ -168,13 +172,22 @@ function ContactInfo({ requestId }) {
         <ContactDetails requestId={requestId} />
       ) : (
         <>
-          <Button
-            size="small"
-            startIcon={<RequestContactIcon />}
-            onClick={requestAccess}>
-            Show Contact Info...
-          </Button>
-
+          {user ? (
+            <Button
+              size="small"
+              startIcon={<RequestContactIcon />}
+              onClick={requestAccess}>
+              Show Contact Info...
+            </Button>
+          ) : (
+            <Button
+              size="small"
+              component={Link}
+              to={LOGIN_PATH}
+              startIcon={<RequestContactIcon />}>
+              Please login to see contact info
+            </Button>
+          )}
           <Dialog open={confirmationDialogOpen}>
             <DialogTitle>Viewing Contact Details</DialogTitle>
             <DialogContent>

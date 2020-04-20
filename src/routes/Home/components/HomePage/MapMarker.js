@@ -2,17 +2,13 @@ import React, { useState } from 'react';
 import { Link, generatePath } from 'react-router-dom';
 import { Marker, InfoWindow } from '@react-google-maps/api';
 import PropTypes from 'prop-types';
-import { makeStyles, Button, Typography, Divider } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { allCategoryMap } from 'constants/categories';
 import immediacyMap from 'constants/immediacy';
 import { format } from 'date-fns';
 import { REQUEST_PATH } from 'constants/paths';
-import styles from './MapMarker.styles';
-
-const useStyles = makeStyles(styles);
 
 function MapMarker(props) {
-  const classes = useStyles();
   const { request, clusterer, position } = props;
   const [marker, setMarker] = useState(null);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
@@ -49,15 +45,11 @@ function MapMarker(props) {
             Needs:{' '}
             {request.d.needs.map((key) => allCategoryMap[key].shortDescription)}
           </Typography>
-          <Divider className={classes.divider} />
-          <Button
-            variant="outlined"
-            size="small"
-            color="primary"
-            component={Link}
-            to={generatePath(REQUEST_PATH, { requestId: request.id })}>
-            Details...
-          </Button>
+          <Typography variant="subtitle2">
+            <Link to={generatePath(REQUEST_PATH, { requestId: request.id })}>
+              Details...
+            </Link>
+          </Typography>
         </div>
       </InfoWindow>
     );

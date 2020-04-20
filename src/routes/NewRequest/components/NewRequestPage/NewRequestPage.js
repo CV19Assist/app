@@ -191,7 +191,7 @@ function useNewRequestPage() {
 
       const action = {
         requestId: requestRef.id,
-        action: 1, // 1-created
+        kind: 1, // 1-created
         createdAt: requestPublicInfo.createdAt,
         ...userInfo,
       };

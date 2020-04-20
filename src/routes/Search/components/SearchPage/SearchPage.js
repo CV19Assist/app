@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { generatePath } from 'react-router-dom';
+import { Link, generatePath } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFirestore, useUser } from 'reactfire';
 import PlacesAutocomplete, {
@@ -377,6 +377,8 @@ function SearchPage() {
                 </Button>
               )}{' '}
               <Button
+                component={Link}
+                to={generatePath(REQUEST_PATH, { requestId: result.id })}
                 size="small"
                 variant="contained"
                 color="primary"
