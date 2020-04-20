@@ -146,7 +146,7 @@ function useNewRequestPage() {
       // TODO: Test and verify after confirming the sign-in workflow.
       const pieces = user.displayName.split(' ');
       if (pieces.length < 2) {
-        showError("Temporary name hack didn't work");
+        showError("Temporary name approach didn't work");
         return;
       }
       if (profile) {
@@ -212,7 +212,7 @@ function useNewRequestPage() {
           .set(action),
       ]);
 
-      showSuccess('Request submitted!');
+      showSuccess('Request submitted');
       history.replace(REQUEST_SUCCESSFUL_PATH);
     } catch (err) {
       showError(err.message || 'Error submitting request');
