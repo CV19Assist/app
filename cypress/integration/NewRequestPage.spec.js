@@ -17,7 +17,7 @@ describe('New Request Page', () => {
     cy.get(createSelector('submit-request')).click();
     cy.get(`${createSelector('firstName')} > p.Mui-error`).should('exist');
     cy.get(`${createSelector('lastName')} > p.Mui-error`).should('exist');
-    cy.get(`${createSelector('phoneNumber')} > p.Mui-error`).should('exist');
+    cy.get(`${createSelector('phone')} > p.Mui-error`).should('exist');
     cy.get(`${createSelector('email')} > p.Mui-error`).should('exist');
   });
 
@@ -27,7 +27,7 @@ describe('New Request Page', () => {
     cy.get(createSelector('otherDetails')).type('Additional details here');
     cy.get(createSelector('firstName')).type('Joe');
     cy.get(createSelector('lastName')).type('Smith');
-    cy.get(createSelector('phoneNumber')).type('123-456-7890');
+    cy.get(createSelector('phone')).type('123-456-7890');
     cy.get(createSelector('email')).type('test@example.com');
     // cy.callFirestore('get', 'aggregates/unfulfilledNeedsInfo', {
     //   orderBy: ['createdAt', 'desc'],

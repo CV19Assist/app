@@ -24,17 +24,25 @@ async function uploadEmailTemplate(fileName) {
   }
 }
 
-async function updateTemplates() {
-  let serviceAccount;
+function loadServiceAccount() {
+  if (process.env.SERVICE_ACCOUNT) {
+    try {
+      return JSON.parse(process.env.SERVICE_ACCOUNT);
+    } catch (err) {
+      console.log(`Error parsing service account env variable: ${err.message}`); // eslint-disable-line no-console
+      throw err;
+    }
+  }
   try {
-    serviceAccount =
-      process.env.SERVICE_ACCOUNT ||
-      require(`${__dirname}/../serviceAccount.json`); // eslint-disable-line import/no-dynamic-require, global-require
+    return require(`${__dirname}/../serviceAccount.json`); // eslint-disable-line import/no-dynamic-require, global-require
   } catch (err) {
-    console.log(`Error loading service account: ${err.message}`); // eslint-disable-line no-console
-    process.exit(1);
+    console.log(`Error loading service account from file: ${err.message}`); // eslint-disable-line no-console
     throw err;
   }
+}
+
+async function updateTemplates() {
+  const serviceAccount = loadServiceAccount();
   // Init Firebase admin SDK
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

@@ -8,12 +8,10 @@
 
 ## Table of Contents
 
-1. [Features](#features)
 1. [Requirements](#requirements)
 1. [Getting Started](#getting-started)
 1. [Application Structure](#application-structure)
-1. [Development](#development)
-   1. [Routing](#routing)
+1. [Routing](#routing)
 1. [Testing](#testing)
 1. [Configuration](#configuration)
 1. [Production](#production)
@@ -151,16 +149,16 @@ More about how routing works is available in [the react-router-dom docs](https:/
 
 ### UI Tests
 
-Cypress is used to write and run UI tests which live in the `cypress` folder. The following npm scripts can be used to run tests:
+Cypress is used to write and run UI tests which live in the `cypress` folder. The following scripts can be used to run tests:
 
-- Run using Cypress run: `npm run test`
-- Open Test Runner UI (`cypress open`): `npm run test:open`
+- Run using Cypress run: `yarn run test`
+- Open Test Runner UI (`cypress open`): `yarn run test:open`
 
 To run tests against emulators:
 
-1. Start database emulators: `npm run emulate`
-1. Start React app pointed at emulators: `npm run start:emulate`
-1. Open Cypress test runner with test utils pointed at emulators: `npm run test:emulate`
+1. Start database emulators: `yarn run emulators`
+1. Start React app pointed at emulators: `yarn run start:emulate`
+1. Open Cypress test runner with test utils pointed at emulators: `yarn run test:emulate`
 
 To Run tests in CI add the following environment variables within your CI provider:
 
@@ -170,9 +168,9 @@ To Run tests in CI add the following environment variables within your CI provid
 
 ## Deployment
 
-Build code before deployment by running `npm run build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
+Build code before deployment by running `yarn run build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
 
-Before starting make sure to install Firebase Command Line Tool: `npm i -g firebase-tools`
+Before starting make sure to install Firebase Command Line Tool: `yarn i -g firebase-tools`
 
 #### CI Deploy (recommended)
 
@@ -190,10 +188,10 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 #### Manual deploy
 
 1. Run `firebase:login`
-1. Build Project: `npm run build`
+1. Build Project: `yarn run build`
 1. Deploy to Firebase (everything including Hosting and Functions): `firebase deploy`
 
-**NOTE:** You can use `npm start:dist` to test how your application will work when deployed to Firebase.
+**NOTE:** You can use `yarn start:dist` to test how your application will work when deployed to Firebase.
 
 ## FAQ
 

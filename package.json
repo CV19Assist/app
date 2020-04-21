@@ -48,6 +48,7 @@
     "react-google-button": "^0.7.0",
     "react-helmet": "^6.0.0",
     "react-hook-form": "^5.2.0",
+    "react-places-autocomplete": "^7.2.1",
     "react-router-dom": "^5.1.2",
     "react-transition-group": "^4.3.0",
     "reactfire": "^2.0.3",

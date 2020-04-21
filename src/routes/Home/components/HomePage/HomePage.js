@@ -11,7 +11,7 @@ import {
 import { Helmet } from 'react-helmet';
 import { useUser } from 'reactfire';
 import { NEW_REQUEST_PATH } from 'constants/paths';
-import NeedsMap from './NeedsMap';
+import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
 
 const useStyles = makeStyles(styles);
@@ -32,7 +32,8 @@ function Homepage() {
               variant="h5"
               align="center"
               // color="textPrimary"
-              gutterBottom>
+              gutterBottom
+              data-test="welcome-banner">
               Welcome to the Volunteer Coronavirus Assistance System
             </Typography>
 
@@ -100,11 +101,11 @@ function Homepage() {
 
               <Typography variant="body2" gutterBottom>
                 Below are a few of the currently open requests. If you are in
-                the request area or know of someone in the request area, please
-                help spread the word and refer them to this site.
+                the area with or know of someone there, please help spread the
+                word and refer them to this site.
               </Typography>
 
-              <NeedsMap />
+              <RequestsMap />
 
               <div className={classes.actionButtons}>
                 <Button
