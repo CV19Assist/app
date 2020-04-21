@@ -1,69 +1,211 @@
-# COVID-19 Assist app
+# app
 
-## Firebase Deployment Notes
+## Please note that all new development is now being done on the [`next branch`](/CV19Assist/app/tree/next) which will be going live in the coming days.
 
-* View Environments: `firebase use`
-* Select proejct: `firebase use project_id_or_alias` Either `default` for dev, or `production` for production.
+[![Build Status][build-status-image]][build-status-url]
+[![License][license-image]][license-url]
+[![Code Style][code-style-image]][code-style-url]
 
-To deploy, make sure that you select the right environment.  Then run one of the following.
+## Table of Contents
+
+1. [Requirements](#requirements)
+1. [Getting Started](#getting-started)
+1. [Application Structure](#application-structure)
+1. [Routing](#routing)
+1. [Testing](#testing)
+1. [Configuration](#configuration)
+1. [Production](#production)
+1. [Deployment](#deployment)
+
+## Requirements
+
+- node `^10.15.0`
+- npm `^6.0.0`
+- yarn `^1.0.0`
+
+## Getting Started
+
+1. Install app and functions dependencies: `yarn install && yarn install --prefix functions`
+1. Copy settings from one of the `.env.*` files into `.env.local` - this is not tracked by git and will be how your local development project gets Firebase config.
+1. Start Development server: `yarn start`
+
+While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:
+
+| `yarn <script>` | Description                                                                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `start`         | Serves your app at `localhost:3000` with automatic refreshing and hot module replacement                                |
+| `start:dist`    | Builds the application to `./dist` then serves at `localhost:3000` using firebase hosting emulator                      |
+| `start:emulate` | Same as `start`, but pointed to database emulators (make sure to call `emulators` first to boot up emulators)           |
+| `build`         | Builds the application to `./dist`                                                                                      |
+| `test`          | Runs ui tests with Cypress. See [testing](#testing)                                                                     |
+| `test:open`     | Opens ui tests runner (Cypress Dashboard). See [testing](#testing)                                                      |
+| `test:emulate`  | Same as `test:open` but with tests pointed at emulators                                                                 |
+| `lint`          | [Lints](http://stackoverflow.com/questions/8503559/what-is-linting) the project for potential errors                    |
+| `lint:fix`      | Lints the project and [fixes all correctable errors](http://eslint.org/docs/user-guide/command-line-interface.html#fix) |
+
+[Husky](https://github.com/typicode/husky) is used to enable `prepush` hook capability. The `prepush` script currently runs `eslint`, which will keep you from pushing if there is any lint within your code. If you would like to disable this, remove the `prepush` script from the `package.json`.
+
+## Config Files
+
+There are multiple configuration files:
+
+- Firebase Project Configuration - `.firebaserc`
+- Cloud Functions Local Configuration - `functions/.runtimeconfig.json`
+
+More details in the [Application Structure Section](#application-structure)
+
+## Application Structure
+
+The application structure presented in this boilerplate is **fractal**, where functionality is grouped primarily by feature rather than file type. Please note, however, that this structure is only meant to serve as a guide, it is by no means prescriptive. That said, it aims to represent generally accepted guidelines and patterns for building scalable applications.
 
 ```
-# For single component
-firebase deploy --only functions
-firebase deploy --only hosting
-
-# For multiple components
-firebase deploy --only functions,hosting
+├── .github                  # Github Settings + Github Actions Workflows
+│   ├── deploy.yml           # Deploy workflow (called on merges to "master" and "production" branches)
+│   └── verify.yml           # Verify workflow (run when PR is created)
+├── cypress                  # UI Tests
+│   └── index.html           # Main HTML page container for app
+├── public                   # All build-related configuration
+│   └── index.html           # Main HTML page container for app
+├── src                      # Application source code
+│   ├── components           # Global Reusable Presentational Components
+│   ├── constants            # Project constants such as firebase paths and form names
+│   │  └── paths.js          # Paths for application routes
+│   ├── containers           # Global Reusable Container Components
+│   ├── layouts              # Components that dictate major page structure
+│   │   └── CoreLayout       # Global application layout in which routes are rendered
+│   ├── routes               # Main route definitions and async split points
+│   │   ├── index.js         # Bootstrap main application routes
+│   │   └── Home             # Fractal route
+│   │       ├── index.js     # Route definitions and async split points
+│   │       ├── components   # Presentational React Components (state connect and handler logic in enhancers)
+│   │       └── routes/**    # Fractal sub-routes (** optional)
+│   ├── static               # Static assets
+│   ├── store                # Redux-specific pieces
+│   │   ├── createStore.js   # Create and instrument redux store
+│   │   └── reducers.js      # Reducer registry and injection
+│   ├── styles               # Application-wide styles (generally settings)
+│   └── utils                # General Utilities (used throughout application)
+│   │   ├── components.js    # Utilities for building/implementing react components (often used in enhancers)
+│   │   ├── form.js          # For forms
+│   │   └── router.js        # Utilities for routing such as those that redirect back to home if not logged in
+├── .env.local               # Environment settings for when running locally
+├── .eslintignore            # ESLint ignore file
+├── .eslintrc.js             # ESLint configuration
+├── .firebaserc              # Firebase Project configuration settings (including ci settings)
+├── cypress.json             # Cypress project settings
+├── database.rules.json      # Security Rules for Firebase Real Time Database
+├── dbschema.txt.js          # File outlining planned database schema
+├── firebase.json            # Firebase Service settings (Hosting, Functions, etc)
+├── firestore.indexes.json   # Indexes for Cloud Firestore
+├── firestore.rules          # Security Rules for Cloud Firestore
+└── storage.rules            # Security Rules for Cloud Storage For Firebase
 ```
 
-## Available Scripts
+## Routing
 
-In the project directory, you can run:
+We use `react-router-dom` [route matching](https://reacttraining.com/react-router/web/guides/basic-components/route-matching) (`<route>/index.js`) to define units of logic within our application. The application routes are defined within `src/routes/index.js`, which loads route settings which live in each route's `index.js`. The component with the suffix `Page` is the top level component of each route (i.e. `HomePage` is the top level component for `Home` route).
 
-### `npm start`
+There are two types of routes definitions:
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Sync Routes
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+The most simple way to define a route is a simple object with `path` and `component`:
 
-### `npm run build:staging`
+_src/routes/Home/index.js_
 
-This will do a production build, but use the `.env.staging` file which has build configuration for the cv19assist-dev firebase project.
+```js
+import HomePage from "./components/HomePage";
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-## Local Development
-
-For local development, you can create a `.env.development.local` with the following configuration to run against the local firebase functions emulator.
-
-```
-REACT_APP_API_URL=http://localhost:5001/cv19assist-dev/us-central1/api/v1
+// Sync route definition
+export default {
+  path: "/",
+  component: HomePage,
+};
 ```
 
-## Initializing the Firebase Environment
+### Async Routes
 
-The firebase functions require the following environment variables.
+Routes can also be seperated into their own bundles which are only loaded when visiting that route, which helps decrease the size of your main application bundle. Routes that are loaded asynchronously are defined using `loadable` function which uses `React.lazy` and `React.Suspense`:
 
+_src/routes/NotFound/index.js_
+
+```js
+import loadable from "utils/components";
+
+// Async route definition
+export default {
+  path: "*",
+  component: loadable(() =>
+    import(/* webpackChunkName: 'NotFound' */ "./components/NotFoundPage")
+  ),
+};
 ```
-# Set the environment URL - Production
-firebase functions:config:set environment.name=Production
-firebase functions:config:set frontend.url=https://cv19assist.com
-firebase functions:config:set admin.emails.0='first-email-address-here'
-firebase functions:config:set admin.emails.1='second-email-address-here'
 
-# For staging
-firebase functions:config:set environment.name=Dev
-firebase functions:config:set frontend.url=https://cv19assist-dev.web.app
-firebase functions:config:set admin.emails.0='first-email-address-here'
-firebase functions:config:set admin.emails.1='second-email-address-here'
-```
+With this setting, the name of the file (called a "chunk") is defined as part of the code as well as a loading spinner showing while the bundle file is loading.
+
+More about how routing works is available in [the react-router-dom docs](https://reacttraining.com/react-router/web/guides/quick-start).
+
+## Testing
+
+### UI Tests
+
+Cypress is used to write and run UI tests which live in the `cypress` folder. The following scripts can be used to run tests:
+
+- Run using Cypress run: `yarn run test`
+- Open Test Runner UI (`cypress open`): `yarn run test:open`
+
+To run tests against emulators:
+
+1. Start database emulators: `yarn run emulators`
+1. Start React app pointed at emulators: `yarn run start:emulate`
+1. Open Cypress test runner with test utils pointed at emulators: `yarn run test:emulate`
+
+To Run tests in CI add the following environment variables within your CI provider:
+
+- `SERVICE_ACCOUNT` - Used to create custom auth tokens for test user login
+- `FIREBASE_APP_NAME` - name of Firebase app (used to load SDK config)
+- `TEST_UID` - UID of the user used for testing
+
+## Deployment
+
+Build code before deployment by running `yarn run build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
+
+Before starting make sure to install Firebase Command Line Tool: `yarn i -g firebase-tools`
+
+#### CI Deploy (recommended)
+
+**Note**: Config for this is located within
+`firebase-ci` has been added to simplify the CI deployment process. All that is required is providing authentication with Firebase:
+
+1. Login: `firebase login:ci` to generate an authentication token (will be used to give CI rights to deploy on your behalf)
+1. Set `FIREBASE_TOKEN` environment variable within CI environment
+1. Run a build on CI
+
+If you would like to deploy to different Firebase instances for different branches (i.e. `prod`), change `ci` settings within `.firebaserc`.
+
+For more options on CI settings checkout the [firebase-ci docs](https://github.com/prescottprue/firebase-ci)
+
+#### Manual deploy
+
+1. Run `firebase:login`
+1. Build Project: `yarn run build`
+1. Deploy to Firebase (everything including Hosting and Functions): `firebase deploy`
+
+**NOTE:** You can use `yarn start:dist` to test how your application will work when deployed to Firebase.
+
+## FAQ
+
+1. Why node `10` instead of a newer version?
+
+[Cloud Functions runtime runs on `10`](https://cloud.google.com/functions/docs/writing/#the_cloud_functions_runtime), which is why that is what is used for the CI build version.
+
+[build-status-image]: https://img.shields.io/github/workflow/status/CV19Assist/app/Deploy?style=flat-square
+[build-status-url]: https://github.com/CV19Assist/app/actions
+[climate-image]: https://img.shields.io/codeclimate/github/CV19Assist/app.svg?style=flat-square
+[climate-url]: https://codeclimate.com/github/CV19Assist/app
+[coverage-image]: https://img.shields.io/codeclimate/coverage/github/CV19Assist/app.svg?style=flat-square
+[coverage-url]: https://codeclimate.com/github/CV19Assist/app
+[license-image]: https://img.shields.io/badge/MIT-blue.svg?style=flat-square
+[license-url]: https://github.com/CV19Assist/app/blob/master/LICENSE
+[code-style-image]: https://img.shields.io/badge/code%20style-airbnb-blue.svg?style=flat-square
+[code-style-url]: http://airbnb.io/javascript/

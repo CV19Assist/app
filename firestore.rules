@@ -1,14 +1,76 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner(res) {
+      return res.data.createdBy == request.auth.uid
+    }
+
+    function isOwnerOfRequest(res) {
+      return get(/databases/$(database)/documents/requests/$(res.id)).data.createdBy == request.auth.uid
+    }
+
+    function hasRequestContactAccess(res) {
+      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(res.id)).data.usersWithContactInfoAccess
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
 
-    match /aggregates/unfulfilledNeedsInfo {
-      allow read: if true;
-      allow write: if false;
+    // Private user profiles
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      allow update: if request.resource.auth.uid == userId // is user associated with user object
+        && !request.resource.data.role; // does not contain the role parameter
     }
 
+    // Semi-private User info which can be shared
+    match /users_privileged/{userId} {
+      // TODO: Add read support for sharing this
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Public user profiles
+    match /users_public/{userId} {
+      allow read;
+      allow write: if false; // only written to by indexUser cloud function
+    }
+
+    // Private request data
+    match /requests/{requestId} {
+      allow create: if isOwner(request.resource)
+        && request.time == request.resource.data.createdAt; // createdAt is created timestamp
+      allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
+      // TODO: Make read require data on request
+      // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isOwner(resource)
+      allow read;
+    }
+
+    // Public request data
+    match /requests_public/{requestId} {
+      allow create: if isOwnerOfRequest(request.resource);
+        // && request.resource.data.d.status == 1;
+      allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
+      allow read;
+    }
+
+    // Public request actions
+    match /requests_actions/{requestId} {
+      allow create: if isOwnerOfRequest(request.resource);
+      allow read;
+    }
+
+    // Contact info for a request - requires contact info access
+    match /requests_contact/{requestId} {
+      allow create: if isOwnerOfRequest(request.resource);
+      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(resource);
+      allow read: if hasRequestContactAccess(resource);
+    }
+
+    // Contact requests
+    match /contacts/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt;
+      allow read: if false;
+    }
   }
 }
