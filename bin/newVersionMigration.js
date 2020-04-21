@@ -119,7 +119,9 @@ async function convertUsers() {
           coordinates: profileSnap.get('d.coordinates'),
           generalLocationName: profileSnap.get('d.generalLocationName'),
         },
-        // TODO: Look into if g/l should be copied
+        // TODO: Look into if g/l should be changed to be generalized or if they were already
+        g: profileSnap.get('g'),
+        l: profileSnap.get('l'),
       };
       batch.set(
         admin.firestore().doc(`users_public/${profileSnap.id}`),
