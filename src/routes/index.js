@@ -18,6 +18,8 @@ import PrivacyPolicyRoute from './PrivacyPolicy';
 import TermsOfServiceRoute from './TermsOfService';
 import RequestSuccessfulRoute from './RequestSuccessful';
 import NewRequestRoute from './NewRequest';
+import BlogPageRoute from './Blog';
+import SinglePostPageRoute from './SinglePost';
 
 export default function createRoutes() {
   return (
@@ -49,6 +51,17 @@ export default function createRoutes() {
               ),
             )
           }
+          <Route
+            exact
+            path={BlogPageRoute.path}
+            component={() => <BlogPageRoute.component />}
+          />
+          <Route
+            exact
+            path={SinglePostPageRoute.path}
+            component={() => <SinglePostPageRoute.component />}
+          />
+
           <Route component={NotFoundRoute.component} />
         </Switch>
       </SuspenseWithPerf>
