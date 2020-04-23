@@ -149,11 +149,9 @@ jobs:
           branchEnvFileName=env.$gitBranch
           envFileName=$(if [ -f "$branchEnvFileName" ]; then echo $branchEnvFileName; else echo .env.next; fi;)
 
-          set -o allexport
-          source $envFileName
-          set +o allexport
+          for v in `cat $envFileName` ; do echo "::set-env name=${v%%=*}::${v##*=}" ; done
           echo "after env set of file $envFileName"
-      
+
       - name: Print Environment Variables Context
         if: matrix.app != 'horchata'
         run: |
@@ -176,6 +174,7 @@ jobs:
           record: true
           # we have already installed all dependencies above
           install: false
+          browser: chrome
           group: 'UI Tests'
           start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
           wait-on: http://localhost:3000
