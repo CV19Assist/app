@@ -142,7 +142,24 @@ jobs:
           # Get value of Service Account associated with branch (i.e. STAGE_SERVICE_ACCOUNT)
           branchTestUidKey="${branchPrefix}_TEST_UID"
           branchTestUid=$(eval echo \$${branchTestUidKey})
-          echo "::set-env name=CYPRESS_TEST_UID::$branchTestUid"
+          testUid=$(if [ ! -z "${branchTestUid}" ]; then echo $branchTestUid; else echo $NEXT_TEST_UID; fi;)
+          echo "::set-env name=CYPRESS_TEST_UID::$testUid"
+
+          # Use firebase SDK API to get the app's configuration and export to CYPRESS. NOTE: databaseURL is intentionally removed
+          firebaseConfig=$($(yarn bin)/firebase --project $gcloudProject apps:sdkconfig WEB \
+            $($(yarn bin)/firebase --project $gcloudProject apps:list WEB | grep cv19assist | awk '{ print $4}') | \
+              tr '\n' ' ' | \
+              sed 's/.*initializeApp(//g' | \
+              sed 's/);//g' | \
+              jq -r 'del(.databaseURL) | to_entries[] | [.key, (.value | tojson)] | join("::")' | \
+              sed 's/:"/:/g; s/^/echo \"::set-env name=CYPRESS_FB_/g' \
+          )
+
+          # Loop through each line of config and evaluate to export env vars
+          while IFS= read -r line; do
+            echo Evaluating: $line
+            eval $line
+          done <<< "$firebaseConfig"
       
       - name: Print Environment Variables Context
         if: matrix.app != 'horchata'

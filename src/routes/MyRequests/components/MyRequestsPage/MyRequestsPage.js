@@ -123,16 +123,6 @@ function MyRequestsPage() {
                     />
                   </Grid>
                 )}
-
-                <Grid item xs={6}>
-                  <Typography
-                    align="right"
-                    variant="h5"
-                    className={classes.TaskTitle}>
-                    {requestSnap.get('distance')} miles
-                  </Typography>
-                </Grid>
-
                 <Grid
                   className={classes.DetailsButton}
                   align="right"

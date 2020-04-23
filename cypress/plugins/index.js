@@ -7,15 +7,13 @@
 // You can read more here:
 // https://on.cypress.io/plugins-guide
 // ***********************************************************
-// TODO: Add back for cy.login and cy.callFirestore
 const cypressFirebasePlugin = require('cypress-firebase').plugin;
 const admin = require('firebase-admin');
+const cypressLogToOutput = require('cypress-log-to-output');
 
 module.exports = (on, config) => {
-  // `on` is used to hook into various events Cypress emits
-  // `config` is the resolved Cypress config
-  // Extends with config from .firebaserc
-  // TODO: Add back for cy.login and cy.callFirestore
+  /** the rest of your plugins... * */
+  cypressLogToOutput.install(on);
   return cypressFirebasePlugin(
     on,
     {
