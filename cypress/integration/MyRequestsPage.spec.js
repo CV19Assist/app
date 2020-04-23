@@ -17,7 +17,7 @@ describe('My Requests Page', () => {
     beforeEach(() => {
       cy.login(userUid);
       cy.callFirestore('delete', 'requests');
-      cy.reload(false);
+      cy.reload();
       cy.visit('/my-requests');
     });
     it('Shows requests created by the current user', () => {

@@ -124,7 +124,7 @@ jobs:
           set -o pipefail
 
           export GIT_BRANCH=${GITHUB_REF##*/}
-          export GCLOUD_PROJECT=$(cat .firebaserc | jq -r --arg GIT_BRANCH "$GIT_BRANCH" '.projects[$GIT_BRANCH] // .projects.default')
+          export GCLOUD_PROJECT=$(cat .firebaserc | jq -r --arg GIT_BRANCH "$GIT_BRANCH" '.projects[$GIT_BRANCH] // .projects.next')
           echo "::set-env name=GCLOUD_PROJECT::$GCLOUD_PROJECT"
           echo "Environment set for branch: $GIT_BRANCH and project: $GCLOUD_PROJECT"
   
@@ -135,8 +135,7 @@ jobs:
           echo "::set-env name=FIRESTORE_EMULATOR_HOST::$FIRESTORE_EMULATOR_HOST"
           echo "::set-env name=CYPRESS_BASE_URL::http://localhost:$(cat package.json | jq .config.port)"
           echo "::set-env name=CYPRESS_FB_databaseURL::http://$FIREBASE_DATABASE_EMULATOR_HOST?ns=$GCLOUD_PROJECT"
-          # TODO: Load this from Firebase API or file instead of having it hardcoded
-          echo "::set-env name=CYPRESS_FB_apiKey::AIzaSyBowgXC55EjPKY46v04jH-crZlH_zCaepU"
+          echo "::set-env name=CYPRESS_GCLOUD_PROJECT::$GCLOUD_PROJECT"
 
           branchPrefix=$(echo $gitBranch | tr a-z A-Z | tr - _)
 
@@ -148,9 +147,8 @@ jobs:
 
           branchEnvFileName=env.$gitBranch
           envFileName=$(if [ -f "$branchEnvFileName" ]; then echo $branchEnvFileName; else echo .env.next; fi;)
-
-          for v in `cat $envFileName` ; do echo "::set-env name=${v%%=*}::${v##*=}" ; done
-          echo "after env set of file $envFileName"
+          echo "Loading config from file $envFileName"
+          for v in `cat $envFileName` ; do echo "::set-env name=CYPRESS_${v%%=*}::${v##*=}" ; done
 
       - name: Print Environment Variables Context
         if: matrix.app != 'horchata'
