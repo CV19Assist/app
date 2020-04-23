@@ -112,9 +112,13 @@ jobs:
 
       - name: Set Test Environment Settings
         env:
-          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
+          NEXT_TEST_UID: ${{ secrets.NEXT_TEST_UID }}
+          MASTER_TEST_UID: ${{ secrets.MASTER_TEST_UID }}
+          PRODUCTION_TEST_UID: ${{ secrets.PRODUCTION_TEST_UID }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF: ${{ github.ref }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           set -o pipefail
 
@@ -130,26 +134,21 @@ jobs:
           echo "::set-env name=FIRESTORE_EMULATOR_HOST::$FIRESTORE_EMULATOR_HOST"
           echo "::set-env name=CYPRESS_BASE_URL::http://localhost:$(cat package.json | jq .config.port)"
           echo "::set-env name=CYPRESS_FB_databaseURL::http://$FIREBASE_DATABASE_EMULATOR_HOST?ns=$GCLOUD_PROJECT"
-  
-          echo "Generating Service Account File..."
-          echo "$(echo $SERVICE_ACCOUNT | jq .)" > $HOME/serviceAccount.json
-          echo "::set-env name=GOOGLE_APPLICATION_CREDENTIALS::$HOME/serviceAccount.json"
+          # TODO: Load this from Firebase API or file instead of having it hardcoded
+          echo "::set-env name=CYPRESS_FB_apiKey::AIzaSyBowgXC55EjPKY46v04jH-crZlH_zCaepU"
 
-          # Use firebase SDK API to get the app's configuration and export to CYPRESS. NOTE: databaseURL is intentionally removed
-          firebaseConfig=$($(yarn bin)/firebase --project $GCLOUD_PROJECT apps:sdkconfig WEB \
-            $($(yarn bin)/firebase --project $GCLOUD_PROJECT apps:list WEB | grep $GCLOUD_PROJECT | awk '{ print $4}') | \
-              tr '\n' ' ' | \
-              sed 's/.*initializeApp(//g' | \
-              sed 's/);//g' | \
-              jq -r 'del(.databaseURL) | to_entries[] | [.key, (.value | tojson)] | join("::")' | \
-              sed 's/:"/:/g; s/^/echo \"::set-env name=CYPRESS_FB_/g' \
-          )
+          branchPrefix=$(echo $gitBranch | tr a-z A-Z | tr - _)
 
-          # Loop through each line of config and evaluate to export env vars
-          while IFS= read -r line; do
-            echo Evaluating: $line
-            eval $line
-          done <<< "$firebaseConfig"
+          # Get value of Service Account associated with branch (i.e. STAGE_SERVICE_ACCOUNT)
+          branchTestUidKey="${branchPrefix}_TEST_UID"
+          branchTestUid=$(eval echo \$${branchTestUidKey})
+          echo "::set-env name=CYPRESS_TEST_UID::$branchTestUid"
+      
+      - name: Print Environment Variables Context
+        if: matrix.app != 'horchata'
+        run: |
+          echo Available ENV vars:
+          env | sort
 
       # Download Built app since we are testing locally
       - name: Download Build Artifact
@@ -168,7 +167,7 @@ jobs:
           # we have already installed all dependencies above
           install: false
           group: 'UI Tests'
-          start: yarn emulators:all --project $GCLOUD_PROJECT
+          start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
           wait-on: http://localhost:3000
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
@@ -176,7 +175,6 @@ jobs:
           CI: true
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_KEY }}
-          CYPRESS_TEST_UID: ${{ secrets.TEST_UID }}
-          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF: ${{ github.ref }}

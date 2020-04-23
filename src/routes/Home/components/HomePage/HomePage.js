@@ -10,7 +10,8 @@ import {
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import { useUser } from 'reactfire';
-import NeedsMap from './NeedsMap';
+import { NEW_REQUEST_PATH } from 'constants/paths';
+import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
 
 const useStyles = makeStyles(styles);
@@ -31,7 +32,8 @@ function Homepage() {
               variant="h5"
               align="center"
               // color="textPrimary"
-              gutterBottom>
+              gutterBottom
+              data-test="welcome-banner">
               Welcome to the Volunteer Coronavirus Assistance System
             </Typography>
 
@@ -71,14 +73,14 @@ function Homepage() {
               <div className={classes.actionButtons}>
                 <Button
                   component={Link}
-                  to="/request?type=grocery-pickup"
+                  to={`${NEW_REQUEST_PATH}?type=grocery-pickup`}
                   variant="contained"
                   color="primary">
                   Grocery Pick-Up
                 </Button>
                 <Button
                   component={Link}
-                  to="/request?type=other"
+                  to={`${NEW_REQUEST_PATH}?type=other`}
                   variant="outlined"
                   color="primary">
                   Other
@@ -99,11 +101,11 @@ function Homepage() {
 
               <Typography variant="body2" gutterBottom>
                 Below are a few of the currently open requests. If you are in
-                the request area or know of someone in the request area, please
-                help spread the word and refer them to this site.
+                the area with or know of someone there, please help spread the
+                word and refer them to this site.
               </Typography>
 
-              <NeedsMap />
+              <RequestsMap />
 
               <div className={classes.actionButtons}>
                 <Button

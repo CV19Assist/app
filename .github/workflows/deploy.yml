@@ -99,3 +99,22 @@ jobs:
             -d "$(jq -n --arg version "$packageVersion" '{current: $version}')" \
             -y --project $gcloudProject \
             "/versionInfo/${packageName}"
+
+      # Update Firestore "email_templates" collection with contents of email templates
+      - name: Update Email Templates
+        if: success()
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          NEXT_SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
+          MASTER_SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          PRODUCTION_SERVICE_ACCOUNT: ${{ secrets.PRODUCTION_SERVICE_ACCOUNT }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          gitBranch=${GITHUB_REF##*/}
+          # Get value of Service Account associated with branch (i.e. NEXT_SERVICE_ACCOUNT)
+          serviceAccountKey="${secretsPrefix}_SERVICE_ACCOUNT"
+          branchServiceAccount=$(eval echo \$${serviceAccountKey})
+          export SERVICE_ACCOUNT=$(if [ ! -z "${branchServiceAccount}" ]; then echo $branchServiceAccount; else echo $MASTER_SERVICE_ACCOUNT; fi;)
+          echo "Service Account selected for projectId $(echo $SERVICE_ACCOUNT | jq .project_id)"
+          bin/updateEmailTemplates.js

@@ -17,6 +17,7 @@ import NotFoundRoute from './NotFound';
 import PrivacyPolicyRoute from './PrivacyPolicy';
 import TermsOfServiceRoute from './TermsOfService';
 import RequestSuccessfulRoute from './RequestSuccessful';
+import NewRequestRoute from './NewRequest';
 
 export default function createRoutes() {
   return (
@@ -38,6 +39,7 @@ export default function createRoutes() {
               TermsOfServiceRoute,
               PrivacyPolicyRoute,
               RequestSuccessfulRoute,
+              NewRequestRoute,
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (

@@ -1,6 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { to } from 'utils/async';
+import {
+  NOTIFICATIONS_SETTINGS_DOC,
+  MAIL_COLLECTION,
+} from 'constants/firestorePaths';
 
 const eventName = 'contactCreated';
 
@@ -17,7 +21,7 @@ async function contactCreatedEvent(snap, context) {
   console.log('contactCreated onCreate event:', snap.data());
 
   // Load settings doc
-  const settingsRef = admin.firestore().doc('system_settings/notifications');
+  const settingsRef = admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC);
   const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
 
   // Handle errors loading settings docs
@@ -38,7 +42,7 @@ async function contactCreatedEvent(snap, context) {
   }
 
   // Request contact email send to emails from settings collection
-  const mailCollection = admin.firestore().collection('mail');
+  const mailCollection = admin.firestore().collection(MAIL_COLLECTION);
   const [writeErr] = await to(
     mailCollection.add({
       toUids,

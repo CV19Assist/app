@@ -29,6 +29,13 @@ export default (theme) => ({
   filterPaper: {
     padding: theme.spacing(2),
   },
+  searchLocation: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  enterAddressButton: {
+    marginLeft: 'auto',
+  },
   searchInput: {
     paddingBottom: theme.spacing(3),
   },
@@ -44,14 +51,22 @@ export default (theme) => ({
     marginBottom: theme.spacing(3),
   },
   divider: {
-    marginTop: theme.spacing(3),
-    marginBottom: theme.spacing(3),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
   grabButton: {
     marginRight: theme.spacing(3),
   },
   TaskTitle: {
     color: '#F4B7B4',
+  },
+  Needs: {
+    color: '#F4B7B4',
+    display: 'flex',
+    '& > *': {
+      marginTop: theme.spacing(0.5),
+      marginRight: theme.spacing(0.5),
+    },
   },
   TaskContainer: {
     paddingTop: theme.spacing(2),
