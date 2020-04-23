@@ -9,11 +9,10 @@
 // ***********************************************************
 const cypressFirebasePlugin = require('cypress-firebase').plugin;
 const admin = require('firebase-admin');
-const cypressLogToOutput = require('cypress-log-to-output');
 
 module.exports = (on, config) => {
   /** the rest of your plugins... * */
-  cypressLogToOutput.install(on);
+  require('cypress-log-to-output').install(on); // eslint-disable-line global-require
   return cypressFirebasePlugin(
     on,
     {
