@@ -9,7 +9,7 @@ export default function AnalyticsPageViewLogger() {
   // By passing `user.uid` to the second argument of `useEffect`,
   // we only set user id when it exists
   useEffect(() => {
-    if (user.uid) {
+    if (user?.uid) {
       analytics.setUserId(user.uid);
     }
   }, [user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
