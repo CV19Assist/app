@@ -8,7 +8,7 @@ async function convertRequests() {
   try {
     needsSnap = await needsRef.get();
   } catch (err) {
-    console.log(`Error loading userProfiles from firestore: ${err.message}`);
+    console.log(`Error loading needs from firestore: ${err.message}`);
     throw err;
   }
   try {
@@ -16,15 +16,22 @@ async function convertRequests() {
     const batch = admin.firestore().batch();
     needsSnap.docs.forEach((needSnap) => {
       const privateRequest = {
-        createdBy: needSnap.get('d.createdBy.userProfileId'),
-        createdByInfo: needSnap.get('d.createdBy'),
         createdAt: needSnap.get('d.createdAt'),
-        firstName: needSnap.get('d.firstName'),
-        lastName: needSnap.get('d.lastName'),
+        firstName: needSnap.get('d.firstName') || null,
+        lastName: needSnap.get('d.lastName') || null,
         needs: needSnap.get('d.needs'),
         preciseLocation: needSnap.get('d.coordinates'),
         immediacy: parseInt(needSnap.get('d.immediacy'), 10),
       };
+      if (needSnap.get('d.createdBy.userProfileId')) {
+        privateRequest.createdBy = needSnap.get('d.createdBy.userProfileId');
+        privateRequest.createdByInfo = {
+          firstName: needSnap.get('d.createdBy.firstName'),
+          displayName: needSnap.get('d.createdBy.displayName'),
+          uid: needSnap.get('d.createdBy.userProfileId'),
+        };
+      }
+
       batch.set(
         admin.firestore().doc(`requests/${needSnap.id}`),
         privateRequest,
@@ -32,17 +39,26 @@ async function convertRequests() {
           merge: true,
         },
       );
+
       const publicRequest = {
         ...needSnap.data(),
         d: {
           ...needSnap.get('d'),
-          createdBy: needSnap.get('d.createdBy.userProfileId'),
-          createdByInfo: needSnap.get('d.createdBy'),
-          owner: needSnap.get('d.owner.userProfileId'),
-          ownerInfo: needSnap.get('d.owner'),
           immediacy: parseInt(needSnap.get('d.immediacy'), 10),
         },
       };
+      if (needSnap.get('d.owner.userProfileId')) {
+        publicRequest.owner = needSnap.get('d.owner.userProfileId');
+        publicRequest.ownerInfo = {
+          uid: needSnap.get('d.owner.userProfileId'),
+          firstName: needSnap.get('d.owner.firstName'),
+          displayName: needSnap.get('d.owner.displayName'),
+        };
+      }
+      if (needSnap.get('d.createdBy.userProfileId')) {
+        publicRequest.createdBy = privateRequest.createdBy;
+        publicRequest.createdByInfo = privateRequest.createdByInfo;
+      }
       batch.set(
         admin.firestore().doc(`requests_public/${needSnap.id}`),
         publicRequest,
@@ -50,8 +66,9 @@ async function convertRequests() {
       );
 
       const requestContact = {
-        email: needSnap.get('d.email'),
-        phone: needSnap.get('d.phone'),
+        email: needSnap.get('d.email') || null,
+        phone: needSnap.get('d.phone') || null,
+        contactInfo: needSnap.get('d.contactInfo') || null, // Old contact info.
       };
       batch.set(
         admin.firestore().doc(`requests_contact/${needSnap.id}`),
@@ -75,7 +92,7 @@ async function convertRequests() {
         const needActionsSnap = await needActionsRef.get();
         needActionsSnap.forEach((needActionSnap) => {
           actionsBatch.set(
-            admin.firestore().doc(`requests/${needSnap.id}/actions`),
+            admin.firestore().doc(`requests_actions/${needSnap.id}/actions`),
             needActionSnap,
           );
         });
@@ -116,8 +133,11 @@ async function convertUsers() {
         d: {
           firstName: profileSnap.get('d.firstName'),
           displayName: profileSnap.get('d.displayName'),
+          // TODO: we have to call the scramble location on coordinates because of the current
+          // version doesn't have a generalLocationName concept.
           coordinates: profileSnap.get('d.coordinates'),
-          generalLocationName: profileSnap.get('d.generalLocationName'),
+          // TODO: we have to generate the general location name based on the scrambled location.
+          // generalLocationName: profileSnap.get('d.generalLocationName'),
         },
         // TODO: Look into if g/l should be changed to be generalized or if they were already
         g: profileSnap.get('g'),
@@ -139,7 +159,7 @@ async function convertUsers() {
         address2: profileSnap.get('d.address2'),
         city: profileSnap.get('d.city'),
         state: profileSnap.get('d.state'),
-        zipcode: profileSnap.get('d.zipcode'),
+        zipcode: profileSnap.get('d.zipcode') || null,
         phone: profileSnap.get('d.phone'),
       };
       batch.set(
@@ -154,7 +174,7 @@ async function convertUsers() {
     await batch.commit();
     console.log('Successfully converted users');
   } catch (err) {
-    console.log(`Error converting needs -> requests: ${err.message}`);
+    console.log(`Error converting userProfiles -> users: ${err.message}`);
     throw err;
   }
 }
