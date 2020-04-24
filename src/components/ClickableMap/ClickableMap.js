@@ -19,41 +19,69 @@ import { scrambleLocation } from 'utils/geo';
 import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
+Geocode.setApiKey(process.env.REACT_APP_FIREBASE_API_KEY);
+Geocode.setRegion('us');
 
-function ClickableMap({ onLocationChange, defaultLocation }) {
-  const {
-    latitude: lat,
-    longitude: lng,
-    generalLocationName: defaultGeneralLocationName,
-  } = defaultLocation || {};
+function SelectedLocationMarker({
+  position: { latitude: lat, longitude: lng },
+  title,
+}) {
+  const [marker, setMarker] = useState(null);
+
+  const handleOnLoad = (mapMarker) => {
+    setMarker(mapMarker);
+  };
+
+  const renderInfoWindow = (mapMarker) => {
+    if (mapMarker === null) return null;
+
+    return (
+      <InfoWindow anchor={mapMarker}>
+        <div>
+          <Typography variant="subtitle2">{title}</Typography>
+        </div>
+      </InfoWindow>
+    );
+  };
+
+  return (
+    <Marker position={{ lat, lng }} onLoad={handleOnLoad}>
+      {renderInfoWindow(marker)}
+    </Marker>
+  );
+}
+
+SelectedLocationMarker.propTypes = {
+  position: PropTypes.shape({
+    latitude: PropTypes.number.isRequired,
+    longitude: PropTypes.number.isRequired,
+  }),
+  title: PropTypes.string,
+};
+
+function ClickableMap({
+  onLocationChange,
+  locationInfo: { generalLocation, generalLocationName, preciseLocation },
+}) {
+  // console.log(
+  //   'ClickableMap',
+  //   generalLocation,
+  //   generalLocationName,
+  //   preciseLocation,
+  // );
   const classes = useStyles();
-  const [map, setMap] = useState(null);
   const { showSuccess, showError } = useNotifications();
+  const [map, setMap] = useState(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [markerLocation, setMarkerLocation] = useState(
-    lat && lng ? { lat, lng } : null,
-  );
-  const [generalLocationName, setGeneralLocationName] = useState(
-    defaultGeneralLocationName || '',
-  );
 
   async function setLocation(location) {
-    // console.log('setLocation called:', location);
-    if (map) {
-      //   console.log("center", location);
-      //   map.panTo(location);
-      //   // TODO: Figure out how to properly zoom and pan.
-      //   if (map.getZoom() < 10) {
-      //     map.setZoom(10);
-      //   }
-    }
-
     const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
     // Detect locality
     try {
-      Geocode.setApiKey(process.env.REACT_APP_FIREBASE_API_KEY);
-      Geocode.setRegion('us');
-      const response = await Geocode.fromLatLng(location.lat, location.lng);
+      const response = await Geocode.fromLatLng(
+        location.latitude,
+        location.longitude,
+      );
       if (response.status === 'ZERO_RESULTS') {
         showError('Could not find the locality.');
         return;
@@ -81,7 +109,6 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
         locationName = result.formatted_address;
       }
 
-      setGeneralLocationName(locationName);
       // console.log(result);
       // console.log(locality, administrative_area_level_1);
 
@@ -89,11 +116,11 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
         generalLocation: scrambledLocation,
         generalLocationName: locationName,
         preciseLocation: {
-          _latitude: location.lat,
-          _longitude: location.lng,
+          latitude: location.latitude,
+          longitude: location.longitude,
         },
       });
-      setMarkerLocation(location);
+      // setMarkerLocation(location);
     } catch (err) {
       console.error(`Error detecting locality: ${err.message}`, err); // eslint-disable-line no-console
       showError(err.message);
@@ -102,7 +129,10 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
   }
 
   function handleLocationClick(args) {
-    const newLoc = { lat: args.latLng.lat(), lng: args.latLng.lng() };
+    const newLoc = {
+      latitude: args.latLng.lat(),
+      longitude: args.latLng.lng(),
+    };
     // console.log("handle click", args);
     // console.log("handle click", newLoc);
     setLocation(newLoc);
@@ -121,20 +151,34 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const loc = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        map.panTo({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        };
+        });
         setLocation(loc);
         showSuccess('Location detected');
         setDetectingLocation(false);
       },
-      () => {
+      (err) => {
+        // eslint-disable-next-line no-console
+        console.log(err);
         showError(
-          'Unable to retrieve your location, please click on your location manually.',
+          `Unable to retrieve your location, please click on your location manually.`,
         );
         setDetectingLocation(false);
       },
     );
+  }
+
+  function onGoogleMapLoad(googleMap) {
+    setMap(googleMap);
+    googleMap.panTo({
+      lat: generalLocation.latitude,
+      lng: generalLocation.longitude,
+    });
   }
 
   return (
@@ -156,33 +200,16 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
           </Typography>
         </Backdrop>
         <GoogleMap
-          onLoad={(googleMap) => {
-            setMap(googleMap);
-          }}
+          onLoad={onGoogleMapLoad}
           mapContainerClassName={classes.map}
-          center={{ lat: 40.318984, lng: -96.960146 }}
           zoom={4}
           options={{ streetViewControl: false, mapTypeControl: false }}
           onClick={handleLocationClick}>
-          {markerLocation && (
-            <>
-              <Marker
-                position={{
-                  lat: markerLocation.lat,
-                  lng: markerLocation.lng,
-                }}
-              />
-              (
-              <InfoWindow
-                // TODO: Figure out how to anchor with the map marker.
-                position={{
-                  lat: markerLocation.lat,
-                  lng: markerLocation.lng,
-                }}>
-                <div className={classes.infobox}>{generalLocationName}</div>
-              </InfoWindow>
-              )
-            </>
+          {preciseLocation && (
+            <SelectedLocationMarker
+              position={preciseLocation}
+              title={generalLocationName}
+            />
           )}
         </GoogleMap>
         <Button
@@ -203,11 +230,17 @@ function ClickableMap({ onLocationChange, defaultLocation }) {
 
 ClickableMap.propTypes = {
   onLocationChange: PropTypes.func.isRequired,
-  defaultLocation: PropTypes.shape({
-    latitude: PropTypes.number,
-    longitude: PropTypes.number,
+  locationInfo: PropTypes.shape({
+    generalLocation: PropTypes.shape({
+      latitude: PropTypes.number.isRequired,
+      longitude: PropTypes.number.isRequired,
+    }),
     generalLocationName: PropTypes.string,
-  }),
+    preciseLocation: PropTypes.shape({
+      latitude: PropTypes.number.isRequired,
+      longitude: PropTypes.number.isRequired,
+    }),
+  }).isRequired,
 };
 
 export default ClickableMap;

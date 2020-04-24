@@ -37,6 +37,7 @@ import ClickableMap from 'components/ClickableMap';
 import { GeoFirestore } from 'geofirestore';
 import { REQUEST_SUCCESSFUL_PATH } from 'constants/paths';
 import LoadingSpinner from 'components/LoadingSpinner';
+import { DEFAULT_LOCATION_INFO } from 'constants/geo';
 import styles from './NewRequestPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -45,7 +46,19 @@ const requestValidationSchema = Yup.object().shape({
   firstName: Yup.string().required('Required').min(2, 'Too Short'),
   lastName: Yup.string().required('Required').min(2, 'Too Short'),
   immediacy: Yup.string().required('Please select the immediacy.'),
-  needs: Yup.object().required('Please select at least one support need.'),
+  needs: Yup.object().test(
+    'one-need-required',
+    'Please select at least one need.',
+    (value) => {
+      let checkedOne = false;
+      Object.keys(value).forEach((item) => {
+        if (value[item] === true) {
+          checkedOne = true;
+        }
+      });
+      return checkedOne;
+    },
+  ),
   phone: Yup.string().required('Required').min(2, 'Too Short'),
   email: Yup.string().email().min(2, 'Too Short'),
   otherComments: Yup.string(),
@@ -58,8 +71,8 @@ function useNewRequestPage() {
   const user = useUser();
   const { FieldValue, GeoPoint } = useFirestore;
   const { showSuccess, showError } = useNotifications();
-  const [userLocation, setUserLocation] = useState(null);
-  const [userLocationLoading, setLocationLoading] = useState(true);
+  const [requestLocation, setRequestLocation] = useState(DEFAULT_LOCATION_INFO);
+  const [requestLocationLoading, setRequestLocationLoading] = useState(true);
 
   // Conditionally load Profile (only if current auth user exists)
   useEffect(() => {
@@ -71,16 +84,17 @@ function useNewRequestPage() {
         const geopoint = profileSnap.get('preciseLocation');
         if (geopoint) {
           const { latitude, longitude } = geopoint;
-          const newUserLocation = { latitude, longitude };
-          const generalLocationName = profileSnap.get('preciseLocationName');
-          if (generalLocationName) {
-            newUserLocation.generalLocationName = generalLocationName;
-          }
-          setUserLocation(newUserLocation);
+          const newRequestLocation = {
+            generalLocation: { latitude, longitude },
+            generalLocationName: profileSnap.get('preciseLocationName'),
+            preciseLocation: { latitude, longitude },
+          };
+          // console.log('effect', newRequestLocation);
+          setRequestLocation(newRequestLocation);
         }
-        setLocationLoading(false);
+        setRequestLocationLoading(false);
       } else {
-        setLocationLoading(false);
+        setRequestLocationLoading(false);
       }
     }
     // NOTE: useEffect is used to load data so it can be done conditionally based
@@ -93,13 +107,8 @@ function useNewRequestPage() {
    * @param {Object} values - Form values
    */
   async function submitRequest(values) {
-    if (!userLocation) {
+    if (!requestLocation) {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
-      return;
-    }
-
-    if (!user || !user.uid) {
-      showError('You must be logged in to create a request');
       return;
     }
 
@@ -110,18 +119,15 @@ function useNewRequestPage() {
       firstName: values.firstName,
       needFinancialAssistance: Boolean(values.needFinancialAssistance),
       immediacy: parseInt(values.immediacy, 10),
-      createdBy: user.uid,
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
       usersWithContactInfoAccess: [],
       status: 1,
       coordinates: new GeoPoint(
-        /* eslint-disable no-underscore-dangle */
-        userLocation.generalLocation._latitude,
-        userLocation.generalLocation._longitude,
-        /* eslint-enable no-underscore-dangle */
+        requestLocation.generalLocation.latitude,
+        requestLocation.generalLocation.longitude,
       ),
-      generalLocationName: userLocation.generalLocationName,
+      generalLocationName: requestLocation.generalLocationName,
     };
 
     // Convert needs to an array
@@ -137,8 +143,23 @@ function useNewRequestPage() {
       email,
     };
 
+    const requestPrivateInfo = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      immediacy: values.immediacy,
+      needs: values.needs,
+      createdAt: FieldValue.serverTimestamp(),
+      preciseLocation: new GeoPoint(
+        requestLocation.preciseLocation.latitude,
+        requestLocation.preciseLocation.longitude,
+      ),
+    };
+
     let userInfo = null;
     if (user && user.uid) {
+      requestPublicInfo.createdBy = user.uid;
+      requestPrivateInfo.createdBy = user.uid;
+
       const userRef = firestore.doc(
         `${USERS_PRIVILEGED_COLLECTION}/${user.uid}`,
       );
@@ -162,26 +183,12 @@ function useNewRequestPage() {
       }
     }
 
-    const requestPrivateInfo = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      immediacy: values.immediacy,
-      needs: values.needs,
-      createdBy: user.uid,
-      createdAt: FieldValue.serverTimestamp(),
-      preciseLocation: new GeoPoint(
-        /* eslint-disable no-underscore-dangle */
-        userLocation.preciseLocation._latitude,
-        userLocation.preciseLocation._longitude,
-        /* eslint-enable no-underscore-dangle */
-      ),
-    };
     /* eslint-disable no-console */
-    console.log('Writing values to Firestore:', {
-      requestPublicInfo,
-      requestPrivateInfo,
-      requestContactInfo,
-    });
+    // console.log('Writing values to Firestore:', {
+    //   requestPublicInfo,
+    //   requestPrivateInfo,
+    //   requestContactInfo,
+    // });
     /* eslint-enable no-console */
 
     try {
@@ -219,37 +226,18 @@ function useNewRequestPage() {
     }
   }
   /**
-   * Update state and profile with location once selected in ClickableMap
+   * Update stat once selected in ClickableMap
    * @param {Object} newLocation - New location object from ClickableMap
    */
   async function handleLocationChange(newLocation) {
     // Set location to form
-    setUserLocation(newLocation);
-    // Update user profile with location selected for their request
-    if (user.uid) {
-      const {
-        preciseLocation,
-        generalLocationName: preciseLocationName,
-      } = newLocation;
-      await firestore.doc(`${USERS_COLLECTION}/${user.uid}`).set(
-        {
-          preciseLocation: new GeoPoint(
-            /* eslint-disable no-underscore-dangle */
-            preciseLocation._latitude,
-            preciseLocation._longitude,
-            /* eslint-enable no-underscore-dangle */
-          ),
-          preciseLocationName,
-        },
-        { merge: true },
-      );
-    }
+    setRequestLocation(newLocation);
   }
   return {
     submitRequest,
     handleLocationChange,
-    userLocation,
-    userLocationLoading,
+    requestLocation,
+    requestLocationLoading,
   };
 }
 
@@ -257,7 +245,11 @@ function NewRequestPage() {
   const classes = useStyles();
   const location = useLocation();
   const qs = queryString.parse(location.search);
-  const defaultValues = { needs: {} };
+  const defaultValues = {
+    needs: {},
+    immediacy: '1',
+    needFinancialAssistance: 'false',
+  };
 
   // Append needs from query string type
   if (qs && qs.type) {
@@ -278,8 +270,8 @@ function NewRequestPage() {
   const {
     submitRequest,
     handleLocationChange,
-    userLocation,
-    userLocationLoading,
+    requestLocation,
+    requestLocationLoading,
   } = useNewRequestPage();
   const currentNeeds = watch('needs');
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
@@ -297,7 +289,7 @@ function NewRequestPage() {
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <form onSubmit={handleSubmit(submitRequest)}>
-              {/* {console.log(errors)} */}
+              {/* {console.log('errors', errors)} */}
               <Container>
                 <FormGroup>
                   <Typography
@@ -375,12 +367,12 @@ function NewRequestPage() {
                         aria-label="Need Financial Assistance"
                         component="fieldset">
                         <FormControlLabel
-                          value="true"
+                          value="false"
                           control={<Radio />}
                           label="Yes, I can pay and only need help with the delivery."
                         />
                         <FormControlLabel
-                          value="false"
+                          value="true"
                           control={<Radio />}
                           label="No, I need help paying for the items."
                         />
@@ -389,7 +381,6 @@ function NewRequestPage() {
                     control={control}
                     onChange={([event]) => event.target.value}
                     name="needFinancialAssistance"
-                    defaultValue="true"
                   />
                   {!!errors.needFinancialAssistance && (
                     <FormHelperText error>
@@ -431,7 +422,6 @@ function NewRequestPage() {
                   }
                   control={control}
                   name="immediacy"
-                  defaultValue="2"
                 />
 
                 {!!errors.immediacy && (
@@ -439,39 +429,7 @@ function NewRequestPage() {
                     {errors.immediacy.message}
                   </FormHelperText>
                 )}
-                {/* <Grid container spacing={3}>
-                      <Grid item xs>
-                        <Typography variant="body2" align="right" gutterBottom>
-                          Very High
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={10}>
-                        <FormControl component="fieldset">
-                          <Field
-                            as={RadioGroup}
-                            name="radioNum"
-                            row
-                            onChange={handleChange}
-                          >
-                            {immediacyOptions.map((option, index) => (
-                              <FormControlLabel
-                                key={index}
-                                className={classes.radio}
-                                value={option}
-                                control={<Radio />}
-                                label={option}
-                                labelPlacement="top"
-                              />
-                            ))}
-                          </Field>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs>
-                        <Typography variant="body2" gutterBottom>
-                          Very Low
-                        </Typography>
-                      </Grid>
-                    </Grid> */}
+
                 <Divider className={classes.optionalDivider} />
                 <Typography variant="h5" gutterBottom>
                   Your Location
@@ -485,11 +443,11 @@ function NewRequestPage() {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Card>
-                      {userLocationLoading ? (
+                      {requestLocationLoading ? (
                         <LoadingSpinner />
                       ) : (
                         <ClickableMap
-                          defaultLocation={userLocation}
+                          locationInfo={requestLocation}
                           onLocationChange={handleLocationChange}
                         />
                       )}
@@ -564,7 +522,7 @@ function NewRequestPage() {
                   </Grid>
                 </Grid>
 
-                {dirty && Object.keys(dirty).length && !isValid && (
+                {dirty && Object.keys(errors).length > 0 && !isValid && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>

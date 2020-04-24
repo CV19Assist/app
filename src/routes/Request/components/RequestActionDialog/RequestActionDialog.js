@@ -45,6 +45,7 @@ function RequestActionDialog({
 
     const statusUpdate = {
       d: {
+        usersWithContactInfoAccess: FieldValue.arrayUnion(user.uid),
         lastUpdatedAt: FieldValue.serverTimestamp(),
       },
     };

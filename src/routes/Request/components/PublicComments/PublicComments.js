@@ -55,45 +55,43 @@ function CommentList({ requestId }) {
   }
 
   return (
-    <>
-      <List>
-        {querySnapshot.docs.map(
-          (docSnap) =>
-            // When new comment is added locally, the createdAt can be the serverTimestamp() value.
-            // So, we wait on rendering until any new snapshot has finished writing.
-            !docSnap.metadata.hasPendingWrites && (
-              <ListItem key={docSnap.id} divider alignItems="flex-start">
-                <ListItemAvatar>
-                  <Avatar>{docSnap.get('author.firstName').slice(0, 1)}</Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography variant="subtitle2">
-                      {docSnap.get('author.firstName')} &ndash;{' '}
-                      <Typography
-                        variant="body2"
-                        display="inline"
-                        color="textSecondary">
-                        {format(docSnap.get('createdAt').toDate(), 'p - PPPP')}
-                      </Typography>
+    <List>
+      {querySnapshot.docs.map(
+        (docSnap) =>
+          // When new comment is added locally, the createdAt can be the serverTimestamp() value.
+          // So, we wait on rendering until any new snapshot has finished writing.
+          !docSnap.metadata.hasPendingWrites && (
+            <ListItem key={docSnap.id} divider alignItems="flex-start">
+              <ListItemAvatar>
+                <Avatar>{docSnap.get('author.firstName').slice(0, 1)}</Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography variant="subtitle2">
+                    {docSnap.get('author.firstName')} &ndash;{' '}
+                    <Typography
+                      variant="body2"
+                      display="inline"
+                      color="textSecondary">
+                      {format(docSnap.get('createdAt').toDate(), 'p - PPPP')}
                     </Typography>
-                  }
-                  secondary={docSnap
-                    .get('content')
-                    .split('\n')
-                    .map((content, key) => (
-                      // eslint-disable-next-line react/no-array-index-key
-                      <Typography variant="body1" key={key} gutterBottom>
-                        {content}
-                      </Typography>
-                    ))}
-                />
-              </ListItem>
-            ),
-        )}
-      </List>
-    </>
+                  </Typography>
+                }
+                secondary={docSnap
+                  .get('content')
+                  .split('\n')
+                  .map((content, key) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <Typography variant="body1" key={key} gutterBottom>
+                      {content}
+                    </Typography>
+                  ))}
+              />
+            </ListItem>
+          ),
+      )}
+    </List>
   );
 }
 

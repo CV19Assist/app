@@ -8,8 +8,7 @@ import immediacyMap from 'constants/immediacy';
 import { format } from 'date-fns';
 import { REQUEST_PATH } from 'constants/paths';
 
-function MapMarker(props) {
-  const { request, clusterer, position } = props;
+function MapMarker({ request, clusterer, position }) {
   const [marker, setMarker] = useState(null);
   const [showInfoWindow, setShowInfoWindow] = useState(false);
 

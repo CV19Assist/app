@@ -91,7 +91,7 @@ export default function useSetupMessaging() {
     //   `messaging.setBackgroundMessageHandler` handler.
     messaging.onMessage((payload) => {
       console.log('Message', payload); // eslint-disable-line no-console
-      showSuccess(payload);
+      showSuccess(payload.notification.body);
     });
 
     // Request permission to setup browser notifications
