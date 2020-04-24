@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { SuspenseWithPerf } from 'reactfire';
 import LoadingSpinner from 'components/LoadingSpinner';
+import AnalyticsPageViewLogger from 'components/AnalyticsPageViewLogger';
 import { PrivateRoute } from 'utils/router';
 import CoreLayout from '../layouts/CoreLayout';
 import Home from './Home';
@@ -52,6 +53,9 @@ export default function createRoutes() {
             )
           }
           <Route component={NotFoundRoute.component} />
+          <SuspenseWithPerf traceId="page-view-logger">
+            <AnalyticsPageViewLogger />
+          </SuspenseWithPerf>
         </Switch>
       </SuspenseWithPerf>
     </CoreLayout>
