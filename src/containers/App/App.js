@@ -7,6 +7,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import NotificationsProvider from 'modules/notification/NotificationsProvider';
 import SetupMessaging from 'components/SetupMessaging';
 import AnalyticsPageViewLogger from 'components/AnalyticsPageViewLogger';
+import { ErrorBoundary } from 'utils/components';
 import ThemeSettings from '../../theme';
 
 const theme = createMuiTheme(ThemeSettings);
@@ -34,17 +35,17 @@ function App({ routes }) {
       <CssBaseline />
       <FirebaseAppProvider firebaseConfig={firebaseConfig} initPerformance>
         <NotificationsProvider>
-          <Router>
-            <>
-              {routes}
-              <SuspenseWithPerf traceId="load-messaging">
-                <SetupMessaging />
-              </SuspenseWithPerf>
-              <SuspenseWithPerf traceId="page-view-logger">
-                <AnalyticsPageViewLogger />
-              </SuspenseWithPerf>
-            </>
-          </Router>
+          <>
+            <ErrorBoundary>
+              <Router>{routes}</Router>
+            </ErrorBoundary>
+            <SuspenseWithPerf traceId="load-messaging">
+              <SetupMessaging />
+            </SuspenseWithPerf>
+            <SuspenseWithPerf traceId="page-view-logger">
+              <AnalyticsPageViewLogger />
+            </SuspenseWithPerf>
+          </>
         </NotificationsProvider>
       </FirebaseAppProvider>
     </MuiThemeProvider>

@@ -565,11 +565,11 @@ function NewRequestPage() {
                   </Grid>
                 </Grid>
 
-                {dirty && Object.keys(dirty).length && !isValid && (
+                {dirty && !!Object.keys(dirty).length && !isValid ? (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
-                )}
+                ) : null}
 
                 <div className={classes.buttons}>
                   <Button
