@@ -1,9 +1,10 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
-import { Link } from 'react-router-dom';
+import { Link, generatePath } from 'react-router-dom';
 import Divider from '@material-ui/core/Divider';
 import PropTypes from 'prop-types';
+import { BLOG_SINGLE_POST_PATH } from 'constants/paths';
 import styles from './Post.styles';
 
 const useStyles = makeStyles(styles);
@@ -17,7 +18,7 @@ function Post({ title, author, slug, date, content }) {
         className={classes.title}
         gutterBottom
         component={Link}
-        to={`/blog/${slug}`}>
+        to={generatePath(BLOG_SINGLE_POST_PATH, { id: slug })}>
         {title}
       </Typography>
       <br />

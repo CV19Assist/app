@@ -42,6 +42,8 @@ export default function createRoutes() {
               PrivacyPolicyRoute,
               RequestSuccessfulRoute,
               NewRequestRoute,
+              BlogPageRoute,
+              SinglePostPageRoute,
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (
@@ -51,17 +53,6 @@ export default function createRoutes() {
               ),
             )
           }
-          <Route
-            exact
-            path={BlogPageRoute.path}
-            component={() => <BlogPageRoute.component />}
-          />
-          <Route
-            exact
-            path={SinglePostPageRoute.path}
-            component={() => <SinglePostPageRoute.component />}
-          />
-
           <Route component={NotFoundRoute.component} />
         </Switch>
       </SuspenseWithPerf>
