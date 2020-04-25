@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useFirestore, useUser } from 'reactfire';
+import { useFirestore, useUser, useAnalytics } from 'reactfire';
 import {
   Typography,
   Container,
@@ -77,6 +77,7 @@ function SearchPage() {
   // Data
   const user = useUser();
   const firestore = useFirestore();
+  const analytics = useAnalytics();
   const { GeoPoint } = useFirestore;
 
   useEffect(() => {
@@ -84,6 +85,9 @@ function SearchPage() {
       // Use lat/long set to state (either from profile or default)
       const { latitude, longitude } = currentLatLong;
       setSearching(true);
+      analytics.logEvent('search', {
+        search_term: `latitude=${latitude}&longitude=${longitude}`,
+      });
       try {
         // Query for nearby requests
         const geofirestore = new GeoFirestore(firestore);

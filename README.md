@@ -3,6 +3,7 @@
 ## Please note that all new development is now being done on the [`next branch`](/CV19Assist/app/tree/next) which will be going live in the coming days.
 
 [![Build Status][build-status-image]][build-status-url]
+[![Coverage][coverage-image]][coverage-url]
 [![License][license-image]][license-url]
 [![Code Style][code-style-image]][code-style-url]
 
@@ -19,7 +20,7 @@
 
 ## Requirements
 
-- node `^10.15.0`
+- node `^10.18.0`
 - npm `^6.0.0`
 - yarn `^1.0.0`
 
@@ -151,14 +152,14 @@ More about how routing works is available in [the react-router-dom docs](https:/
 
 Cypress is used to write and run UI tests which live in the `cypress` folder. The following scripts can be used to run tests:
 
-- Run using Cypress run: `yarn run test`
-- Open Test Runner UI (`cypress open`): `yarn run test:open`
+- Run using Cypress run: `yarn test`
+- Open Test Runner UI (`cypress open`): `yarn test:open`
 
 To run tests against emulators:
 
-1. Start database emulators: `yarn run emulators`
-1. Start React app pointed at emulators: `yarn run start:emulate`
-1. Open Cypress test runner with test utils pointed at emulators: `yarn run test:emulate`
+1. Start database emulators: `yarn emulators`
+1. Start React app pointed at emulators: `yarn start:emulate`
+1. Open Cypress test runner with test utils pointed at emulators: `yarn test:emulate`
 
 To Run tests in CI add the following environment variables within your CI provider:
 
@@ -168,7 +169,7 @@ To Run tests in CI add the following environment variables within your CI provid
 
 ## Deployment
 
-Build code before deployment by running `yarn run build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
+Build code before deployment by running `yarn build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
 
 Before starting make sure to install Firebase Command Line Tool: `yarn i -g firebase-tools`
 
@@ -188,7 +189,7 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 #### Manual deploy
 
 1. Run `firebase:login`
-1. Build Project: `yarn run build`
+1. Build Project: `yarn build`
 1. Deploy to Firebase (everything including Hosting and Functions): `firebase deploy`
 
 **NOTE:** You can use `yarn start:dist` to test how your application will work when deployed to Firebase.
@@ -203,8 +204,8 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 [build-status-url]: https://github.com/CV19Assist/app/actions
 [climate-image]: https://img.shields.io/codeclimate/github/CV19Assist/app.svg?style=flat-square
 [climate-url]: https://codeclimate.com/github/CV19Assist/app
-[coverage-image]: https://img.shields.io/codeclimate/coverage/github/CV19Assist/app.svg?style=flat-square
-[coverage-url]: https://codeclimate.com/github/CV19Assist/app
+[coverage-image]: https://img.shields.io/codecov/c/gh/CV19Assist/app&style=flat-square
+[coverage-url]: https://codecov.io/gh/CV19Assist/app
 [license-image]: https://img.shields.io/badge/MIT-blue.svg?style=flat-square
 [license-url]: https://github.com/CV19Assist/app/blob/master/LICENSE
 [code-style-image]: https://img.shields.io/badge/code%20style-airbnb-blue.svg?style=flat-square

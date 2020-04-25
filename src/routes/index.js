@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { SuspenseWithPerf } from 'reactfire';
 import LoadingSpinner from 'components/LoadingSpinner';
+import AnalyticsPageViewLogger from 'components/AnalyticsPageViewLogger';
 import { PrivateRoute } from 'utils/router';
 import CoreLayout from '../layouts/CoreLayout';
 import Home from './Home';
@@ -17,6 +18,7 @@ import NotFoundRoute from './NotFound';
 import PrivacyPolicyRoute from './PrivacyPolicy';
 import TermsOfServiceRoute from './TermsOfService';
 import RequestSuccessfulRoute from './RequestSuccessful';
+import MyRequestsRoute from './MyRequests';
 import NewRequestRoute from './NewRequest';
 
 export default function createRoutes() {
@@ -40,6 +42,7 @@ export default function createRoutes() {
               PrivacyPolicyRoute,
               RequestSuccessfulRoute,
               NewRequestRoute,
+              MyRequestsRoute,
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (
@@ -50,6 +53,9 @@ export default function createRoutes() {
             )
           }
           <Route component={NotFoundRoute.component} />
+          <SuspenseWithPerf traceId="page-view-logger">
+            <AnalyticsPageViewLogger />
+          </SuspenseWithPerf>
         </Switch>
       </SuspenseWithPerf>
     </CoreLayout>

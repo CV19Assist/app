@@ -3680,6 +3680,14 @@ chownr@^1.1.1, chownr@^1.1.2:
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
   integrity sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==
 
+chrome-remote-interface@^0.27.1:
+  version "0.27.2"
+  resolved "https://registry.yarnpkg.com/chrome-remote-interface/-/chrome-remote-interface-0.27.2.tgz#e5605605f092b7ef8575d95304e004039c9d0ab9"
+  integrity sha512-pVLljQ29SAx8KIv5tSa9sIf8GrEsAZdPJoeWOmY3/nrIzFmE+EryNNHvDkddGod0cmAFTv+GmPG0uvzxi2NWsA==
+  dependencies:
+    commander "2.11.x"
+    ws "^6.1.0"
+
 chrome-trace-event@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.2.tgz#234090ee97c7d4ad1a2c4beae27505deffc608a4"
@@ -3964,6 +3972,11 @@ command-exists@^1.2.8:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/command-exists/-/command-exists-1.2.8.tgz#715acefdd1223b9c9b37110a149c6392c2852291"
   integrity sha512-PM54PkseWbiiD/mMsbvW351/u+dafwTJ0ye2qB60G1aGQP9j3xK2gmMDc+R34L3nDtx4qMCitXT75mkbkGJDLw==
+
+commander@2.11.x:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.11.0.tgz#157152fd1e7a6c8d98a5b715cf376df928004563"
+  integrity sha512-b0553uYA5YAEGgyYIGYROzKQ7X5RAqedkfjiZxwi0kL1g3bOaBNNZfYkzt/CL0umgD5wc9Jec2FbB98CjkMRvQ==
 
 commander@4.1.0:
   version "4.1.0"
@@ -4631,10 +4644,18 @@ cypress-firebase@^1.1.0:
   resolved "https://registry.yarnpkg.com/cypress-firebase/-/cypress-firebase-1.1.0.tgz#87a2dcfedd740270a7b7020982d240ee88f2b922"
   integrity sha512-TWBy7Syi2xWxHswJPP5ys+iGGF1hHOE0b6arnQvMplCrkoj0YUMTe3fpyLiFlYsqYLzczEYTX6gd4aploMI8oA==
 
-cypress@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-4.4.0.tgz#566ac224e11601634c31e5648e5c15199dde7954"
-  integrity sha512-ZpsV3pVemANGi4Cxu0UIqFv23uHdDJZYlKY+8P/eixujCpI1TQ5RSPBp2grfV3ZvlGYrOXPJY44j9iEh1xoQug==
+cypress-log-to-output@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/cypress-log-to-output/-/cypress-log-to-output-1.0.8.tgz#8698db2cd68b88fd62e7f9ea8d1eece20bb210cf"
+  integrity sha512-o0PwNSXSZho2QLTOa4I/KgyPfZwgqNBqNcz+jBMcKJHPsRBZDUElaosigqSXI28uuSlprUlvcYjpcb/791u/lg==
+  dependencies:
+    chalk "^2.4.2"
+    chrome-remote-interface "^0.27.1"
+
+cypress@^4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-4.4.1.tgz#f5aa1aa5f328f1299bff328103f7cbad89e80f29"
+  integrity sha512-LcskZ/PXRG9XTlEeeenKqz/KddT1x+7O7dqXsdKWPII01LxLNmNHIvHnlUqApchVbinJ5vir6J255CkELSeL0A==
   dependencies:
     "@cypress/listr-verbose-renderer" "0.4.1"
     "@cypress/request" "2.88.5"
@@ -14494,7 +14515,7 @@ ws@^5.2.0:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@^6.1.2, ws@^6.2.1:
+ws@^6.1.0, ws@^6.1.2, ws@^6.2.1:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/ws/-/ws-6.2.1.tgz#442fdf0a47ed64f59b6a5d8ff130f4748ed524fb"
   integrity sha512-GIyAXC2cB7LjvpgMt9EKS2ldqr0MTrORaleiOno6TweZ6r3TKtoFQWay/2PceJ3RuBasOHzXNn5Lrw1X0bEjqA==
