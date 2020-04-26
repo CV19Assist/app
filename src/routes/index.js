@@ -45,8 +45,9 @@ export default function createRoutes() {
               RequestSuccessfulRoute,
               NewRequestRoute,
               MyRequestsRoute,
-              BlogPageRoute,
               SinglePostPageRoute,
+              BlogPageRoute,
+              
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (
