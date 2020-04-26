@@ -11,3 +11,5 @@ export const PRIVACY_POLICY_PATH = '/privacy-policy';
 export const TERMS_OF_SERVICE_PATH = '/terms-of-service';
 export const NEW_REQUEST_PATH = '/new-request';
 export const MY_REQUESTS_PATH = '/my-requests';
+export const BLOG_PATH = '/blog';
+export const BLOG_SINGLE_POST_PATH = '/blog/:id';
