@@ -89,6 +89,9 @@ function SearchPage() {
     // Use lat/long set to state (either from profile or default)
     const { latitude, longitude } = searchLocation;
     setSearching(true);
+    analytics.logEvent('search', {
+      search_term: `latitude=${latitude}&longitude=${longitude}`,
+    });
     try {
       // Query for nearby requests
       const geofirestore = new GeoFirestore(firestore);
@@ -118,9 +121,7 @@ function SearchPage() {
       console.log(err);
       setSearching(false);
     }
-    searchForNearbyRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentLatLong, distance]);
+  }
 
   // Setup an observable for debouncing the search requests.
   useEffect(() => {
