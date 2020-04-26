@@ -14,7 +14,7 @@ import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { NEW_REQUEST_PATH } from 'constants/paths';
+import { NEW_REQUEST_PATH, BLOG_PATH } from 'constants/paths';
 import styles from './Navbar.styles';
 
 const useStyles = makeStyles(styles);
@@ -96,6 +96,12 @@ function NavbarWithoutAuth({ children }) {
                 }}>
                 <ListItemText primary="About" />
               </ListItem>
+              <ListItem
+                onClick={() => {
+                  launchURL(BLOG_PATH);
+                }}>
+                <ListItemText primary="Blog" />
+              </ListItem>
             </List>
           </Drawer>
         </Hidden>
@@ -125,6 +131,9 @@ function NavbarWithoutAuth({ children }) {
           </Button>
           <Button component={Link} to="/about" color="inherit">
             About
+          </Button>
+          <Button component={Link} to={BLOG_PATH} color="inherit">
+            Blog
           </Button>
         </Hidden>
         {children}
