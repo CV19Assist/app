@@ -52,6 +52,7 @@
     "react-router-dom": "^5.1.2",
     "react-transition-group": "^4.3.0",
     "reactfire": "^2.0.3",
+    "rxjs": "^6.5.5",
     "yup": "^0.28.3"
   },
   "devDependencies": {

@@ -5,7 +5,7 @@ describe('Contact Page', () => {
     cy.visit('/contact');
   });
 
-  it('Submits contact to contacts collection and shows success message', () => {
+  it.skip('Submits contact to contacts collection and shows success message', () => {
     const email = 'test@email.com';
     const name = 'some user';
     const phone = '1231231234';
