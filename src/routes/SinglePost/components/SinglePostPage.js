@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core';
-import Container from '@material-ui/core/Container';
-
-import { Redirect, useRouteMatch } from 'react-router-dom';
+import {
+  Button,
+  Container,
+  Typography,
+  Paper,
+  makeStyles,
+} from '@material-ui/core';
+import { Redirect, useRouteMatch, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { BLOG_PATH } from 'constants/paths';
+import { ChevronLeft as BackIcon } from '@material-ui/icons';
 import styles from './SinglePostPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -37,44 +42,33 @@ function SinglePostPage() {
   }
   return (
     <>
-      <main className={classes.container}>
-        <div>
-          <Container maxWidth="md">
-            <Typography
-              component="h1"
-              variant="h3"
-              className={classes.title}
-              align="center"
-              gutterBottom>
-              {post.title}
-            </Typography>
-            <Typography
-              component="h5"
-              variant="subtitle2"
-              className={classes.sub}
-              align="center"
-              gutterBottom>
-              By {post.author}
-            </Typography>
+      <Helmet>
+        <title>{post.title}</title>
+      </Helmet>
+      <Container maxWidth="md">
+        <Typography variant="h5" gutterBottom>
+          {post.title}
+        </Typography>
+        <Paper className={classes.paper}>
+          <Typography variant="subtitle2" color="textSecondary">
+            By {post.author} &ndash;{' '}
+            {post.createdAt ? post.createdAt.substring(0, 10) : null}
+          </Typography>
+          <Typography
+            gutterBottom
+            dangerouslySetInnerHTML={{ __html: post.html }}
+          />
 
-            <Typography
-              component="h5"
-              variant="subtitle2"
-              align="center"
-              className={classes.sub}
-              gutterBottom>
-              {post.createdAt ? post.createdAt.substring(0, 10) : null}
-            </Typography>
-            <Typography
-              className={classes.content}
-              align="center"
-              gutterBottom
-              dangerouslySetInnerHTML={{ __html: post.html }}
-            />
-            <div className="content" />
-          </Container>
-        </div>
-      </main>
+          <Button
+            component={Link}
+            to={BLOG_PATH}
+            variant="outlined"
+            startIcon={<BackIcon />}
+            color="primary">
+            Back
+          </Button>
+        </Paper>
+      </Container>
     </>
   );
 }

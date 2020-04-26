@@ -2,7 +2,6 @@ import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core';
 import { Link, generatePath } from 'react-router-dom';
-import Divider from '@material-ui/core/Divider';
 import PropTypes from 'prop-types';
 import { BLOG_SINGLE_POST_PATH } from 'constants/paths';
 import styles from './Post.styles';
@@ -22,28 +21,17 @@ function Post({ title, author, slug, date, content }) {
         {title}
       </Typography>
       <br />
-      <Typography
-        variant="subtitle2"
-        className={classes.sub}
-        align="left"
-        gutterBottom>
-        By {author}
+      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+        By {author} &ndash; {date}
       </Typography>
-      <Typography
-        className={classes.sub}
-        variant="subtitle2"
-        align="left"
-        gutterBottom>
-        {date}
-      </Typography>
-      <Typography
-        className={classes.content}
-        component="p"
-        align="left"
-        gutterBottom>
+      <Typography variant="body1" gutterBottom className={classes.content}>
         {content}
       </Typography>
-      <Divider light className={classes.divider} />
+      <Typography variant="body2">
+        <Link to={generatePath(BLOG_SINGLE_POST_PATH, { id: slug })}>
+          Read more...
+        </Link>
+      </Typography>
     </>
   );
 }

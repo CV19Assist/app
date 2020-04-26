@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-
-import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
+import { Typography, Paper, Container, makeStyles } from '@material-ui/core';
 import { Redirect } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Post from './Post/Post';
+import styles from './BlogPage.styles';
+
+const useStyles = makeStyles(styles);
 
 function BlogPage() {
+  const classes = useStyles();
   const [posts, setPosts] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -34,19 +36,21 @@ function BlogPage() {
         <title>Blog</title>
       </Helmet>
       <Container maxWidth="md">
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h5" gutterBottom>
           Blog
         </Typography>
         {posts.map((post) => {
           return (
-            <Post
-              slug={post.slug}
-              title={post.title}
-              author={post.author}
-              date={post.createdAt.substring(0, 10)}
-              key={post.id}
-              content={post.summary}
-            />
+            <Paper className={classes.paper} key={post.id}>
+              <Post
+                slug={post.slug}
+                title={post.title}
+                author={post.author}
+                date={post.createdAt.substring(0, 10)}
+                key={post.id}
+                content={post.summary}
+              />
+            </Paper>
           );
         })}
       </Container>

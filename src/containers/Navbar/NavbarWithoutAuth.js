@@ -86,6 +86,12 @@ function NavbarWithoutAuth({ children }) {
               </ListItem>
               <ListItem
                 onClick={() => {
+                  launchURL(BLOG_PATH);
+                }}>
+                <ListItemText primary="Blog" />
+              </ListItem>
+              <ListItem
+                onClick={() => {
                   launchURL('/contact');
                 }}>
                 <ListItemText primary="Contact" />
@@ -95,12 +101,6 @@ function NavbarWithoutAuth({ children }) {
                   launchURL('/about');
                 }}>
                 <ListItemText primary="About" />
-              </ListItem>
-              <ListItem
-                onClick={() => {
-                  launchURL(BLOG_PATH);
-                }}>
-                <ListItemText primary="Blog" />
               </ListItem>
             </List>
           </Drawer>
@@ -126,14 +126,14 @@ function NavbarWithoutAuth({ children }) {
           <Button component={Link} to="/donate" color="inherit">
             Donate
           </Button>
+          <Button component={Link} to={BLOG_PATH} color="inherit">
+            Blog
+          </Button>
           <Button component={Link} to="/contact" color="inherit">
             Contact
           </Button>
           <Button component={Link} to="/about" color="inherit">
             About
-          </Button>
-          <Button component={Link} to={BLOG_PATH} color="inherit">
-            Blog
           </Button>
         </Hidden>
         {children}
