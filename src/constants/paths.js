@@ -13,3 +13,4 @@ export const ABOUT_PATH = '/about';
 export const NEW_REQUEST_PATH = '/new-request';
 export const REQUEST_PATH = '/requests/:requestId';
 export const REQUEST_SUCCESSFUL_PATH = '/request-successful';
+export const MY_REQUESTS_PATH = '/my-requests';

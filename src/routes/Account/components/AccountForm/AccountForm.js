@@ -47,13 +47,6 @@ function AccountForm({ account, onSubmit }) {
           error={!!errors.email}
           helperText={errors.email && 'Email must be valid'}
         />
-        <TextField
-          name="photoURL"
-          label="Avatar Url"
-          margin="normal"
-          inputRef={register}
-          fullWidth
-        />
       </div>
       {!!account && !!account.providerData && (
         <div>

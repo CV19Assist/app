@@ -1,5 +1,10 @@
 import React from 'react';
-import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
+import {
+  useFirestore,
+  useFirestoreDoc,
+  useUser,
+  useAnalytics,
+} from 'reactfire';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
 import defaultUserImageUrl from 'static/User.png';
@@ -12,11 +17,13 @@ function AccountEditor() {
   const classes = useStyles();
   const firestore = useFirestore();
   const user = useUser();
+  const analytics = useAnalytics();
   const accountRef = firestore.doc(`users/${user.uid}`);
   const profileSnap = useFirestoreDoc(accountRef);
   const profile = profileSnap.data();
 
   async function updateAccount(changedAccount) {
+    analytics.logEvent('account-update');
     try {
       // Update auth profile (displayName, photoURL, etc)
       await user.updateProfile(changedAccount);

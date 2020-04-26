@@ -22,7 +22,7 @@ import {
   RadioGroup,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { useFirestore, useUser } from 'reactfire';
+import { useFirestore, useUser, useAnalytics } from 'reactfire';
 import { activeCategoryMap } from 'constants/categories';
 import { useNotifications } from 'modules/notification';
 import {
@@ -68,6 +68,7 @@ const requestValidationSchema = Yup.object().shape({
 function useNewRequestPage() {
   const history = useHistory();
   const firestore = useFirestore();
+  const analytics = useAnalytics();
   const user = useUser();
   const { FieldValue, GeoPoint } = useFirestore;
   const { showSuccess, showError } = useNotifications();
@@ -219,7 +220,8 @@ function useNewRequestPage() {
           .set(action),
       ]);
 
-      showSuccess('Request submitted');
+      showSuccess('Request submitted!');
+      analytics.logEvent('new-request', action);
       history.replace(REQUEST_SUCCESSFUL_PATH);
     } catch (err) {
       showError(err.message || 'Error submitting request');

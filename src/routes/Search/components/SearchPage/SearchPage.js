@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import { Helmet } from 'react-helmet';
 import { Link, generatePath } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useFirestore, useUser } from 'reactfire';
+import { useFirestore, useUser, useAnalytics } from 'reactfire';
 import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
@@ -81,6 +81,7 @@ function SearchPage() {
   // Data
   const user = useUser();
   const firestore = useFirestore();
+  const analytics = useAnalytics();
   const { GeoPoint } = useFirestore;
 
   async function searchForNearbyRequests({ searchLocation, searchDistance }) {
@@ -117,7 +118,9 @@ function SearchPage() {
       console.log(err);
       setSearching(false);
     }
-  }
+    searchForNearbyRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, currentLatLong, distance]);
 
   // Setup an observable for debouncing the search requests.
   useEffect(() => {
@@ -140,6 +143,8 @@ function SearchPage() {
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
+      // TODO: Search is triggered twice when the user is logged in. Once with the first render,
+      //       and then again when the user is assigned.  Need to fix this behavior.
       // Set lat/long from profile or fallback to defaults
       if (user && user.uid) {
         const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
@@ -174,7 +179,7 @@ function SearchPage() {
     // on whether current user is logged in
     loadLatLongFromProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');

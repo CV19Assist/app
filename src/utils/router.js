@@ -24,7 +24,7 @@ export function PrivateRoute({ children, path, ...rest }) {
           }}
         />
       }>
-      <Route key={`Route-${path}`} path={path} {...rest} />
+      {children || <Route key={`Route-${path}`} path={path} {...rest} />}
     </AuthCheck>
   );
 }
