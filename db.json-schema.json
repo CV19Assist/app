@@ -1,0 +1,206 @@
+{
+  "$id": "https://github.com/CV19Assist/app/blob/master/db-json-schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoSQL database layout for CV19 Assist",
+
+  "definitions": {
+    "collection": {
+      "$id": "#collection",
+      "description": "Firestore collection"
+    },
+
+    "uid": {
+      "$id": "#uid",
+      "type": "string",
+      "description": "User's Firebase Auth UID."
+    },
+
+    "author": {
+      "$id": "#author",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "displayName": { "type": "string" }
+      }
+    }
+  },
+
+  "type": "object",
+
+  "properties": {
+    "requests_public": {
+      "description": "Public geofirestore collection about a request",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "d": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "number",
+                  "description": "Status of this request",
+                  "oneOf": [
+                    { "const": 1, "description": "New or release" },
+                    { "const": 5, "description": "Released - Not currently used" },
+                    { "const": 10, "description": "Assigned" },
+                    {
+                      "const": 15,
+                      "description": "In progress - Not currently used"
+                    },
+                    { "const": 20, "description": "Completed" },
+                    {
+                      "const": 30,
+                      "description": "Close, cannot be completed. e.g., could not find a volunteer."
+                    }
+                  ]
+                }
+              }
+            },
+            "g": {
+              "type": "string",
+              "description": "Geofirestore managed geohash"
+            },
+            "l": {
+              "type": "string",
+              "description": "Geofirestore managed GeoPoint"
+            }
+          },
+          "required": ["d", "g", "l"]
+        }
+      ]
+    },
+
+    "requests_contact": {
+      "description": "This data can be shared with any volunteers, but we will first require an entry in the requests_public.usersWithContactInfoAccess collection.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "phone": { "type": "string" },
+            "email": { "type": "string" }
+          },
+          "required": ["phone", "email"]
+        }
+      ]
+    },
+
+    "request_actions": {
+      "description": "Request actions. Only visible to admins.  No functionatity needed in the UI for now.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "createdAt": { "type": "date-time" },
+            "createdBy": { "$ref": "#uid" },
+            "kind": {
+              "type": "number",
+              "description": "Kind of action.",
+              "oneOf": [
+                { "const": 1, "description": "Created" },
+                { "const": 2, "description": "Viewed contact information" },
+                { "const": 5, "description": "Released" },
+                { "const": 10, "description": "Took Ownership" },
+                {
+                  "const": 15,
+                  "description": "Started - for future functionality"
+                },
+                { "const": 20, "description": "Completed" },
+                {
+                  "const": 25,
+                  "description": "Assigned to someone other than self - for future functionality"
+                }
+              ]
+            },
+
+            "firstName": { "type": "string" },
+            "displayName": { "type": "string" },
+            "assignedBy": {
+              "$ref": "#uid",
+              "description": "If 15-assigned, for future functionality"
+            }
+          },
+          "required": [
+            "requestId",
+            "createdAt",
+            "action",
+            "firstName",
+            "displayName"
+          ]
+        }
+      ]
+    },
+
+    "request_comments_public": {
+      "description": "Public comments about the request, e.g. volunteer follow-up.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "createdAt": { "type": "date-time" },
+            "createdBy": { "$ref": "#uid" },
+            "author": { "$ref": "#author" },
+            "content": { "type": "string" },
+            "contentType": {
+              "type": "string",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "enum": ["text"]
+            }
+          },
+          "required": [
+            "requestId",
+            "createdAt",
+            "createdBy",
+            "author",
+            "content",
+            "contentType"
+          ]
+        }
+      ]
+    },
+
+    "requests_discussions": {
+      "description": "Private discussion about this specific request between the requestor, volunteer and other privileged users. This will only be displayed to the requestor, volunteer and privileged users (e.g., admins).",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "kind": {
+              "type": "number",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "oneOf": [
+                { "const": 1, "description": "Discussion" },
+                { "const": 5, "description": "Release comment" },
+                { "const": 8, "description": "Admin comment" },
+                { "const": 10, "description": "Acceptance comment" },
+                { "const": 15, "description": "Assignment comment" },
+                { "const": 20, "description": "Completion comment" }
+              ]
+            },
+            "createdAt": { "type": "timestamp" },
+            "createdBy": { "$ref": "#uid" },
+            "author": { "$ref": "#author" },
+            "content": { "type": "string" },
+            "contentType": {
+              "type": "string",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "enum": ["text"]
+            }
+          },
+          "required": [
+            "requestId",
+            "kind",
+            "createdAt",
+            "createdBy",
+            "author",
+            "content",
+            "contentType"
+          ]
+        }
+      ]
+    }
+  }
+}

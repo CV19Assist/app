@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { debounceTime } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
+import { Link, generatePath } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFirestore, useUser, useAnalytics } from 'reactfire';
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from 'react-places-autocomplete';
+import { GeoFirestore } from 'geofirestore';
 import {
   Typography,
   Container,
   Grid,
   Button,
   Divider,
+  Hidden,
   Paper,
   Slider,
   Chip,
   TextField,
-  Card,
-  CardContent,
   CircularProgress,
   LinearProgress,
 } from '@material-ui/core';
-import { Autocomplete, Alert } from '@material-ui/lab';
-import PlacesAutocomplete, {
-  geocodeByAddress,
-  getLatLng,
-} from 'react-places-autocomplete';
-import { GeoFirestore } from 'geofirestore';
+import Alert from '@material-ui/lab/Alert';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import { makeStyles } from '@material-ui/core/styles';
+import { LoadScript } from '@react-google-maps/api';
+import {
+  ShoppingBasket as GroceryIcon,
+  AttachMoney as FinancialAssitanceIcon,
+} from '@material-ui/icons';
 import { kmToMiles } from 'utils/geo';
 import { useNotifications } from 'modules/notification';
 import {
@@ -38,12 +46,7 @@ import {
   DEFAULT_LOCATION_NAME,
   USED_GOOGLE_MAPS_LIBRARIES,
 } from 'constants/geo';
-import { makeStyles } from '@material-ui/core/styles';
-import { LoadScript } from '@react-google-maps/api';
-import {
-  ShoppingBasket as GroceryIcon,
-  AttachMoney as FinancialAssitanceIcon,
-} from '@material-ui/icons';
+import { REQUEST_PATH } from 'constants/paths';
 import styles from './SearchPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -58,7 +61,6 @@ const defaultDistance = 25;
 
 function SearchPage() {
   const classes = useStyles();
-  const location = useLocation();
   const { showError } = useNotifications();
 
   // State
@@ -68,11 +70,13 @@ function SearchPage() {
     latitude: DEFAULT_LATITUDE,
     longitude: DEFAULT_LONGITUDE,
   });
-  const [distance, setDistance] = useState(defaultDistance);
-  const [searching, setSearching] = useState(false);
   const [currentPlaceLabel, setCurrentPlaceLabel] = React.useState(
     `Using default location: ${DEFAULT_LOCATION_NAME}`,
   );
+  const [distance, setDistance] = useState(defaultDistance);
+  const [searching, setSearching] = useState(false);
+
+  const [onSearch$] = useState(() => new Subject());
 
   // Data
   const user = useUser();
@@ -80,47 +84,63 @@ function SearchPage() {
   const analytics = useAnalytics();
   const { GeoPoint } = useFirestore;
 
-  useEffect(() => {
-    async function searchForNearbyRequests() {
-      // Use lat/long set to state (either from profile or default)
-      const { latitude, longitude } = currentLatLong;
-      setSearching(true);
-      analytics.logEvent('search', {
-        search_term: `latitude=${latitude}&longitude=${longitude}`,
-      });
-      try {
-        // Query for nearby requests
-        const geofirestore = new GeoFirestore(firestore);
-        const nearbyRequestsSnap = await geofirestore
-          .collection(REQUESTS_PUBLIC_COLLECTION)
-          .near({
-            center: new GeoPoint(latitude, longitude),
-            radius: KM_TO_MILES * distance,
-          })
-          .where('status', '==', 1)
-          .limit(30)
-          .get();
-        const sortedByDistance = nearbyRequestsSnap.docs.sort(
-          (a, b) => a.distance - b.distance,
-        );
-        setNearbyRequests(
-          sortedByDistance.map((docSnap) => ({
-            ...docSnap.data(),
-            id: docSnap.id,
-            distance: kmToMiles(docSnap.distance).toFixed(2),
-          })),
-        );
-        setSearching(false);
-      } catch (err) {
-        showError('Error searching for nearby requests');
-        // eslint-disable-next-line no-console
-        console.log(err);
-        setSearching(false);
-      }
+  async function searchForNearbyRequests({ searchLocation, searchDistance }) {
+    if (!searchLocation) return;
+    // Use lat/long set to state (either from profile or default)
+    const { latitude, longitude } = searchLocation;
+    setSearching(true);
+    analytics.logEvent('search', {
+      search_term: `latitude=${latitude}&longitude=${longitude}`,
+    });
+    try {
+      // Query for nearby requests
+      const geofirestore = new GeoFirestore(firestore);
+      const nearbyRequestsSnap = await geofirestore
+        .collection(REQUESTS_PUBLIC_COLLECTION)
+        .near({
+          center: new GeoPoint(latitude, longitude),
+          radius: KM_TO_MILES * searchDistance,
+        })
+        .where('status', '==', 1)
+        .limit(30)
+        .get();
+      const sortedByDistance = nearbyRequestsSnap.docs.sort(
+        (a, b) => a.distance - b.distance,
+      );
+      setNearbyRequests(
+        sortedByDistance.map((docSnap) => ({
+          ...docSnap.data(),
+          id: docSnap.id,
+          distance: kmToMiles(docSnap.distance).toFixed(2),
+        })),
+      );
+      setSearching(false);
+    } catch (err) {
+      showError('Error searching for nearby requests');
+      // eslint-disable-next-line no-console
+      console.log(err);
+      setSearching(false);
     }
-    searchForNearbyRequests();
+  }
+
+  // Setup an observable for debouncing the search requests.
+  useEffect(() => {
+    const subscription = onSearch$
+      .pipe(debounceTime(500))
+      .subscribe(searchForNearbyRequests);
+
+    return () => subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentLatLong, distance]);
+  }, []);
+
+  // This pushes new empty values to the observable when the distance or location changes.
+  useEffect(() => {
+    onSearch$.next({
+      searchLocation: currentLatLong,
+      searchDistance: distance,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLatLong, distance]);
 
   useEffect(() => {
     async function loadLatLongFromProfile() {
@@ -133,17 +153,27 @@ function SearchPage() {
         const geopoint = profileSnap.get('preciseLocation');
         const preciseLocationName = profileSnap.get('preciseLocationName');
         if (geopoint) {
-          const { latitude, longitude } = geopoint;
-          setCurrentLatLong({ latitude, longitude });
+          const userLocation = {
+            latitude: geopoint.latitude,
+            longitude: geopoint.longitude,
+          };
+          setCurrentLatLong(userLocation);
+          setCurrentPlaceLabel(preciseLocationName);
+          onSearch$.next({
+            searchLocation: userLocation,
+            searchDistance: defaultDistance,
+          });
+        } else {
+          onSearch$.next({
+            searchLocation: currentLatLong,
+            searchDistance: defaultDistance,
+          });
         }
-        // TODO: Remove this once preciseLocationName is being set during sign up.
-        setCurrentPlaceLabel(
-          preciseLocationName || 'Using your default location',
-        );
       } else {
-        setCurrentPlaceLabel(
-          `Using default location: ${DEFAULT_LOCATION_NAME}`,
-        );
+        onSearch$.next({
+          searchLocation: currentLatLong,
+          searchDistance: defaultDistance,
+        });
       }
     }
     // NOTE: useEffect is used to load data so it can be done conditionally based
@@ -155,7 +185,9 @@ function SearchPage() {
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
     document.body.appendChild(el);
-    el.value = `${location.origin}/requests/${id}`;
+    el.value = `${window.location.origin}${generatePath(REQUEST_PATH, {
+      requestId: id,
+    })}`;
     el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
@@ -259,143 +291,135 @@ function SearchPage() {
             max={markValues[markValues.length - 1].value}
           />
         </div>
-        {/* 
-        <Divider className={classes.divider} />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={searchForNearbyRequests}>
-          Search
-        </Button> */}
       </Paper>
       {searching && (
-        <Card className={classes.cards}>
-          <CardContent>
-            <LinearProgress />
-          </CardContent>
-        </Card>
+        <Paper className={classes.simplePaper}>
+          <LinearProgress />
+        </Paper>
       )}
       {nearbyRequests && nearbyRequests.length === 0 && (
-        <Card className={classes.cards}>
-          <CardContent>
-            <Typography data-test="no-requests-found">
-              No requests found. You can try expanding the search area or try
-              entering a new location.
-            </Typography>
-          </CardContent>
-        </Card>
+        <Paper className={classes.simplePaper}>
+          <Typography data-test="no-requests-found">
+            No requests found with {distance} miles. You can try expanding the
+            search area or try entering a new location.
+          </Typography>
+        </Paper>
       )}
       {nearbyRequests &&
         nearbyRequests.map((result) => (
-          <Card key={result.id} className={classes.cards}>
-            <Container maxWidth="lg" className={classes.TaskContainer}>
-              <Grid container>
-                <Grid item xs={9}>
-                  <Typography variant="caption" gutterBottom>
-                    ADDED {format(result.createdAt.toDate(), 'p - PPPP')}
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    className={classes.Needs}
-                    gutterBottom>
-                    {result.needs.map((item) => (
-                      <React.Fragment key={item}>
-                        {allCategoryMap[item] ? (
-                          <Chip
-                            variant="outlined"
-                            icon={
-                              item === 'grocery-pickup' ? <GroceryIcon /> : null
-                            }
-                            label={allCategoryMap[item].shortDescription}
-                          />
-                        ) : (
-                          <Alert severity="error">
-                            Could not find &apos;{item}&apos; in all category
-                            map.
-                          </Alert>
-                        )}
-                      </React.Fragment>
-                    ))}
-                    {result.needFinancialAssistance && (
-                      <Chip
-                        variant="outlined"
-                        icon={<FinancialAssitanceIcon />}
-                        label="Need financial assistance"
-                      />
-                    )}
-                  </Typography>
+          <Paper className={classes.resultPaper} key={result.id}>
+            <Grid container>
+              <Hidden smDown>
+                <Grid item className={classes.distanceContainer} sm={2}>
+                  {result.distance}
+                  <br />
+                  miles
                 </Grid>
-
+              </Hidden>
+              <Grid item className={classes.requestSummary} sm={10}>
                 {parseInt(result.immediacy, 10) > 5 && (
-                  <Grid item xs={3}>
-                    <img
-                      align="right"
-                      src="/taskIcon.png"
-                      width="50px"
-                      height="50px"
-                      alt="Urgent"
-                      title="Urgent"
-                    />
-                  </Grid>
+                  <img
+                    align="right"
+                    src="/taskIcon.png"
+                    width="50px"
+                    height="50px"
+                    alt="Urgent"
+                    title="Urgent"
+                  />
                 )}
 
-                <Grid item xs={12}>
-                  <Typography variant="caption" gutterBottom>
-                    REQUESTOR
-                  </Typography>
-                </Grid>
+                <Typography variant="h6">
+                  {result.name ? result.name : result.firstName} &ndash;{' '}
+                  {result.generalLocationName}
+                </Typography>
 
-                <Grid item xs={6}>
-                  <Typography variant="h6">
-                    {result.name ? result.name : result.firstName}
-                  </Typography>
-                </Grid>
+                <Typography variant="caption" gutterBottom>
+                  Requested {format(result.createdAt.toDate(), 'p - PPPP')}
+                </Typography>
 
-                <Grid item xs={6}>
+                <Typography variant="h5" className={classes.needs} gutterBottom>
+                  {result.needs.map((item) => (
+                    <React.Fragment key={item}>
+                      {allCategoryMap[item] ? (
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          icon={
+                            item === 'grocery-pickup' ? <GroceryIcon /> : null
+                          }
+                          label={allCategoryMap[item].shortDescription}
+                        />
+                      ) : (
+                        <Alert severity="error">
+                          Could not find &apos;{item}&apos; in all category map.
+                        </Alert>
+                      )}
+                    </React.Fragment>
+                  ))}
+                  {result.needFinancialAssistance && (
+                    <Chip
+                      variant="outlined"
+                      size="small"
+                      icon={<FinancialAssitanceIcon />}
+                      label="Need financial assistance"
+                    />
+                  )}
+                </Typography>
+
+                <Hidden smUp>
                   <Typography
                     align="right"
                     variant="h5"
                     className={classes.TaskTitle}>
                     {result.distance} miles
                   </Typography>
-                </Grid>
+                </Hidden>
 
-                <Grid
-                  className={classes.DetailsButton}
-                  align="right"
-                  item
-                  xs={12}>
-                  {navigator.share ? (
+                <Grid container justify="flex-end">
+                  <Grid item>
+                    {navigator.share ? (
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          navigator.share({
+                            title: 'CV19 Assist Need Link',
+                            text: 'CV19 Assist Need Link',
+                            url: `${window.location.origin}${generatePath(
+                              REQUEST_PATH,
+                              {
+                                requestId: result.id,
+                              },
+                            )}`,
+                          });
+                        }}>
+                        SHARE
+                      </Button>
+                    ) : (
+                      <Button
+                        size="small"
+                        onClick={() => handleCopyNeedLink(result.id)}>
+                        COPY LINK FOR SHARING
+                      </Button>
+                    )}{' '}
                     <Button
+                      component={Link}
+                      to={generatePath(REQUEST_PATH, {
+                        requestId: result.id,
+                      })}
+                      size="small"
                       color="primary"
-                      variant="outlined"
-                      onClick={() => {
-                        navigator.share({
-                          title: 'CV19 Assist Need Link',
-                          text: 'CV19 Assist Need Link',
-                          url: `${location.origin}/needs/${result.id}`,
-                        });
-                      }}>
-                      SHARE
+                      disableElevation>
+                      DETAILS...
                     </Button>
-                  ) : (
-                    <Button
-                      color="primary"
-                      variant="outlined"
-                      onClick={() => handleCopyNeedLink(result.id)}>
-                      COPY LINK FOR SHARING
-                    </Button>
-                  )}{' '}
-                  <Button variant="contained" color="primary" disableElevation>
-                    DETAILS...
-                  </Button>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Container>
-          </Card>
+            </Grid>
+          </Paper>
         ))}
     </Container>
   );
 }
 
+// export default SearchPage;
 export default SearchPage;

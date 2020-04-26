@@ -1,8 +1,8 @@
 export default (theme) => ({
-  round: {
-    borderRadius: 50,
-    paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(3),
+  simplePaper: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    padding: theme.spacing(2),
   },
   center: {
     display: 'flex',
@@ -15,10 +15,6 @@ export default (theme) => ({
   icons: {
     width: theme.spacing(5),
     height: theme.spacing(5),
-  },
-  cards: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
   },
   arrows: {
     padding: theme.spacing(1.5),
@@ -42,6 +38,22 @@ export default (theme) => ({
   alertMessage: {
     marginTop: theme.spacing(3),
   },
+  resultPaper: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  distanceContainer: {
+    textAlign: 'center',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    padding: theme.spacing(2),
+    fontSize: theme.typography.h5.fontSize,
+    borderTopLeftRadius: theme.shape.borderRadius,
+    borderBottomLeftRadius: theme.shape.borderRadius,
+  },
+  requestSummary: {
+    padding: theme.spacing(2),
+  },
   distance: {
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
@@ -60,19 +72,13 @@ export default (theme) => ({
   TaskTitle: {
     color: '#F4B7B4',
   },
-  Needs: {
+  needs: {
     color: '#F4B7B4',
     display: 'flex',
+    flexWrap: 'wrap',
     '& > *': {
       marginTop: theme.spacing(0.5),
       marginRight: theme.spacing(0.5),
     },
-  },
-  TaskContainer: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-  },
-  DetailsButton: {
-    paddingTop: theme.spacing(1),
   },
 });
