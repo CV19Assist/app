@@ -2,6 +2,11 @@
 /* eslint-disable no-console */
 const admin = require('firebase-admin');
 const { Client } = require('@googlemaps/google-maps-services-js');
+const { GeoFirestore } = require('geofirestore');
+
+let geofirestore = null;
+let usersPublicGeofirestoreCollection = null;
+let requestsPublicGeofirestoreCollection = null;
 
 /**
  * Scrable specific location to a location nearby
@@ -40,16 +45,72 @@ function scrambleLocation(center, radiusInMeters = 300) {
  * @param {Array} callbacks - List of promises to run in order
  * @return {Promise} Resolves when all promises have completed in order
  */
-function promiseWaterfall(callbacks) {
-  return callbacks.reduce(
-    (accumulator, callback) =>
-      accumulator.then(
-        typeof callback === 'function' ? callback : () => callback,
-      ),
-    Promise.resolve(),
-  );
+async function promiseWaterfall(callbacks) {
+  return callbacks.reduce(async (accumulator, callback) => {
+    accumulator.then(
+      typeof callback === 'function' ? callback : () => callback,
+    );
+
+    // Add a slight delay to address Google Maps API rate limiting.
+    await new Promise((resolve) => setTimeout(resolve, 800));
+  }, Promise.resolve());
 }
 
+/**
+ * Get general location name from
+ * @param {number} latitude - Location latitude
+ * @param {number} longitude - Location longitude
+ */
+async function getLocationNameFromLatLong(latitude, longitude) {
+  const client = new Client({});
+  const requestOptions = {
+    params: {
+      latlng: { latitude, longitude },
+      key: 'AIzaSyBowgXC55EjPKY46v04jH-crZlH_zCaepU',
+    },
+  };
+  let result;
+  try {
+    const response = await client.reverseGeocode(requestOptions);
+    if (response.data.error_message) {
+      console.log(
+        'Geocoding failed: ',
+        JSON.stringify(response.data.error_message),
+      );
+    }
+
+    [result] = response.data.results;
+  } catch (err) {
+    console.log(
+      `Error calling geocoding for lat: ${latitude} and long: ${longitude}`,
+      err.message,
+    );
+    throw err;
+  }
+
+  // // Add a slight delay to address Google Maps API rate limiting.
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  let locality = null;
+  let administrativeAreaLevel1 = null;
+  let administrativeAreaLevel3 = null;
+  if (result && result.address_components) {
+    result.address_components.forEach((addressComp) => {
+      if (addressComp.types.includes('locality')) {
+        locality = addressComp.long_name;
+      }
+      if (addressComp.types.includes('administrative_area_level_3')) {
+        administrativeAreaLevel3 = addressComp.long_name;
+      }
+      if (addressComp.types.includes('administrative_area_level_1')) {
+        administrativeAreaLevel1 = addressComp.short_name;
+      }
+    });
+  }
+  const city = locality || administrativeAreaLevel3;
+  const locationName = `${city}, ${administrativeAreaLevel1}`;
+  return locationName;
+}
 /**
  * Convert needs -> requests, requests_public, requests_contact
  */
@@ -65,7 +126,8 @@ async function convertRequests() {
   try {
     // Create a single batch for all needs updates
     const batch = admin.firestore().batch();
-    needsSnap.docs.forEach((needSnap) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const needSnap of needsSnap.docs) {
       const privateRequest = {
         createdAt: needSnap.get('d.createdAt'),
         firstName: needSnap.get('d.firstName') || null,
@@ -78,12 +140,17 @@ async function convertRequests() {
         privateRequest.lastUpdatedAt = lastUpdatedAt;
       }
       const coords = needSnap.get('d.coordinates');
-      if (coords) {
-        privateRequest.preciseLocation = new admin.firestore.GeoPoint(
-          coords.latitude,
-          coords.longitude,
-        );
-      }
+      privateRequest.preciseLocation = new admin.firestore.GeoPoint(
+        coords.latitude,
+        coords.longitude,
+      );
+      // Get General location name from precise lat/long
+      // eslint-disable-next-line no-await-in-loop
+      const preciseLocationName = await getLocationNameFromLatLong(
+        coords.latitude,
+        coords.longitude,
+      );
+      privateRequest.preciseLocationName = preciseLocationName;
       const ownerUid = needSnap.get('d.owner.userProfileId');
       if (ownerUid) {
         privateRequest.owner = ownerUid;
@@ -104,30 +171,28 @@ async function convertRequests() {
         privateRequest,
       );
 
+      // ==== Public request
       const publicRequest = {
-        g: needSnap.get('g'),
-        l: needSnap.get('l'),
-        d: {
-          ...needSnap.get('d'),
-          immediacy: parseInt(needSnap.get('d.immediacy'), 10),
-        },
+        ...needSnap.get('d'),
+        immediacy: parseInt(needSnap.get('d.immediacy'), 10),
       };
       if (ownerUid) {
-        publicRequest.d.owner = ownerUid;
+        publicRequest.owner = ownerUid;
         const { userProfileId, ...otherOwner } = needSnap.get('d.owner');
-        publicRequest.d.ownerInfo = otherOwner;
+        publicRequest.ownerInfo = otherOwner;
       }
       if (createdByUid) {
-        publicRequest.d.createdBy = createdByUid;
+        publicRequest.createdBy = createdByUid;
         const { userProfileId, ...otherCreatedBy } = needSnap.get(
           'd.createdBy',
         );
-        publicRequest.d.createdByInfo = otherCreatedBy;
+        publicRequest.createdByInfo = otherCreatedBy;
       }
-      batch.set(
-        admin.firestore().doc(`requests_public/${needSnap.id}`),
-        publicRequest,
-      );
+      publicRequest.generalLocationName = preciseLocationName;
+      // Add directly using the geofirestore db so it can recalculate the geohash.
+      requestsPublicGeofirestoreCollection
+        .doc(needSnap.id)
+        .set(publicRequest, { customKey: 'generalLocation', merge: true });
 
       const requestContact = {
         email: needSnap.get('d.email') || null,
@@ -138,13 +203,13 @@ async function convertRequests() {
         admin.firestore().doc(`requests_contact/${needSnap.id}`),
         requestContact,
       );
-    });
+    }
     await batch.commit();
     console.log(
       'Successfully converted needs -> requests, copying needs/$needId/history...',
     );
 
-    // Copy needs/$needId/history -> requests/$requestId/actions
+    // Copy needs/$needId/history -> requests_actions
     // Batch copy of all actions for a single need
     await Promise.all(
       needsSnap.docs.map(async (needSnap) => {
@@ -154,66 +219,31 @@ async function convertRequests() {
         const actionsBatch = admin.firestore().batch();
         const needActionsSnap = await needActionsRef.get();
         needActionsSnap.forEach((needActionSnap) => {
-          actionsBatch.set(
-            admin.firestore().doc(`requests_actions/${needSnap.id}/actions`),
-            needActionSnap,
-          );
+          const requestAction = needActionSnap.data();
+          requestAction.requestId = needSnap.id;
+          requestAction.kind = requestAction.action;
+          delete requestAction.action;
+          requestAction.createdAt = requestAction.takenAt;
+          delete requestAction.takenAt;
+          requestAction.createdBy = requestAction.userProfileId || null;
+          delete requestAction.userProfileId;
+
+          const actionRef = admin
+            .firestore()
+            .collection(`requests_actions`)
+            .doc();
+          actionsBatch.set(actionRef, requestAction);
         });
         await actionsBatch.commit();
       }),
     );
     console.log(
-      'Successfully copied needs/$needId/history -> requests/$requestId/actions',
+      'Successfully copied needs/$needId/history -> requests_actions',
     );
   } catch (err) {
     console.log(`Error converting needs -> requests: ${err.message}`);
     throw err;
   }
-}
-
-/**
- * Get general location name from
- * @param {number} latitude - Location latitude
- * @param {number} longitude - Location longitude
- */
-async function getLocationNameFromLatLong(latitude, longitude) {
-  const client = new Client({});
-  const requestOptions = {
-    params: {
-      latlng: { latitude, longitude },
-      key: 'AIzaSyBowgXC55EjPKY46v04jH-crZlH_zCaepU',
-    },
-  };
-  let result;
-  try {
-    const response = await client.reverseGeocode(requestOptions);
-    [result] = response.data.results;
-  } catch (err) {
-    console.log(
-      `Error calling geocoding for lat: ${latitude} and long: ${longitude}`,
-      err.message,
-    );
-    throw err;
-  }
-
-  let locality = null;
-  let administrativeAreaLevel1 = null;
-  if (result && result.address_components) {
-    result.address_components.forEach((addressComp) => {
-      if (addressComp.types.includes('locality')) {
-        locality = addressComp.long_name;
-      }
-      if (addressComp.types.includes('administrative_area_level_1')) {
-        administrativeAreaLevel1 = addressComp.short_name;
-      }
-    });
-  }
-
-  let locationName = `${locality}, ${administrativeAreaLevel1}`;
-  if (!locality && result && result.formatted_address) {
-    locationName = result.formatted_address;
-  }
-  return locationName;
 }
 
 /**
@@ -230,46 +260,38 @@ async function convertUser(profileSnap) {
     createdAt: profileSnap.get('d.createdAt'),
   };
   const coords = profileSnap.get('d.coordinates');
-  if (coords && coords.latitude) {
-    privateUser.preciseLocation = new admin.firestore.GeoPoint(
-      coords.latitude,
-      coords.longitude,
-    );
-  }
+  privateUser.preciseLocation = new admin.firestore.GeoPoint(
+    coords.latitude,
+    coords.longitude,
+  );
+  // Get General location name from precise lat/long
+  const { latitude, longitude } = profileSnap.get('d.coordinates');
+  const preciseLocationName = await getLocationNameFromLatLong(
+    latitude,
+    longitude,
+  );
+  privateUser.preciseLocationName = preciseLocationName;
+
   // Add action to batch for setting private user
   batch.set(db.doc(`users/${profileSnap.id}`), privateUser, {
     merge: true,
   });
 
-  // Get General location name from precise lat/long
-  const { latitude, longitude } = profileSnap.get('d.coordinates');
-  const generalLocationName = await getLocationNameFromLatLong(
-    latitude,
-    longitude,
-  );
-
   // Build public user profile (GeoFirestore format)
   const publicUser = {
-    d: {
-      firstName: profileSnap.get('d.firstName'),
-      displayName: profileSnap.get('d.displayName'),
-      generalLocationName,
-    },
-    // TODO: Look into if g/l should be changed to be generalized or if they were already
-    g: profileSnap.get('g'),
-    l: profileSnap.get('l'),
+    firstName: profileSnap.get('d.firstName'),
+    displayName: profileSnap.get('d.displayName'),
+    generalLocationName: preciseLocationName,
   };
-  if (coords && coords.latitude) {
-    const scrambledLocation = scrambleLocation(coords, 300);
-    publicUser.d.coordinates = new admin.firestore.GeoPoint(
-      scrambledLocation.latitude,
-      scrambledLocation.longitude,
-    );
-  }
-  // Add action to batch for setting public user
-  batch.set(db.doc(`users_public/${profileSnap.id}`), publicUser, {
-    merge: true,
-  });
+  const scrambledLocation = scrambleLocation(coords, 300);
+  publicUser.generalLocation = new admin.firestore.GeoPoint(
+    scrambledLocation.latitude,
+    scrambledLocation.longitude,
+  );
+  // Add directly using the geofirestore db so it can recalculate the geohash.
+  usersPublicGeofirestoreCollection
+    .doc(profileSnap.id)
+    .set(publicUser, { customKey: 'generalLocation', merge: true });
 
   // Build public privileged user object
   const privilegedUser = {
@@ -354,28 +376,33 @@ async function migrateToNewFormat() {
     firebaseConfig.credential = admin.credential.cert(serviceAccount);
   }
   admin.initializeApp(firebaseConfig);
+  geofirestore = new GeoFirestore(admin.firestore());
+  usersPublicGeofirestoreCollection = geofirestore.collection('users_public');
+  requestsPublicGeofirestoreCollection = geofirestore.collection(
+    'requests_public',
+  );
 
   console.log('Converting to new data format...');
   try {
-    // Convert needs -> requests, requests_public, requests_contact
+    // Convert needs -> requests, requests_public, requests_contact, requests_actions
     await convertRequests();
     // Convert userProfiles -> users, users_privileged, users_public
     await convertUsers();
     console.log(`Successfully converted Firestore data to new format`);
   } catch (err) {
     console.log('error', err);
-    console.log(`Error uploading mail templates: ${err.message}`);
+    console.log(`Error during migration: ${err.message}`);
     throw err;
   }
 }
 
-(async function runTemplatesUpdate() {
+(async function runConversion() {
   try {
-    // Upload all email templates
+    // Kick off the migration.
     await migrateToNewFormat();
     process.exit(0);
   } catch (err) {
-    console.log(`Error uploading mail templates: ${err.message}`);
+    console.log(`Error migrating to new format: ${err.message}`);
     process.exit(1);
   }
 })();
