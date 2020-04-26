@@ -95,6 +95,7 @@ function ClickableMap({
       // Find city and state.
       let locality = null;
       let administrativeAreaLevel1 = null;
+      let administrativeAreaLevel3 = null;
       result.address_components.forEach((addressComp) => {
         if (addressComp.types.indexOf('locality') !== -1) {
           locality = addressComp.long_name;
@@ -102,11 +103,15 @@ function ClickableMap({
         if (addressComp.types.indexOf('administrative_area_level_1') !== -1) {
           administrativeAreaLevel1 = addressComp.short_name;
         }
+        if (addressComp.types.indexOf('administrative_area_level_3') !== -1) {
+          administrativeAreaLevel3 = addressComp.short_name;
+        }
       });
 
-      let locationName = `${locality}, ${administrativeAreaLevel1}`;
-      if (!locality) {
-        locationName = result.formatted_address;
+      const city = locality || administrativeAreaLevel3;
+      let locationName = `${city}, ${administrativeAreaLevel1}`;
+      if (!city) {
+        locationName = administrativeAreaLevel1;
       }
 
       // console.log(result);

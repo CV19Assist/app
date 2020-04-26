@@ -42,7 +42,7 @@ users_public = [{
 
     // For privacy, randomly adjusted version of the preciseLocation. This must be called
     // "coordinates" for the geofirestore library to work.
-    coordinates: Joi.object().keys({
+    generalLocation: Joi.object().keys({
       _latitude: Joi.number().greater(-90).less(90),
       _longitude: Joi.number().greater(-180).less(180)
     }),

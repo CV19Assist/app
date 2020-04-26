@@ -42,7 +42,10 @@
                   "description": "Status of this request",
                   "oneOf": [
                     { "const": 1, "description": "New or release" },
-                    { "const": 5, "description": "Released - Not currently used" },
+                    {
+                      "const": 5,
+                      "description": "Released - Not currently used"
+                    },
                     { "const": 10, "description": "Assigned" },
                     {
                       "const": 15,
@@ -85,7 +88,7 @@
       ]
     },
 
-    "request_actions": {
+    "requests_actions": {
       "description": "Request actions. Only visible to admins.  No functionatity needed in the UI for now.",
       "allOf": [
         { "$ref": "#collection" },
