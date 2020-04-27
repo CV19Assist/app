@@ -30,10 +30,7 @@ describe('morningEmailCentral Schedule Cloud Function (schedule:onRun)', () => {
       .doc('system_settings/notifications')
       .set({ morningEmail: [userUid] }, { merge: true });
     // Add request to public collection
-    await adminApp
-      .firestore()
-      .collection('requests_public')
-      .add({ d: requestData });
+    await adminApp.firestore().collection('requests').add(requestData);
     // Calling wrapped function with fake context
     await morningCentral(context);
 

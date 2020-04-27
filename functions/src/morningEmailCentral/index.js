@@ -24,7 +24,7 @@ async function morningEmailCentralEvent(context) {
     admin
       .firestore()
       .collection(REQUESTS_COLLECTION)
-      .where('d.status', '<', 10)
+      .where('status', '<', 10)
       .get(),
   );
 
