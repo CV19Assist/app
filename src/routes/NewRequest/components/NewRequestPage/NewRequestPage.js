@@ -87,7 +87,7 @@ function useNewRequestPage() {
           const { latitude, longitude } = geopoint;
           const newRequestLocation = {
             generalLocation: { latitude, longitude },
-            generalLocationName: profileSnap.get('preciseLocationName'),
+            generalLocationName: profileSnap.get('generalLocationName'),
             preciseLocation: { latitude, longitude },
           };
           // console.log('effect', newRequestLocation);
@@ -149,12 +149,9 @@ function useNewRequestPage() {
       lastName: values.lastName,
       immediacy: values.immediacy,
       needs: values.needs,
+      status: 1,
       createdAt: FieldValue.serverTimestamp(),
-      preciseLocationName: requestLocation.generalLocationName,
-      preciseLocation: new GeoPoint(
-        requestLocation.preciseLocation.latitude,
-        requestLocation.preciseLocation.longitude,
-      ),
+      ...requestLocation,
     };
 
     let userInfo = null;

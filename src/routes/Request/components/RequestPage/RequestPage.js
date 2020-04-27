@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { Suspense } from 'react';
-import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
+import { useFirestore, useFirestoreDoc } from 'reactfire';
+// import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -15,13 +16,10 @@ import {
 } from '@material-ui/core';
 import { Alert, Skeleton } from '@material-ui/lab';
 import { allCategoryMap } from 'constants/categories';
-import {
-  REQUESTS_COLLECTION,
-  REQUESTS_PUBLIC_COLLECTION,
-} from 'constants/collections';
+import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import ContactInfo from '../ContactInfo';
 import PublicComments from '../PublicComments';
-import Discussion from '../Discussion';
+// import Discussion from '../Discussion';
 import RequestActions from '../RequestActions';
 import styles from './RequestPage.styles';
 
@@ -31,17 +29,13 @@ function RequestPage() {
   const classes = useStyles();
   const { requestId } = useParams();
   const firestore = useFirestore();
-  const user = useUser();
+  // const user = useUser();
 
-  const requestRef = firestore.doc(`${REQUESTS_COLLECTION}/${requestId}`);
-  const requestSnap = useFirestoreDoc(requestRef);
-
-  const requestPublicRef = firestore.doc(
-    `${REQUESTS_PUBLIC_COLLECTION}/${requestId}`,
+  const requestPublicSnap = useFirestoreDoc(
+    firestore.doc(`${REQUESTS_PUBLIC_COLLECTION}/${requestId}`),
   );
-  const requestPublicSnap = useFirestoreDoc(requestPublicRef);
 
-  if (!requestSnap.exists) {
+  if (!requestPublicSnap.exists) {
     return (
       <Container>
         <Helmet>
@@ -55,12 +49,11 @@ function RequestPage() {
   }
 
   let immediacy = 0;
-  if (requestSnap.exists) {
-    immediacy = parseInt(requestSnap.get('immediacy'), 10);
+  if (requestPublicSnap.exists) {
+    immediacy = parseInt(requestPublicSnap.get('d.immediacy'), 10);
   }
 
-  // TODO: Is this right?
-  const { latitude, longitude } = requestSnap.get('preciseLocation');
+  const { latitude, longitude } = requestPublicSnap.get('d.generalLocation');
 
   return (
     <>
@@ -96,30 +89,32 @@ function RequestPage() {
               : immediacy <= 5
               ? 'Not very urgent: '
               : 'URGENT: '}
-            {requestSnap.get('needs') &&
-              Object.keys(requestSnap.get('needs')).map((item) => (
-                <React.Fragment key={item}>
-                  {allCategoryMap[item] ? (
-                    <Chip
-                      label={allCategoryMap[item].shortDescription}
-                      className={classes.needChip}
-                    />
-                  ) : (
-                    <Alert severity="error">
-                      Could not find &apos;{item}&apos; in all category map.
-                    </Alert>
-                  )}
-                </React.Fragment>
-              ))}
+            {requestPublicSnap.get('d.needs') &&
+              requestPublicSnap
+                .get('d.needs')
+                .map((item) => (
+                  <React.Fragment key={item}>
+                    {allCategoryMap[item] ? (
+                      <Chip
+                        label={allCategoryMap[item].shortDescription}
+                        className={classes.needChip}
+                      />
+                    ) : (
+                      <Alert severity="error">
+                        Could not find &apos;{item}&apos; in all category map.
+                      </Alert>
+                    )}
+                  </React.Fragment>
+                ))}
           </Typography>
 
           <Typography variant="caption" gutterBottom>
             REQUESTED
           </Typography>
           <Typography variant="h6" gutterBottom>
-            {requestSnap.get('createdAt') &&
+            {requestPublicSnap.get('d.createdAt') &&
               format(
-                requestSnap.get('createdAt').toDate(),
+                requestPublicSnap.get('d.createdAt').toDate(),
                 'EEE, MMM d, yyyy h:mm a',
               )}
           </Typography>
@@ -132,9 +127,9 @@ function RequestPage() {
           <Typography variant="caption" gutterBottom>
             OTHER DETAILS
           </Typography>
-          {requestSnap.get('otherDetails') ? (
+          {requestPublicSnap.get('d.otherDetails') ? (
             <Typography variant="h6" gutterBottom>
-              {requestSnap.get('otherDetails')}
+              {requestPublicSnap.get('d.otherDetails')}
             </Typography>
           ) : (
             <Box color="text.disabled">
@@ -159,7 +154,7 @@ function RequestPage() {
         </Paper>
 
         {/* Only show for authenticated users. */}
-        {user && user.uid && <Discussion requestId={requestId} />}
+        {/* {user && user.uid && <Discussion requestId={requestId} />} */}
       </Container>
     </>
   );

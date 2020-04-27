@@ -151,14 +151,15 @@ function SearchPage() {
         const profileRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
         const profileSnap = await profileRef.get();
         const geopoint = profileSnap.get('preciseLocation');
-        const preciseLocationName = profileSnap.get('preciseLocationName');
         if (geopoint) {
           const userLocation = {
             latitude: geopoint.latitude,
             longitude: geopoint.longitude,
           };
           setCurrentLatLong(userLocation);
-          setCurrentPlaceLabel(preciseLocationName);
+          setCurrentPlaceLabel(
+            `Near ${profileSnap.get('generalLocationName')}`,
+          );
           onSearch$.next({
             searchLocation: userLocation,
             searchDistance: defaultDistance,

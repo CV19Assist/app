@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { GeoFirestore } from 'geofirestore';
 import {
   USERS_PUBLIC_COLLECTION,
   USERS_PRIVILEGED_COLLECTION,
@@ -48,16 +49,22 @@ async function indexUser(change, context) {
   // const previousData = change.before.data();
   const newData = change.after.data();
   try {
-    // Update displayName within public profile
-    await publicProfileRef.set(
-      {
-        d: {
-          // TODO: Copy over coordinates if they exist on user object (make sure to obscurify them)
-          displayName: newData.displayName,
-        },
-      },
-      { merge: true },
-    );
+    const geofirestore = new GeoFirestore(admin.firestore());
+    if (newData.generalLocation) {
+      // Update displayName within public profile
+      await geofirestore
+        .collection(USERS_PUBLIC_COLLECTION)
+        .doc(userId)
+        .set(
+          {
+            firstName: newData.firstName || '',
+            displayName: newData.displayName || '',
+            generalLocation: newData.generalLocation,
+            generalLocationName: newData.generalLocationName || '',
+          },
+          { customKey: 'generalLocation', merge: true },
+        );
+    }
 
     await privilegedProfileRef.set(
       {

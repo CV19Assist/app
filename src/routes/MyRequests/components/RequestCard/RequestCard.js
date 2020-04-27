@@ -63,6 +63,10 @@ function RequestCard({ requestSnap }) {
       <Container maxWidth="lg" className={classes.TaskContainer}>
         <Grid container>
           <Grid item xs={9}>
+            <Typography variant="h6">
+              {requestSnap.get('firstName')} &ndash;{' '}
+              {requestSnap.get('generalLocationName')}
+            </Typography>
             <Typography variant="caption" gutterBottom>
               ADDED{' '}
               {requestSnap.get('createdAt') &&

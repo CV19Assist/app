@@ -142,14 +142,21 @@
               "description": "User role",
               "oneOf": [
                 { "const": "user", "description": "Regular user" },
-                { "const": "superadmin", "description": "Super administrator" }
+                {
+                  "const": "system-admin",
+                  "description": "System administrator"
+                }
               ]
             },
             "preciseLocation": {
               "$ref": "#geopoint",
               "description": "Precise location"
             },
-            "preciseLocationName": {
+            "generalLocation": {
+              "$ref": "#geopoint",
+              "description": "For privacy, randomly adjusted version of the user's preciseLocation."
+            },
+            "generalLocationName": {
               "type": "string",
               "description": "A name for the precise location, generally 'City, State'."
             },
@@ -161,7 +168,8 @@
             "email",
             "lastName",
             "preciseLocation",
-            "preciseLocationName",
+            "generalLocation",
+            "generalLocationName",
             "role"
           ]
         }
@@ -237,7 +245,11 @@
               "$ref": "#geopoint",
               "description": "Precise location of the request."
             },
-            "preciseLocationName": {
+            "generalLocation": {
+              "$ref": "#geopoint",
+              "description": "For privacy, randomly adjusted version of the preciseLocation."
+            },
+            "generalLocationName": {
               "type": "string",
               "description": "A name for the precise location, generally 'City, State'."
             }

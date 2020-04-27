@@ -144,13 +144,13 @@ async function convertRequests() {
         coords.latitude,
         coords.longitude,
       );
-      // Get General location name from precise lat/long
+      // Get location name from precise lat/long
       // eslint-disable-next-line no-await-in-loop
-      const preciseLocationName = await getLocationNameFromLatLong(
+      const locationName = await getLocationNameFromLatLong(
         coords.latitude,
         coords.longitude,
       );
-      privateRequest.preciseLocationName = preciseLocationName;
+      privateRequest.generalLocationName = locationName;
       const ownerUid = needSnap.get('d.owner.userProfileId');
       if (ownerUid) {
         privateRequest.owner = ownerUid;
@@ -188,7 +188,7 @@ async function convertRequests() {
         );
         publicRequest.createdByInfo = otherCreatedBy;
       }
-      publicRequest.generalLocationName = preciseLocationName;
+      publicRequest.generalLocationName = locationName;
       // Add directly using the geofirestore db so it can recalculate the geohash.
       requestsPublicGeofirestoreCollection
         .doc(needSnap.id)
@@ -266,11 +266,8 @@ async function convertUser(profileSnap) {
   );
   // Get General location name from precise lat/long
   const { latitude, longitude } = profileSnap.get('d.coordinates');
-  const preciseLocationName = await getLocationNameFromLatLong(
-    latitude,
-    longitude,
-  );
-  privateUser.preciseLocationName = preciseLocationName;
+  const locationName = await getLocationNameFromLatLong(latitude, longitude);
+  privateUser.generalLocationName = locationName;
 
   // Add action to batch for setting private user
   batch.set(db.doc(`users/${profileSnap.id}`), privateUser, {
@@ -281,7 +278,7 @@ async function convertUser(profileSnap) {
   const publicUser = {
     firstName: profileSnap.get('d.firstName'),
     displayName: profileSnap.get('d.displayName'),
-    generalLocationName: preciseLocationName,
+    generalLocationName: locationName,
   };
   const scrambledLocation = scrambleLocation(coords, 300);
   publicUser.generalLocation = new admin.firestore.GeoPoint(
