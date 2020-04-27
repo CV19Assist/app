@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useFirebaseApp } from 'reactfire';
+import { useAuth } from 'reactfire';
 import { useHistory } from 'react-router-dom';
 import {
   makeStyles,
@@ -15,17 +15,14 @@ const useStyles = makeStyles(styles);
 
 function LogoutPage() {
   const classes = useStyles();
-  const firebase = useFirebaseApp();
+  const auth = useAuth();
   const history = useHistory();
 
   useEffect(() => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        history.replace('/');
-      });
-  }, [firebase, history]);
+    auth.signOut().then(() => {
+      history.replace('/');
+    });
+  }, [auth, history]);
 
   return (
     <Container maxWidth="md">
