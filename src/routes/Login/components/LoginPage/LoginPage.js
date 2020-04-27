@@ -22,52 +22,81 @@ function LoginPage() {
   const [isLoading, setLoadingState] = useState(false);
   const { showError } = useNotifications();
 
-  auth.onAuthStateChanged((authState) => {
-    if (authState) {
-      const { email, displayName, photoURL, providerData } = authState;
-      const newProfile = { email, displayName, photoURL };
-      if (providerData && providerData.length) {
-        newProfile.providerData = [{ ...providerData[0] }];
-      }
+  async function updateUserAndRedirect(authState) {
+    try {
       // Write user profile if it doesn't exist, otherwise redirect to search page
-      firestore
-        .doc(`${USERS_COLLECTION}/${authState.uid}`)
-        .get()
-        // eslint-disable-next-line consistent-return
-        .then((userSnap) => {
-          if (!userSnap.exists) {
-            return userSnap.ref.set(newProfile, { merge: true }).then(() => {
-              history.replace(NEW_USER_PATH);
-            });
-          }
-          history.replace(SEARCH_PATH);
-        });
+      const userSnap = await firestore
+        .doc(`${USERS_COLLECTION}/${authState.user.uid}`)
+        .get();
+      // Redirect to search page if user exists
+      if (userSnap.exists) {
+        history.replace(SEARCH_PATH);
+      } else {
+        // Write user object then redirect to new user page
+        const { email, displayName, photoURL, providerData } = authState.user;
+        const newProfile = { email, displayName, photoURL };
+        if (providerData && providerData.length) {
+          newProfile.providerData = [{ ...providerData[0] }];
+        }
+        await userSnap.ref.set(newProfile, { merge: true });
+        history.replace(NEW_USER_PATH);
+      }
+    } catch (err) {
+      setLoadingState(false);
+      showError(err.message);
     }
-  });
+  }
 
-  function googleLogin() {
+  async function googleLogin() {
     setLoadingState(true);
     const provider = new firebase.auth.GoogleAuthProvider();
     const isMobile = /iPhone|iPad|iPod|Android/i.test(
       window.navigator.userAgent,
     );
-    // Use redirect on mobile
-    if (isMobile) {
-      return auth.signInWithRedirect(provider).catch((err) => {
-        setLoadingState(false);
-        showError(err.message);
-      });
-    }
-    return auth.signInWithPopup(provider).catch((err) => {
+    const signInMethod = isMobile ? 'signInWithRedirect' : 'signInWithPopup';
+    try {
+      const authState = await auth[signInMethod](provider);
+      // Write user profile if it doesn't exist, otherwise redirect to search page
+      await updateUserAndRedirect(authState);
+    } catch (err) {
       setLoadingState(false);
       showError(err.message);
-    });
+    }
+  }
+
+  async function emailLogin(creds) {
+    try {
+      const authState = await auth.signInWithEmailAndPassword(
+        creds.email,
+        creds.password,
+      );
+      // Write user profile if it doesn't exist, otherwise redirect to search page
+      await updateUserAndRedirect(authState);
+    } catch (err) {
+      try {
+        // Create user if they do not exist
+        if (err.code === 'auth/user-not-found') {
+          const authState = await auth.createUserWithEmailAndPassword(
+            creds.email,
+            creds.password,
+          );
+          // Write user profile if it doesn't exist, otherwise redirect to search page
+          await updateUserAndRedirect(authState);
+        }
+      } catch (err2) {
+        if (err2.message === 'auth/user-exists') {
+          showError(err.message);
+        } else {
+          showError(err2.message);
+        }
+      }
+    }
   }
 
   return (
     <div className={classes.root}>
       <Paper className={classes.panel}>
-        {isLoading ? <LoadingSpinner /> : <LoginForm />}
+        {isLoading ? <LoadingSpinner /> : <LoginForm onSubmit={emailLogin} />}
       </Paper>
       {isLoading ? null : (
         <>
