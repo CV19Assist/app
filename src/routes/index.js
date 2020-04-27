@@ -20,6 +20,9 @@ import TermsOfServiceRoute from './TermsOfService';
 import RequestSuccessfulRoute from './RequestSuccessful';
 import MyRequestsRoute from './MyRequests';
 import NewRequestRoute from './NewRequest';
+import BlogPageRoute from './Blog';
+import LogoutRoute from './Logout';
+import SinglePostPageRoute from './SinglePost';
 
 export default function createRoutes() {
   return (
@@ -43,6 +46,9 @@ export default function createRoutes() {
               RequestSuccessfulRoute,
               NewRequestRoute,
               MyRequestsRoute,
+              SinglePostPageRoute,
+              BlogPageRoute,
+              LogoutRoute,
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (

@@ -124,7 +124,7 @@ function useNewRequestPage() {
       lastUpdatedAt: FieldValue.serverTimestamp(),
       usersWithContactInfoAccess: [],
       status: 1,
-      coordinates: new GeoPoint(
+      generalLocation: new GeoPoint(
         requestLocation.generalLocation.latitude,
         requestLocation.generalLocation.longitude,
       ),
@@ -150,6 +150,7 @@ function useNewRequestPage() {
       immediacy: values.immediacy,
       needs: values.needs,
       createdAt: FieldValue.serverTimestamp(),
+      preciseLocationName: requestLocation.generalLocationName,
       preciseLocation: new GeoPoint(
         requestLocation.preciseLocation.latitude,
         requestLocation.preciseLocation.longitude,
@@ -176,7 +177,7 @@ function useNewRequestPage() {
         [profile.firstName, profile.lastName] = pieces;
 
         userInfo = {
-          userProfileId: user.uid,
+          uid: user.uid,
           firstName: profile.firstName,
           displayName: profile.displayName,
         };
@@ -209,15 +210,12 @@ function useNewRequestPage() {
         geofirestore
           .collection(REQUESTS_PUBLIC_COLLECTION)
           .doc(requestRef.id)
-          .set(requestPublicInfo),
+          .set(requestPublicInfo, { customKey: 'generalLocation' }),
         firestore
           .collection(REQUESTS_CONTACT_INFO_COLLECTION)
           .doc(requestRef.id)
           .set(requestContactInfo),
-        firestore
-          .collection(REQUESTS_ACTIONS_COLLECTION)
-          .doc(requestRef.id)
-          .set(action),
+        firestore.collection(REQUESTS_ACTIONS_COLLECTION).add(action),
       ]);
 
       showSuccess('Request submitted!');

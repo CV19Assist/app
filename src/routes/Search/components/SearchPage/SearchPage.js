@@ -231,48 +231,54 @@ function SearchPage() {
           </div>
         )}
         {showAddressPicker && (
-          <LoadScript
-            id="script-loader"
-            libraries={USED_GOOGLE_MAPS_LIBRARIES}
-            googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
-            <PlacesAutocomplete
-              value={currentPlaceLabel}
-              onChange={handlePlaceChange}>
-              {({ getInputProps, suggestions, loading }) => (
-                <>
-                  {/* {console.log(suggestions)} */}
-                  <Autocomplete
-                    data-test="places-autocomplete"
-                    onChange={handlePlaceSelect}
-                    options={suggestions}
-                    loading={loading}
-                    getOptionLabel={(sug) => sug.description}
-                    noOptionsText="No matches"
-                    renderInput={(params) => (
-                      <TextField
-                        data-test="address-entry"
-                        {...getInputProps({
-                          ...params,
-                          label: 'Address',
-                          className: classes.searchInput,
-                        })}
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {loading && (
-                                <CircularProgress color="inherit" size={20} />
-                              )}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                </>
-              )}
-            </PlacesAutocomplete>
-          </LoadScript>
+          <>
+            <LoadScript
+              id="script-loader"
+              libraries={USED_GOOGLE_MAPS_LIBRARIES}
+              googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
+              <PlacesAutocomplete
+                value={currentPlaceLabel}
+                onChange={handlePlaceChange}>
+                {({ getInputProps, suggestions, loading }) => (
+                  <>
+                    {/* {console.log(suggestions)} */}
+                    <Autocomplete
+                      data-test="places-autocomplete"
+                      onChange={handlePlaceSelect}
+                      options={suggestions}
+                      loading={loading}
+                      getOptionLabel={(sug) => sug.description}
+                      noOptionsText="No matches"
+                      renderInput={(params) => (
+                        <TextField
+                          margin="none"
+                          data-test="address-entry"
+                          {...getInputProps({
+                            ...params,
+                            label: 'Address',
+                            className: classes.searchInput,
+                          })}
+                          InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                              <>
+                                {loading && (
+                                  <CircularProgress color="inherit" size={20} />
+                                )}
+                              </>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                  </>
+                )}
+              </PlacesAutocomplete>
+            </LoadScript>
+            <Typography align="right" variant="caption" display="block">
+              Powered by Google Maps
+            </Typography>
+          </>
         )}
 
         <Divider className={classes.divider} />

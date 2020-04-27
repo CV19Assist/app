@@ -16,6 +16,7 @@ import {
 } from '@material-ui/core';
 import { useNotifications } from 'modules/notification';
 import { scrambleLocation } from 'utils/geo';
+import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } from 'constants/geo';
 import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
@@ -59,10 +60,14 @@ SelectedLocationMarker.propTypes = {
   title: PropTypes.string,
 };
 
-function ClickableMap({
-  onLocationChange,
-  locationInfo: { generalLocation, generalLocationName, preciseLocation },
-}) {
+function ClickableMap({ onLocationChange, locationInfo }) {
+  let generalLocation = null;
+  let generalLocationName = null;
+  let preciseLocation = null;
+
+  if (locationInfo) {
+    ({ generalLocation, generalLocationName, preciseLocation } = locationInfo);
+  }
   // console.log(
   //   'ClickableMap',
   //   generalLocation,
@@ -95,6 +100,7 @@ function ClickableMap({
       // Find city and state.
       let locality = null;
       let administrativeAreaLevel1 = null;
+      let administrativeAreaLevel3 = null;
       result.address_components.forEach((addressComp) => {
         if (addressComp.types.indexOf('locality') !== -1) {
           locality = addressComp.long_name;
@@ -102,11 +108,15 @@ function ClickableMap({
         if (addressComp.types.indexOf('administrative_area_level_1') !== -1) {
           administrativeAreaLevel1 = addressComp.short_name;
         }
+        if (addressComp.types.indexOf('administrative_area_level_3') !== -1) {
+          administrativeAreaLevel3 = addressComp.short_name;
+        }
       });
 
-      let locationName = `${locality}, ${administrativeAreaLevel1}`;
-      if (!locality) {
-        locationName = result.formatted_address;
+      const city = locality || administrativeAreaLevel3;
+      let locationName = `${city}, ${administrativeAreaLevel1}`;
+      if (!city) {
+        locationName = administrativeAreaLevel1;
       }
 
       // console.log(result);
@@ -175,10 +185,17 @@ function ClickableMap({
 
   function onGoogleMapLoad(googleMap) {
     setMap(googleMap);
-    googleMap.panTo({
-      lat: generalLocation.latitude,
-      lng: generalLocation.longitude,
-    });
+    if (generalLocation) {
+      googleMap.panTo({
+        lat: generalLocation.latitude,
+        lng: generalLocation.longitude,
+      });
+    } else {
+      googleMap.panTo({
+        lat: DEFAULT_LATITUDE,
+        lng: DEFAULT_LONGITUDE,
+      });
+    }
   }
 
   return (
@@ -220,7 +237,7 @@ function ClickableMap({
         </Button>
         {generalLocationName !== '' && (
           <Typography variant="body2" display="inline">
-            General location: {generalLocationName}
+            General location: {generalLocationName || 'Not selected yet'}
           </Typography>
         )}
       </LoadScript>
@@ -240,7 +257,7 @@ ClickableMap.propTypes = {
       latitude: PropTypes.number.isRequired,
       longitude: PropTypes.number.isRequired,
     }),
-  }).isRequired,
+  }),
 };
 
 export default ClickableMap;
