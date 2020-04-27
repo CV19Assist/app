@@ -64,7 +64,7 @@ function SearchPage() {
   const { showError } = useNotifications();
 
   // State
-  const [showAddressPicker, setShowAddressPicker] = useState(true);
+  const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [nearbyRequests, setNearbyRequests] = useState(null);
   const [currentLatLong, setCurrentLatLong] = useState({
     latitude: DEFAULT_LATITUDE,
