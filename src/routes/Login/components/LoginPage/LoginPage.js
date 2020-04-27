@@ -73,7 +73,23 @@ function LoginPage() {
       // Write user profile if it doesn't exist, otherwise redirect to search page
       await updateUserAndRedirect(authState);
     } catch (err) {
-      showError(err.message);
+      try {
+        // Create user if they do not exist
+        if (err.code === 'auth/user-not-found') {
+          const authState = await auth.createUserWithEmailAndPassword(
+            creds.email,
+            creds.password,
+          );
+          // Write user profile if it doesn't exist, otherwise redirect to search page
+          await updateUserAndRedirect(authState);
+        }
+      } catch (err2) {
+        if (err2.message === 'auth/user-exists') {
+          showError(err.message);
+        } else {
+          showError(err2.message);
+        }
+      }
     }
   }
 
