@@ -63,6 +63,14 @@ async function indexUser(change, context) {
       {
         displayName: newData.displayName,
         email: newData.email || '',
+        firstName: newData.firstName || '',
+        lastName: newData.lastName || '',
+        address1: newData.address1 || '',
+        address2: newData.address2 || '',
+        city: newData.city || '',
+        state: newData.state || '',
+        zipcode: newData.zipcode || '',
+        phone: newData.phone || '',
       },
       { merge: true },
     );

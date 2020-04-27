@@ -320,7 +320,7 @@
     },
 
     "requests_actions": {
-      "description": "Request actions. Only visible to admins.  No functionatity needed in the UI for now.",
+      "description": "Request actions. Only visible to admins.  No functionality needed in the UI for now.",
       "allOf": [
         { "$ref": "#collection" },
         {
@@ -414,7 +414,7 @@
                 { "const": 20, "description": "Completion comment" }
               ]
             },
-            "createdAt": { "type": "timestamp" },
+            "createdAt": { "$ref": "timestamp" },
             "createdBy": { "$ref": "#uid" },
             "author": { "$ref": "#author" },
             "content": { "type": "string" },
