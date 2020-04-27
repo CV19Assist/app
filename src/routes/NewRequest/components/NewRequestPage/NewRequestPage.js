@@ -150,6 +150,7 @@ function useNewRequestPage() {
       immediacy: values.immediacy,
       needs: values.needs,
       createdAt: FieldValue.serverTimestamp(),
+      preciseLocationName: requestLocation.generalLocationName,
       preciseLocation: new GeoPoint(
         requestLocation.preciseLocation.latitude,
         requestLocation.preciseLocation.longitude,
