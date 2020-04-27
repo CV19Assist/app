@@ -118,6 +118,14 @@ function AboutPage() {
             </a>{' '}
           </li>
           <li>Jessie Luo</li>
+          <li>
+            <a
+              href="https://github.com/prescottprue"
+              target="_blank"
+              rel="noopener noreferrer">
+              Prescott Prue
+            </a>{' '}
+          </li>
         </ul>
         <p>
           Please see the contributor list on our{' '}

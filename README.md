@@ -1,22 +1,27 @@
-# app
-
-## Please note that all new development is now being done on the [`next branch`](/CV19Assist/app/tree/next) which will be going live in the coming days.
+# CV19Assist App
 
 [![Build Status][build-status-image]][build-status-url]
 [![Coverage][coverage-image]][coverage-url]
 [![License][license-image]][license-url]
 [![Code Style][code-style-image]][code-style-url]
 
+> App for connecting volunteers with at-health-risk population during The Coronavirus Pandemic
+
 ## Table of Contents
 
 1. [Requirements](#requirements)
 1. [Getting Started](#getting-started)
+1. [Config Files](#config-files)
 1. [Application Structure](#application-structure)
 1. [Routing](#routing)
+   1. [Async Routes](#async-routes)
+   1. [Sync Routes](#sync-routes)
 1. [Testing](#testing)
+   1. [UI Tests](#ui-tests)
+   1. [Functions Unit Tests](#functions-unit-tests)
 1. [Configuration](#configuration)
-1. [Production](#production)
 1. [Deployment](#deployment)
+1. [FAQ](#faq)
 
 ## Requirements
 
@@ -80,10 +85,6 @@ The application structure presented in this boilerplate is **fractal**, where fu
 │   │       ├── index.js     # Route definitions and async split points
 │   │       ├── components   # Presentational React Components (state connect and handler logic in enhancers)
 │   │       └── routes/**    # Fractal sub-routes (** optional)
-│   ├── static               # Static assets
-│   ├── store                # Redux-specific pieces
-│   │   ├── createStore.js   # Create and instrument redux store
-│   │   └── reducers.js      # Reducer registry and injection
 │   ├── styles               # Application-wide styles (generally settings)
 │   └── utils                # General Utilities (used throughout application)
 │   │   ├── components.js    # Utilities for building/implementing react components (often used in enhancers)
@@ -95,6 +96,7 @@ The application structure presented in this boilerplate is **fractal**, where fu
 ├── .firebaserc              # Firebase Project configuration settings (including ci settings)
 ├── cypress.json             # Cypress project settings
 ├── database.rules.json      # Security Rules for Firebase Real Time Database
+├── db.json-schema.json      # JSON Schema for database
 ├── dbschema.txt.js          # File outlining planned database schema
 ├── firebase.json            # Firebase Service settings (Hosting, Functions, etc)
 ├── firestore.indexes.json   # Indexes for Cloud Firestore
@@ -167,6 +169,13 @@ To Run tests in CI add the following environment variables within your CI provid
 - `FIREBASE_APP_NAME` - name of Firebase app (used to load SDK config)
 - `TEST_UID` - UID of the user used for testing
 
+### Functions Unit Tests
+
+Mocha/Chai are used to run Functions unit tests. Unit tests are run against Firebase emulators. The following scripts can be used to run functions tests:
+
+- Start emulators and run functions unit tests: `yarn functions:test`
+- Start emulators and run functions unit tests, generating coverage: `yarn functions:test:cov`
+
 ## Deployment
 
 Build code before deployment by running `yarn build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
@@ -206,7 +215,7 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 [climate-url]: https://codeclimate.com/github/CV19Assist/app
 [coverage-image]: https://img.shields.io/codecov/c/gh/CV19Assist/app&style=flat-square
 [coverage-url]: https://codecov.io/gh/CV19Assist/app
-[license-image]: https://img.shields.io/badge/MIT-blue.svg?style=flat-square
+[license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
 [license-url]: https://github.com/CV19Assist/app/blob/master/LICENSE
 [code-style-image]: https://img.shields.io/badge/code%20style-airbnb-blue.svg?style=flat-square
 [code-style-url]: http://airbnb.io/javascript/
