@@ -99,12 +99,6 @@ function Homepage() {
                 pandemic!
               </Typography>
 
-              <Typography variant="body2" gutterBottom>
-                Below are a few of the currently open requests. If you are in
-                the area with or know of someone there, please help spread the
-                word and refer them to this site.
-              </Typography>
-
               <RequestsMap />
 
               <div className={classes.actionButtons}>

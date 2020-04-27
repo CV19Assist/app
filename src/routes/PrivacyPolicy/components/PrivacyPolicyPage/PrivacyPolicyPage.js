@@ -24,8 +24,8 @@ function PrivacyPolicyPage() {
           Your privacy is important to us. It is CV19 Assist&apos;s policy to
           respect your privacy regarding any information we may collect from you
           across our website,{' '}
-          <a href="https://cv19assist.com">https://cv19assist.com</a>, and other
-          sites we own and operate.
+          <a href="https://cv19assist.com">cv19assist.com</a>, and other sites
+          we own and operate.
         </p>
         <p>
           We only ask for personal information when we truly need it to provide
@@ -42,12 +42,12 @@ function PrivacyPolicyPage() {
         </p>
 
         <p>
-          Given the nature of the service, we publicly share the personal
+          Given the nature of the service, we publicly share the contact
           information for requests with volunteers. Volunteers must register to
           look up the contact information. A log of the volunteers who have
           looked up information is kept for auditing purposes. For volunteers,
           we publicly share the first name, display name, avatars and other
-          public user profile information.
+          public profile information.
         </p>
 
         <p>

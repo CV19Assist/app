@@ -1,6 +1,7 @@
 export const NEW_USER_PATH = '/new-user';
 export const ACCOUNT_PATH = '/account';
 export const LOGIN_PATH = '/login';
+export const LOGOUT_PATH = '/logout';
 export const SEARCH_PATH = '/search';
 
 export const PRIVACY_POLICY_PATH = '/privacy-policy';

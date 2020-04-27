@@ -1,24 +1,30 @@
 import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
-import Divider from '@material-ui/core/Divider';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Container from '@material-ui/core/Container';
-import Grid from '@material-ui/core/Grid';
+import {
+  Typography,
+  TextField,
+  Paper,
+  Divider,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Container,
+  Grid,
+  makeStyles,
+} from '@material-ui/core';
+import {
+  ExitToApp as LogoutIcon,
+  Person as AccountIcon,
+} from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
-import { makeStyles } from '@material-ui/core/styles';
 import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
 import { USERS_COLLECTION } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from 'utils/form';
-import { ACCOUNT_PATH } from 'constants/paths';
+import { ACCOUNT_PATH, LOGOUT_PATH } from 'constants/paths';
 import styles from './NewUserPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -49,17 +55,17 @@ function NewUser() {
   } = useForm({
     validationSchema: userProfileSchema,
   });
-  const userRef = firestore.doc(`${USERS_COLLECTION}/${user && user.uid}`);
+  const userRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
   const userProfile = useFirestoreDocData(userRef);
-  const [userLocation, setUserLocation] = useState(null);
+  const [userLocationInfo, setUserLocationInfo] = useState(null);
 
   if (userProfile) {
     return (
-      <Container>
+      <Container maxWidth="md">
         <Card style={{ minWidth: 275 }}>
           <CardContent>
-            <Typography variant="h5" component="h2">
-              Profile Exists
+            <Typography variant="h5" gutterBottom>
+              New User Setup
             </Typography>
             <Typography variant="body2" color="textSecondary" component="p">
               You are already signed up so you do not have to sign up again.
@@ -69,9 +75,18 @@ function NewUser() {
             <Button
               component={Link}
               to={ACCOUNT_PATH}
+              startIcon={<AccountIcon />}
               size="small"
               color="primary">
-              View Profile
+              View Your Profile
+            </Button>
+            <Button
+              component={Link}
+              to={LOGOUT_PATH}
+              startIcon={<LogoutIcon />}
+              size="small"
+              color="secondary">
+              Logout
             </Button>
           </CardActions>
         </Card>
@@ -79,12 +94,12 @@ function NewUser() {
     );
   }
 
-  const handleLocationChange = (location) => {
-    setUserLocation(location);
-  };
+  // const handleLocationChange = (location) => {
+  //   setUserLocation(location);
+  // };
 
   const handleFormSubmit = async (values) => {
-    if (!userLocation) {
+    if (!userLocationInfo) {
       alert('Please select a location above.'); // eslint-disable-line no-alert
       return;
     }
@@ -96,24 +111,20 @@ function NewUser() {
   return (
     <Container maxWidth="md">
       <Helmet>
-        <title>Sign Up</title>
+        <title>Volunteer Sign Up</title>
       </Helmet>
+      <Typography variant="h4" gutterBottom>
+        Volunteer Sign Up
+      </Typography>
       <Paper className={classes.paper}>
-        <Typography
-          component="h1"
-          variant="h4"
-          align="center"
-          className={classes.header}>
-          Sign Up
-        </Typography>
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <Container maxWidth="sm">
-            <Typography variant="subtitle2" className={classes.intro}>
-              Please complete the following information so we can find matches
-              efficiently.
+          <Container>
+            <Typography gutterBottom>
+              Thank you for volunteering with CV19 Assist. Please complete the
+              following information so we can efficiently find matches.
             </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs>
+            <Grid container spacing={1} direction="row">
+              <Grid item xs={6}>
                 <TextField
                   name="firstName"
                   type="text"
@@ -123,10 +134,10 @@ function NewUser() {
                   fullWidth
                   inputRef={register}
                   error={!!errors.firstName}
-                  helperText={errors.firstName && 'firstName must be valid'}
+                  helperText={errors.firstName && 'First name must be valid'}
                 />
               </Grid>
-              <Grid item xs>
+              <Grid item xs={6}>
                 <TextField
                   name="lastName"
                   type="text"
@@ -136,16 +147,15 @@ function NewUser() {
                   fullWidth
                   inputRef={register}
                   error={!!errors.lastName}
-                  helperText={errors.lastName && 'lastName must be valid'}
+                  helperText={errors.lastName && 'Last name must be valid'}
                 />
               </Grid>
-            </Grid>
-            <Grid container spacing={3}>
               <Grid item xs={8}>
                 <TextField
                   type="email"
                   name="email"
                   label="Email"
+                  variant="outlined"
                   margin="normal"
                   fullWidth
                   inputRef={register({
@@ -174,21 +184,24 @@ function NewUser() {
             <Typography variant="h6" gutterBottom>
               Please click or tap on your location
             </Typography>
-            <Typography variant="body2" className={classes.intro}>
+            <Typography gutterBottom>
               A rough location is needed to allow us to efficiently and quickly
               find a match. You can either click on the &quot;Detect
               Location&quot; button below the map or click on the map to specify
               the location.
             </Typography>
             <Card>
-              <ClickableMap onLocationChange={handleLocationChange} />
+              <ClickableMap
+                onLocationChange={setUserLocationInfo}
+                locationInfo={userLocationInfo}
+              />
             </Card>
             <Divider className={classes.optionalDivider} />
             <Typography variant="h6" gutterBottom>
               Optional &ndash; Address
             </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs>
+            <Grid container>
+              <Grid item sm={12}>
                 <TextField
                   name="address1"
                   label="Street 1"
@@ -200,9 +213,7 @@ function NewUser() {
                   helperText={errors.address1 && 'address1 must be valid'}
                 />
               </Grid>
-            </Grid>
-            <Grid container spacing={3}>
-              <Grid item xs>
+              <Grid item sm={12}>
                 <TextField
                   name="address2"
                   label="Street 2"
@@ -215,7 +226,7 @@ function NewUser() {
                 />
               </Grid>
             </Grid>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               <Grid item xs={6}>
                 <TextField
                   name="city"
@@ -254,18 +265,12 @@ function NewUser() {
               </Grid>
             </Grid>
 
-            <Typography variant="subtitle2" className={classes.warrantyInfo}>
-              {/* eslint-disable no-irregular-whitespace */}
+            <Typography className={classes.warrantyInfo}>
               Note: This website and all related work products are provided
-              ​&quot;AS IS&quot;. The provider of this service makes no other
+              &quot;AS IS&quot;. The provider of this service makes no other
               warranties, express or implied, and hereby disclaims all implied
               warranties, including any warranty of merchantability and warranty
               of fitness for a particular purpose.
-              {/* eslint-enable no-irregular-whitespace */}
-              <br />
-              <br />
-              The volunteers are working on a privacy policy and will publish it
-              soon.
             </Typography>
             {!isValid && (
               <Typography variant="body2" className={classes.errorText}>

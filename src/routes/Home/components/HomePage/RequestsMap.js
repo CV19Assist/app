@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core';
+import { Typography, makeStyles } from '@material-ui/core';
 import { GoogleMap, LoadScript, MarkerClusterer } from '@react-google-maps/api';
 import { useFirestore, useFirestoreCollectionData } from 'reactfire';
 import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
@@ -29,6 +29,19 @@ function NeedsMap() {
 
   return (
     <>
+      {unfulfilledRequests.length === 0 ? (
+        <Typography variant="body2" gutterBottom>
+          Currently, there are no open requests. Please help spread the word
+          about this volunteer service so we can help more people!
+        </Typography>
+      ) : (
+        <Typography variant="body2" gutterBottom>
+          Below are a few of the currently open requests. If you are in the area
+          with or know of someone there, please help spread the word and refer
+          them to this site.
+        </Typography>
+      )}
+
       <LoadScript
         id="script-header"
         googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
@@ -45,8 +58,8 @@ function NeedsMap() {
                   request={request}
                   key={`${request.id}`}
                   position={{
-                    lat: request.d.coordinates.latitude,
-                    lng: request.d.coordinates.longitude,
+                    lat: request.d.generalLocation.latitude,
+                    lng: request.d.generalLocation.longitude,
                   }}
                   clusterer={clusterer}
                 />

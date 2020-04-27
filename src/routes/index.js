@@ -21,6 +21,7 @@ import RequestSuccessfulRoute from './RequestSuccessful';
 import MyRequestsRoute from './MyRequests';
 import NewRequestRoute from './NewRequest';
 import BlogPageRoute from './Blog';
+import LogoutRoute from './Logout';
 import SinglePostPageRoute from './SinglePost';
 
 export default function createRoutes() {
@@ -47,6 +48,7 @@ export default function createRoutes() {
               MyRequestsRoute,
               SinglePostPageRoute,
               BlogPageRoute,
+              LogoutRoute,
               /* Add More Routes Here */
             ].map((settings) =>
               settings.authRequired ? (
