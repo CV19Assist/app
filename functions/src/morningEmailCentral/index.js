@@ -4,7 +4,7 @@ import { to } from 'utils/async';
 import {
   NOTIFICATIONS_SETTINGS_DOC,
   MAIL_COLLECTION,
-  REQUESTS_PUBLIC_COLLECTION,
+  REQUESTS_COLLECTION,
 } from 'constants/firestorePaths';
 import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
 
@@ -23,7 +23,7 @@ async function morningEmailCentralEvent(context) {
   const [requestsErr, unclaimedRequestsSnap] = await to(
     admin
       .firestore()
-      .collection(REQUESTS_PUBLIC_COLLECTION)
+      .collection(REQUESTS_COLLECTION)
       .where('d.status', '<', 10)
       .get(),
   );
@@ -38,10 +38,9 @@ async function morningEmailCentralEvent(context) {
 
   // Map doc snaps into an array of doc values
   const requests = unclaimedRequestsSnap.docs.map((docSnap) => {
-    const requestData = docSnap.get('d') || {};
     return {
       id: docSnap.id,
-      ...requestData,
+      ...docSnap.data(),
     };
   });
 
