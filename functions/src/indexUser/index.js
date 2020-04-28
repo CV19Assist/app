@@ -50,27 +50,26 @@ async function indexUser(change, context) {
   const newData = change.after.data();
 
   // Default to 'user' role and do not allow changing role for now.
-  if (!previousData.role || previousData.role !== newData.role) {
+  if (!previousData || previousData.role !== newData.role) {
     newData.role = 'user';
   }
 
   try {
     const geofirestore = new GeoFirestore(admin.firestore());
-    if (newData.generalLocation) {
-      // Update displayName within public profile
-      await geofirestore
-        .collection(USERS_PUBLIC_COLLECTION)
-        .doc(userId)
-        .set(
-          {
-            firstName: newData.firstName || '',
-            displayName: newData.displayName || '',
-            generalLocation: newData.generalLocation,
-            generalLocationName: newData.generalLocationName || '',
-          },
-          { customKey: 'generalLocation', merge: true },
-        );
-    }
+    const geoDoc = {
+      firstName: newData.firstName || previousData.firstName || '',
+      displayName: newData.displayName || previousData.displayName || '',
+      generalLocation:
+        newData.generalLocation || previousData.generalLocation || '',
+      generalLocationName:
+        newData.generalLocationName || previousData.generalLocationName || '',
+    };
+
+    // Update displayName within public profile
+    await geofirestore
+      .collection(USERS_PUBLIC_COLLECTION)
+      .doc(userId)
+      .set(geoDoc, { customKey: 'generalLocation', merge: true });
 
     await privilegedProfileRef.set(
       {
