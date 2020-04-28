@@ -1,6 +1,8 @@
 export const MAIL_COLLECTION = 'mail';
 export const REQUESTS_COLLECTION = 'requests';
 export const REQUESTS_PUBLIC_COLLECTION = 'requests_public';
+export const REQUESTS_CONTACT_COLLECTION = 'requests_contact';
+export const REQUESTS_ACTIONS_COLLECTION = 'requests_actions';
 export const USERS_COLLECTION = 'users';
 export const USERS_NOTIFICATIONS_SUBCOLLECTION = 'notifications';
 export const USERS_PRIVILEGED_COLLECTION = 'users_privileged';
