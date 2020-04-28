@@ -1,8 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner(res) {
+    function isAuthor(res) {
       return res.data.createdBy == request.auth.uid
+    }
+    function isOwner(res) {
+      return res.data.owner == request.auth.uid
     }
 
     function isSystemAdmin() {
@@ -44,9 +47,9 @@ service cloud.firestore {
     // Private request data
     match /requests/{requestId} {
       allow create: if request.time == request.resource.data.createdAt; // createdAt is created timestamp
-      allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
+      allow write: if isAuthor(resource) && request.time == request.resource.data.lastUpdatedAt;
       // TODO: Make read require data on request
-      // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isOwner(resource)
+      // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isAuthor(resource)
       allow read: if request.auth.uid != null && isOwnerOfRequest(requestId);
     }
 
@@ -63,21 +66,15 @@ service cloud.firestore {
     // TODO: Fix these rules
     // Public request data
     match /requests_public/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt // createdAt is created timestamp
+        && isAuthor(request.resource)
+        && request.resource.data.d.status == 1;
       allow read: if true;
       allow list: if request.query.limit <= 60;
+      // TODO: Limit writes to adding one's self as an owner. Should the UI have a verify?
+      // allow write: if (isAuthor(resource) || isOwner(resource)) && request.time == request.resource.data.d.lastUpdatedAt;
       allow write: if true;
     }
-    // match /requests_public/{requestId} {
-    //   allow create: if isOwnerOfRequest(request.resource);
-    //     // && request.resource.data.d.status == 1;
-    //   allow update: if request.auth.uid != null && (
-    //     addingContactInfo() ||
-    //     acceptingRequest()
-    //   );
-    //   // allow write: if isOwnerOfRequest(resource) && request.time == request.resource.data.d.lastUpdatedAt;
-    //   allow read;
-    //   allow create: if true;
-    // }
 
     // Taking assignment of a request
     // match /requests_public/{requestId} {
