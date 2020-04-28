@@ -1,5 +1,3 @@
-// TODO: update isOwnerOfRequest and hasRequestContactAccess to use requestId.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -8,20 +6,21 @@ service cloud.firestore {
     }
 
     function isSystemAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system-admin';
     }
+    // TODO: update isOwnerOfRequest and hasRequestContactAccess to use requestId.
 
     function isOwnerOfRequest(requestId) {
-      return get(/databases/$(database)/documents/requests/$(requestId)).data.createdBy == request.auth.uid
+      return get(/databases/$(database)/documents/requests_public/$(requestId)).data.d.owner == request.auth.uid
     }
 
-    function hasRequestContactAccess(res) {
-      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(res.id)).data.d.usersWithContactInfoAccess
+    function hasRequestContactAccess(requestId) {
+      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(requestId)).data.d.usersWithContactInfoAccess
     }
 
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    // match /{document=**} {
+    //   allow read, write: if false;
+    // }
 
     // Private user profiles
     match /users/{userId} {
@@ -48,23 +47,25 @@ service cloud.firestore {
       allow write: if isOwner(resource) && request.time == request.resource.data.lastUpdatedAt;
       // TODO: Make read require data on request
       // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isOwner(resource)
-      allow read;
+      allow read: if request.auth.uid != null && isOwnerOfRequest(requestId);
     }
 
-    function addingContactInfo() {
-        // If user requesting contact info.
-        // TODO: How do we prevent a user from requesting on someone else's behalf?
-        return (
-          request.resource.data.d.usersWithContactInfoAccess.hasAll(resource.data.d.usersWithContactInfoAccess) &&
-          request.resource.data.d.usersWithContactInfoAccess.hasAll([request.auth.uid]) &&
-          request.resource.data.d.usersWithContactInfoAccess.size() == resource.data.d.usersWithContactInfoAccess.size() + 1
-        )
-    }
+    // function addingContactInfo() {
+    //     // If user requesting contact info.
+    //     // TODO: How do we prevent a user from requesting on someone else's behalf?
+    //     return (
+    //       request.resource.data.d.usersWithContactInfoAccess.hasAll(resource.data.d.usersWithContactInfoAccess) &&
+    //       request.resource.data.d.usersWithContactInfoAccess.hasAll([request.auth.uid]) &&
+    //       request.resource.data.d.usersWithContactInfoAccess.size() == resource.data.d.usersWithContactInfoAccess.size() + 1
+    //     )
+    // }
 
     // TODO: Fix these rules
     // Public request data
     match /requests_public/{requestId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow list: if request.query.limit <= 60;
+      allow write: if true;
     }
     // match /requests_public/{requestId} {
     //   allow create: if isOwnerOfRequest(request.resource);
@@ -102,21 +103,25 @@ service cloud.firestore {
     // Contact info for a request - requires contact info access
     match /requests_contact/{requestId} {
       allow create: if true;
-      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(resource);
+      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(requestId);
       allow read: if hasRequestContactAccess(resource);
     }
 
     // TODO: Test this.
     // Private discussion
     match /requests_discussions/{commentId} {
+      // allow read: if true;
       allow read: if
-        isOwnerOfRequest(request.data.requestId) || isSystemAdmin();
+        get(/databases/$(database)/documents/requests_public/$(resource.data.requestId)).data.d.owner == request.auth.uid;
+        // isOwnerOfRequest(request.data.requestId) || isSystemAdmin();
+      // allow list: if
+      //   isOwnerOfRequest(request.data.requestId) || isSystemAdmin();
 
       allow create: if
-        isOwnerOfRequest(request.data.requestId) || isSystemAdmin() && (
-          request.auth.uid == request.data.createdBy &&
+        isOwnerOfRequest(request.resource.data.requestId) || isSystemAdmin() && (
+          request.auth.uid == request.resource.data.createdBy &&
           request.time == request.resource.data.createdAt &&
-          request.data.contentType == 'text'
+          request.resource.data.contentType == 'text'
         );
     }
 

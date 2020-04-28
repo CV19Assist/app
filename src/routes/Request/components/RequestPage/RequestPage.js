@@ -1,7 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { Suspense } from 'react';
-import { useFirestore, useFirestoreDoc } from 'reactfire';
-// import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
+import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -19,7 +18,7 @@ import { allCategoryMap } from 'constants/categories';
 import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import ContactInfo from '../ContactInfo';
 import PublicComments from '../PublicComments';
-// import Discussion from '../Discussion';
+import Discussion from '../Discussion';
 import RequestActions from '../RequestActions';
 import styles from './RequestPage.styles';
 
@@ -29,7 +28,7 @@ function RequestPage() {
   const classes = useStyles();
   const { requestId } = useParams();
   const firestore = useFirestore();
-  // const user = useUser();
+  const user = useUser();
 
   const requestPublicSnap = useFirestoreDoc(
     firestore.doc(`${REQUESTS_PUBLIC_COLLECTION}/${requestId}`),
@@ -154,7 +153,7 @@ function RequestPage() {
         </Paper>
 
         {/* Only show for authenticated users. */}
-        {/* {user && user.uid && <Discussion requestId={requestId} />} */}
+        {user && user.uid && <Discussion requestId={requestId} />}
       </Container>
     </>
   );
