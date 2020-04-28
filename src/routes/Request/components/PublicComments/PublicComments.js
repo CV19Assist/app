@@ -114,7 +114,7 @@ function CommentEntry({ requestId }) {
     firestore.doc(`${USERS_COLLECTION}/${user.uid}`),
   );
 
-  if (userProfile.get('role') !== 'admin') {
+  if (userProfile.get('role') !== 'system-admin') {
     return (
       <Typography variant="body2">
         Only administrators are allowed to add public comments.

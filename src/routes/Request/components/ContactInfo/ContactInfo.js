@@ -19,6 +19,7 @@ import {
 } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { LOGIN_PATH } from 'constants/paths';
+import { useNotifications } from 'modules/notification';
 import styles from './ContactInfo.styles';
 
 const useStyles = makeStyles(styles);
@@ -78,9 +79,11 @@ function useContactInfo(requestId) {
 function ContactDetails({ requestId }) {
   const classes = useStyles();
   const firestore = useFirestore();
+  const { showError } = useNotifications();
 
   const [retries, setRetries] = useState(0);
   const [contactInfo, setContactInfo] = useState(null);
+  const [accessFailed, setAccessFailed] = useState(false);
 
   // This is used to trigger the snapshot subscription after confirming that the user
   // has permission to access the contact info.
@@ -104,13 +107,20 @@ function ContactDetails({ requestId }) {
         if (err.code !== 'permission-denied') {
           throw err;
         }
-        window.setTimeout(() => {
-          setRetries(retries + 1);
-        }, 1000);
+        if (retries >= 25) {
+          setAccessFailed(true);
+          showError(
+            'Failed to get contact info access, please try again later.',
+          );
+        } else {
+          window.setTimeout(() => {
+            setRetries(retries + 1);
+          }, 1000);
+        }
       }
     }
     getData();
-  }, [retries, firestore, requestId]);
+  }, [retries, firestore, requestId, showError]);
 
   // Once the previous useEffect verifies that the user has access then this one does the actual
   // document subscription.
@@ -128,6 +138,10 @@ function ContactDetails({ requestId }) {
 
   const phone = contactInfo.get('phone');
   const email = contactInfo.get('email');
+
+  if (accessFailed) {
+    return <div className={classes.info}>Failed to get access.</div>;
+  }
 
   return (
     <div className={classes.info}>

@@ -258,6 +258,7 @@ async function convertUser(profileSnap) {
     displayName: profileSnap.get('d.displayName'),
     lastName: profileSnap.get('d.lastName'),
     createdAt: profileSnap.get('d.createdAt'),
+    role: 'user',
   };
   const coords = profileSnap.get('d.coordinates');
   privateUser.preciseLocation = new admin.firestore.GeoPoint(

@@ -46,8 +46,14 @@ async function indexUser(change, context) {
     return null;
   }
 
-  // const previousData = change.before.data();
+  const previousData = change.before.data();
   const newData = change.after.data();
+
+  // Default to 'user' role and do not allow changing role for now.
+  if (!previousData.role || previousData.role !== newData.role) {
+    newData.role = 'user';
+  }
+
   try {
     const geofirestore = new GeoFirestore(admin.firestore());
     if (newData.generalLocation) {

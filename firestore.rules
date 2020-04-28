@@ -11,19 +11,14 @@ service cloud.firestore {
     function isSystemAdmin() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system-admin';
     }
-    // TODO: update isOwnerOfRequest and hasRequestContactAccess to use requestId.
 
-    function isOwnerOfRequest(requestId) {
-      return get(/databases/$(database)/documents/requests_public/$(requestId)).data.d.owner == request.auth.uid
+    function isOwnerOfRequest(res) {
+      return res.data.d.owner == request.auth.uid;
     }
 
-    function hasRequestContactAccess(requestId) {
-      return request.auth.uid in get(/databases/$(database)/documents/requests_public/$(requestId)).data.d.usersWithContactInfoAccess
+    function hasRequestContactAccess(res) {
+      return request.auth.uid in res.data.d.usersWithContactInfoAccess
     }
-
-    // match /{document=**} {
-    //   allow read, write: if false;
-    // }
 
     // Private user profiles
     match /users/{userId} {
@@ -50,7 +45,9 @@ service cloud.firestore {
       allow write: if isAuthor(resource) && request.time == request.resource.data.lastUpdatedAt;
       // TODO: Make read require data on request
       // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isAuthor(resource)
-      allow read: if request.auth.uid != null && isOwnerOfRequest(requestId);
+      allow read: if
+        request.auth.uid != null &&
+        isOwnerOfRequest(get(/databases/$(database)/documents/requests_public/$(requestId)));
     }
 
     // function addingContactInfo() {
@@ -99,23 +96,28 @@ service cloud.firestore {
 
     // Contact info for a request - requires contact info access
     match /requests_contact/{requestId} {
+      // Anyone can submit a request.
       allow create: if true;
-      allow write: if isOwnerOfRequest(resource) || hasRequestContactAccess(requestId);
-      allow read: if hasRequestContactAccess(resource);
+
+      allow write: if
+        isSystemAdmin() || isOwnerOfRequest(resource) || hasRequestContactAccess(requestId);
+
+      allow read: if
+        hasRequestContactAccess(get(/databases/$(database)/documents/requests_public/$(requestId))) ||
+        isSystemAdmin();
     }
 
-    // TODO: Test this.
-    // Private discussion
+    // Private discussions
     match /requests_discussions/{commentId} {
-      // allow read: if true;
       allow read: if
-        get(/databases/$(database)/documents/requests_public/$(resource.data.requestId)).data.d.owner == request.auth.uid;
-        // isOwnerOfRequest(request.data.requestId) || isSystemAdmin();
-      // allow list: if
-      //   isOwnerOfRequest(request.data.requestId) || isSystemAdmin();
+        isOwnerOfRequest(
+          get(/databases/$(database)/documents/requests_public/$(resource.data.requestId))
+        ) || isSystemAdmin();
 
       allow create: if
-        isOwnerOfRequest(request.resource.data.requestId) || isSystemAdmin() && (
+        isOwnerOfRequest(
+          get(/databases/$(database)/documents/requests_public/$(request.resource.data.requestId))
+        ) || isSystemAdmin() && (
           request.auth.uid == request.resource.data.createdBy &&
           request.time == request.resource.data.createdAt &&
           request.resource.data.contentType == 'text'
