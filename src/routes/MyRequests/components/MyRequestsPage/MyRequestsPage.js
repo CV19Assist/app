@@ -6,7 +6,7 @@ import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { REQUESTS_COLLECTION } from 'constants/collections';
+import { REQUESTS_PUBLIC_COLLECTION } from 'constants/collections';
 import { Link } from 'react-router-dom';
 import { SEARCH_PATH } from 'constants/paths';
 import styles from './MyRequestsPage.styles';
@@ -19,10 +19,10 @@ function MyRequestsPage() {
   const firestore = useFirestore();
   const user = useUser();
   const userRequestsRef = firestore
-    .collection(REQUESTS_COLLECTION)
-    .where('owner', '==', user.uid);
-  const openRequestsRef = userRequestsRef.where('status', '<', 20);
-  const closedRequestsRef = userRequestsRef.where('status', '==', 20);
+    .collection(REQUESTS_PUBLIC_COLLECTION)
+    .where('d.owner', '==', user.uid);
+  const openRequestsRef = userRequestsRef.where('d.status', '<', 20);
+  const closedRequestsRef = userRequestsRef.where('d.status', '==', 20);
   const openRequestsSnap = useFirestoreCollection(openRequestsRef);
   const closedRequestsSnap = useFirestoreCollection(closedRequestsRef);
 

@@ -39,8 +39,8 @@ function RequestActionDialog({
     const batch = firestore.batch();
 
     const userInfo = {
-      firstName: userProfileSnap.get('firstName'),
-      displayName: userProfileSnap.get('displayName'),
+      firstName: userProfileSnap.get('firstName') || '',
+      displayName: userProfileSnap.get('displayName') || '',
     };
 
     const statusUpdate = {
