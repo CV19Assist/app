@@ -39,7 +39,9 @@ function LoginPage() {
           newProfile.providerData = [{ ...providerData[0] }];
         }
         await userSnap.ref.set(newProfile, { merge: true });
-        history.replace(NEW_USER_PATH);
+        window.setTimeout(() => {
+          history.replace(NEW_USER_PATH);
+        }, 1000);
       }
     } catch (err) {
       setLoadingState(false);

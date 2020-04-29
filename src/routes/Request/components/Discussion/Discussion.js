@@ -205,7 +205,7 @@ function Discussion({ requestId }) {
 
   if (
     requestPublicSnap.get('d.owner') !== user.uid &&
-    userProfileSnap.get('role') !== 'admin'
+    userProfileSnap.get('role') !== 'system-admin'
   ) {
     return null;
   }

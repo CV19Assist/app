@@ -15,10 +15,24 @@ const adminApp = firebaseTesting.initializeAdminApp({
 });
 
 const indexUser = functionsTest.wrap(indexUserOriginal);
-const userFirestoreRef = adminApp.firestore().doc(USER_PUBLIC_PATH);
-const privilegedProfileRef = adminApp
+// const userFirestoreRef = adminApp.firestore().doc(USER_PATH);
+const userPublicFirestoreRef = adminApp.firestore().doc(USER_PUBLIC_PATH);
+const userPrivilegedRef = adminApp
   .firestore()
   .doc(`users_privileged/${USER_UID}`);
+
+const sampleLocation = {
+  latitude: 43.074585,
+  longitude: -89.384182,
+};
+const sampleUserData = {
+  preciseLocation: sampleLocation,
+  generalLocation: sampleLocation,
+  generalLocationName: 'Madison, WI',
+  firstName: 'TestUserFirst',
+  displayName: 'some',
+  email: 'test@test.com',
+};
 
 describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
   beforeEach(async () => {
@@ -27,56 +41,64 @@ describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
   });
 
   it('adds user to users_public on create event', async () => {
-    const userData = { displayName: 'some', email: 'test@test.com' };
     // Build a Firestore create event object on users path
     const beforeSnap = functionsTest.firestore.makeDocumentSnapshot(
       null,
       USER_PATH,
     );
     const afterSnap = functionsTest.firestore.makeDocumentSnapshot(
-      userData,
+      sampleUserData,
       USER_PATH,
     );
     const changeEvent = { before: beforeSnap, after: afterSnap };
     // Calling wrapped function with fake snap and context
     await indexUser(changeEvent, context);
     // Load data to confirm user has been deleted
-    const newUserRes = await userFirestoreRef.get();
-    expect(newUserRes.data()).to.have.nested.property(
-      'd.displayName',
-      userData.displayName,
+    // const newUserRes = await userFirestoreRef.get();
+    const newUserPublicRes = await userPublicFirestoreRef.get();
+    // expect(newUserRes.data()).to.have.property('role', 'user');
+    expect(newUserPublicRes.data()).to.have.nested.property(
+      'd.firstName',
+      sampleUserData.firstName,
     );
-    expect(newUserRes.data()).to.not.have.nested.property(
+    expect(newUserPublicRes.data()).to.have.nested.property(
+      'd.firstName',
+      sampleUserData.firstName,
+    );
+    expect(newUserPublicRes.data()).to.have.nested.property(
+      'd.displayName',
+      sampleUserData.displayName,
+    );
+    expect(newUserPublicRes.data()).to.not.have.nested.property(
       'd.email',
-      userData.email,
+      sampleUserData.email,
     );
   });
 
   it('adds user to users_privileged on create event', async () => {
-    const userData = { displayName: 'some', email: 'test@test.com' };
     // Build a Firestore create event object on users path
     const beforeSnap = functionsTest.firestore.makeDocumentSnapshot(
       null,
       USER_PATH,
     );
     const afterSnap = functionsTest.firestore.makeDocumentSnapshot(
-      userData,
+      sampleUserData,
       USER_PATH,
     );
     const changeEvent = { before: beforeSnap, after: afterSnap };
     // Calling wrapped function with fake snap and context
     await indexUser(changeEvent, context);
     // Load data to confirm user has been deleted
-    const newUserRes = await privilegedProfileRef.get();
+    const newUserRes = await userPrivilegedRef.get();
     expect(newUserRes.data()).to.have.property(
       'displayName',
-      userData.displayName,
+      sampleUserData.displayName,
     );
-    expect(newUserRes.data()).to.have.property('email', userData.email);
+    expect(newUserRes.data()).to.have.property('email', sampleUserData.email);
   });
 
   it('updates existing user in users_public on update event', async () => {
-    const initialUserData = { displayName: 'initial' };
+    const initialUserData = sampleUserData;
     const userData = { displayName: 'afterchange', email: 'test@test.com' };
     // Create update snapshot on users collection document with user's id
     const beforeSnap = functionsTest.firestore.makeDocumentSnapshot(
@@ -91,7 +113,7 @@ describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
     // Calling wrapped function with fake snap and context
     await indexUser(changeEvent, context);
     // Load data to confirm user has been deleted
-    const newUserRes = await userFirestoreRef.get();
+    const newUserRes = await userPublicFirestoreRef.get();
     expect(newUserRes.data()).to.have.nested.property(
       'd.displayName',
       userData.displayName,
@@ -118,7 +140,7 @@ describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
     // Calling wrapped function with fake snap and context
     await indexUser(changeEvent, context);
     // Load data to confirm user has been deleted
-    const newUserRes = await userFirestoreRef.get();
+    const newUserRes = await userPublicFirestoreRef.get();
     expect(newUserRes.exists).to.be.false;
     expect(newUserRes.data()).to.be.undefined;
   });

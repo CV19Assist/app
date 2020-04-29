@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Typography,
   TextField,
@@ -16,15 +16,15 @@ import {
   ExitToApp as LogoutIcon,
   Person as AccountIcon,
 } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import * as Yup from 'yup';
-import { useFirestore, useFirestoreDocData, useUser } from 'reactfire';
+import { useFirestore, useUser } from 'reactfire';
 import { USERS_COLLECTION } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from 'utils/form';
-import { ACCOUNT_PATH, LOGOUT_PATH } from 'constants/paths';
+import { ACCOUNT_PATH, LOGOUT_PATH, SEARCH_PATH } from 'constants/paths';
 import styles from './NewUserPage.styles';
 
 const useStyles = makeStyles(styles);
@@ -33,7 +33,7 @@ const userProfileSchema = Yup.object().shape({
   firstName: Yup.string().min(2, 'Too Short').required('Required'),
   lastName: Yup.string().min(2, 'Too Short').required('Required'),
   email: Yup.string()
-    .email('Please enter a valida email address')
+    .email('Please enter a valid email address')
     .required('Required'),
   phone: Yup.string().required('Required'),
   address1: Yup.string(),
@@ -46,7 +46,47 @@ const userProfileSchema = Yup.object().shape({
 function NewUser() {
   const classes = useStyles();
   const firestore = useFirestore();
+  const history = useHistory();
   const user = useUser();
+  const defaultValues = {};
+
+  const [retries, setRetries] = useState(0);
+  const [userRef, setUserRef] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+
+  // Because of timing issues, this component will likely get run before the server has applied
+  // the requested document access resulting in almost a guranteed permission-denied error. So,
+  // we use this effect to monitor for permission-denied until the change has propagated, at which
+  // point, we do the actual doc subscription (next useEffect);
+  useEffect(() => {
+    async function getData() {
+      try {
+        const ref = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
+        // Call it once because this will throw the permission exception.
+        await ref.get();
+        setUserProfile(await ref.get());
+        setUserRef(ref);
+      } catch (err) {
+        // We only try reloading if insufficient permissions.
+        if (err.code !== 'permission-denied') {
+          throw err;
+        }
+        window.setTimeout(() => {
+          setRetries(retries + 1);
+        }, 1000);
+      }
+    }
+    getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retries]);
+
+  if (user && user.uid) {
+    defaultValues.email = user.email;
+    const name = user.displayName.split(' ');
+    [defaultValues.firstName] = name;
+    defaultValues.lastName = name.length > 1 ? name[1] : '';
+  }
+
   const {
     handleSubmit,
     errors,
@@ -54,12 +94,11 @@ function NewUser() {
     formState: { isValid },
   } = useForm({
     validationSchema: userProfileSchema,
+    defaultValues,
   });
-  const userRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
-  const userProfile = useFirestoreDocData(userRef);
   const [userLocationInfo, setUserLocationInfo] = useState(null);
 
-  if (userProfile) {
+  if (userProfile && userProfile.preciseLocation) {
     return (
       <Container maxWidth="md">
         <Card style={{ minWidth: 275 }}>
@@ -98,15 +137,16 @@ function NewUser() {
   //   setUserLocation(location);
   // };
 
-  const handleFormSubmit = async (values) => {
+  async function handleFormSubmit(values) {
     if (!userLocationInfo) {
       alert('Please select a location above.'); // eslint-disable-line no-alert
       return;
     }
 
-    values.coordinates = userLocation; // eslint-disable-line
-    await userRef.set(values, { merge: true });
-  };
+    const userUpdates = { ...values, ...userLocationInfo };
+    await userRef.set(userUpdates, { merge: true });
+    history.replace(SEARCH_PATH);
+  }
 
   return (
     <Container maxWidth="md">

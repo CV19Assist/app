@@ -14,5 +14,4 @@ export const DEFAULT_LOCATION_INFO = {
     latitude: DEFAULT_LATITUDE,
     longitude: DEFAULT_LONGITUDE,
   },
-  preciseLocationName: DEFAULT_LOCATION_NAME,
 };

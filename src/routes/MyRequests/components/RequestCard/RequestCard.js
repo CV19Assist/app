@@ -1,10 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
-import { Helmet } from 'react-helmet';
-import { useFirestore, useFirestoreDoc, useUser } from 'reactfire';
 import { Link } from 'react-router-dom';
-import Paper from '@material-ui/core/Paper';
 import Container from '@material-ui/core/Container';
 // import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
@@ -17,7 +14,6 @@ import Chip from '@material-ui/core/Chip';
 import FinancialAssistanceIcon from '@material-ui/icons/AttachMoney';
 import GroceryIcon from '@material-ui/icons/ShoppingBasket';
 import { makeStyles } from '@material-ui/core/styles';
-import { REQUESTS_COLLECTION } from 'constants/collections';
 import { allCategoryMap } from 'constants/categories';
 import styles from './RequestCard.styles';
 
@@ -25,13 +21,6 @@ const useStyles = makeStyles(styles);
 
 function RequestCard({ requestSnap }) {
   const classes = useStyles();
-  const firestore = useFirestore();
-  const user = useUser();
-
-  const requestRef = firestore
-    .collection(REQUESTS_COLLECTION)
-    .where('createdBy', '==', user.uid);
-  const requestsSnap = useFirestoreDoc(requestRef);
 
   function handleCopyNeedLink(id) {
     const el = document.createElement('textarea');
@@ -42,19 +31,6 @@ function RequestCard({ requestSnap }) {
     document.body.removeChild(el);
   }
 
-  if (!requestsSnap.docs) {
-    return (
-      <Container>
-        <Helmet>
-          <title>Requests Not Found</title>
-        </Helmet>
-        <Paper className={classes.paper} data-test="request-not-found">
-          Request Not Found
-        </Paper>
-      </Container>
-    );
-  }
-
   return (
     <Card
       className={classes.cards}
@@ -63,32 +39,38 @@ function RequestCard({ requestSnap }) {
       <Container maxWidth="lg" className={classes.TaskContainer}>
         <Grid container>
           <Grid item xs={9}>
+            <Typography variant="h6">
+              {requestSnap.get('d.firstName')} &ndash;{' '}
+              {requestSnap.get('d.generalLocationName')}
+            </Typography>
             <Typography variant="caption" gutterBottom>
               ADDED{' '}
-              {requestSnap.get('createdAt') &&
-                typeof requestSnap.get('createdAt').toDate === 'function' &&
-                format(requestSnap.get('createdAt').toDate(), 'p - PPPP')}
+              {requestSnap.get('d.createdAt') &&
+                typeof requestSnap.get('d.createdAt').toDate === 'function' &&
+                format(requestSnap.get('d.createdAt').toDate(), 'p - PPPP')}
             </Typography>
             <Typography variant="h5" className={classes.Needs} gutterBottom>
-              {requestSnap.get('needs') &&
-                Object.keys(requestSnap.get('needs')).map((item) => (
-                  <React.Fragment key={item}>
-                    {allCategoryMap[item] ? (
-                      <Chip
-                        variant="outlined"
-                        icon={
-                          item === 'grocery-pickup' ? <GroceryIcon /> : null
-                        }
-                        label={allCategoryMap[item].shortDescription}
-                      />
-                    ) : (
-                      <Alert severity="error">
-                        Could not find &apos;{item}&apos; in all category map.
-                      </Alert>
-                    )}
-                  </React.Fragment>
-                ))}
-              {requestSnap.get('needFinancialAssistance') && (
+              {requestSnap.get('d.needs') &&
+                requestSnap
+                  .get('d.needs')
+                  .map((item) => (
+                    <React.Fragment key={item}>
+                      {allCategoryMap[item] ? (
+                        <Chip
+                          variant="outlined"
+                          icon={
+                            item === 'grocery-pickup' ? <GroceryIcon /> : null
+                          }
+                          label={allCategoryMap[item].shortDescription}
+                        />
+                      ) : (
+                        <Alert severity="error">
+                          Could not find &apos;{item}&apos; in all category map.
+                        </Alert>
+                      )}
+                    </React.Fragment>
+                  ))}
+              {requestSnap.get('d.needFinancialAssistance') && (
                 <Chip
                   variant="outlined"
                   icon={<FinancialAssistanceIcon />}
@@ -98,7 +80,7 @@ function RequestCard({ requestSnap }) {
             </Typography>
           </Grid>
 
-          {parseInt(requestSnap.get('immediacy'), 10) > 5 && (
+          {parseInt(requestSnap.get('d.immediacy'), 10) > 5 && (
             <Grid item xs={3}>
               <img
                 align="right"

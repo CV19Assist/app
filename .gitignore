@@ -3,6 +3,7 @@
 **/*.log
 .DS_Store
 **/.DS_Store
+/notes.txt
 
 # Dependencies
 **/node_modules

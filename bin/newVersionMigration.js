@@ -8,6 +8,11 @@ let geofirestore = null;
 let usersPublicGeofirestoreCollection = null;
 let requestsPublicGeofirestoreCollection = null;
 
+// A simple flag which can be used to prevent the Google Maps APIs calls. This can be useful when
+// testing because we can quickly run over the limit.  When false, the relevant code will return
+// sample data.
+let callGoogleMapsAPIs = true;
+
 /**
  * Scrable specific location to a location nearby
  * Based on https://stackoverflow.com/a/31280435/391230
@@ -62,6 +67,10 @@ async function promiseWaterfall(callbacks) {
  * @param {number} longitude - Location longitude
  */
 async function getLocationNameFromLatLong(latitude, longitude) {
+  if (!callGoogleMapsAPIs) {
+    return 'Sample location, WI';
+  }
+
   const client = new Client({});
   const requestOptions = {
     params: {
@@ -88,7 +97,7 @@ async function getLocationNameFromLatLong(latitude, longitude) {
     throw err;
   }
 
-  // // Add a slight delay to address Google Maps API rate limiting.
+  // Add a slight delay to address Google Maps API rate limiting.
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   let locality = null;
@@ -133,6 +142,7 @@ async function convertRequests() {
         firstName: needSnap.get('d.firstName') || null,
         lastName: needSnap.get('d.lastName') || null,
         needs: needSnap.get('d.needs'),
+        status: needSnap.get('d.status'),
         immediacy: parseInt(needSnap.get('d.immediacy'), 10),
       };
       const lastUpdatedAt = needSnap.get('d.lastUpdatedAt');
@@ -144,13 +154,18 @@ async function convertRequests() {
         coords.latitude,
         coords.longitude,
       );
-      // Get General location name from precise lat/long
+      // Get location name from precise lat/long
       // eslint-disable-next-line no-await-in-loop
-      const preciseLocationName = await getLocationNameFromLatLong(
+      const locationName = await getLocationNameFromLatLong(
         coords.latitude,
         coords.longitude,
       );
-      privateRequest.preciseLocationName = preciseLocationName;
+      privateRequest.generalLocationName = locationName;
+      const scrambledLocation = scrambleLocation(coords, 300);
+      privateRequest.generalLocation = new admin.firestore.GeoPoint(
+        scrambledLocation.latitude,
+        scrambledLocation.longitude,
+      );
       const ownerUid = needSnap.get('d.owner.userProfileId');
       if (ownerUid) {
         privateRequest.owner = ownerUid;
@@ -174,8 +189,11 @@ async function convertRequests() {
       // ==== Public request
       const publicRequest = {
         ...needSnap.get('d'),
+        generalLocation: privateRequest.generalLocation,
+        generalLocationName: privateRequest.generalLocationName,
         immediacy: parseInt(needSnap.get('d.immediacy'), 10),
       };
+      delete publicRequest.coordinates;
       if (ownerUid) {
         publicRequest.owner = ownerUid;
         const { userProfileId, ...otherOwner } = needSnap.get('d.owner');
@@ -188,7 +206,6 @@ async function convertRequests() {
         );
         publicRequest.createdByInfo = otherCreatedBy;
       }
-      publicRequest.generalLocationName = preciseLocationName;
       // Add directly using the geofirestore db so it can recalculate the geohash.
       requestsPublicGeofirestoreCollection
         .doc(needSnap.id)
@@ -258,6 +275,7 @@ async function convertUser(profileSnap) {
     displayName: profileSnap.get('d.displayName'),
     lastName: profileSnap.get('d.lastName'),
     createdAt: profileSnap.get('d.createdAt'),
+    role: 'user',
   };
   const coords = profileSnap.get('d.coordinates');
   privateUser.preciseLocation = new admin.firestore.GeoPoint(
@@ -266,11 +284,13 @@ async function convertUser(profileSnap) {
   );
   // Get General location name from precise lat/long
   const { latitude, longitude } = profileSnap.get('d.coordinates');
-  const preciseLocationName = await getLocationNameFromLatLong(
-    latitude,
-    longitude,
+  const locationName = await getLocationNameFromLatLong(latitude, longitude);
+  privateUser.generalLocationName = locationName;
+  const scrambledLocation = scrambleLocation(coords, 300);
+  privateUser.generalLocation = new admin.firestore.GeoPoint(
+    scrambledLocation.latitude,
+    scrambledLocation.longitude,
   );
-  privateUser.preciseLocationName = preciseLocationName;
 
   // Add action to batch for setting private user
   batch.set(db.doc(`users/${profileSnap.id}`), privateUser, {
@@ -281,13 +301,9 @@ async function convertUser(profileSnap) {
   const publicUser = {
     firstName: profileSnap.get('d.firstName'),
     displayName: profileSnap.get('d.displayName'),
-    generalLocationName: preciseLocationName,
+    generalLocationName: locationName,
   };
-  const scrambledLocation = scrambleLocation(coords, 300);
-  publicUser.generalLocation = new admin.firestore.GeoPoint(
-    scrambledLocation.latitude,
-    scrambledLocation.longitude,
-  );
+  publicUser.generalLocation = privateUser.generalLocation;
   // Add directly using the geofirestore db so it can recalculate the geohash.
   usersPublicGeofirestoreCollection
     .doc(profileSnap.id)
@@ -397,6 +413,12 @@ async function migrateToNewFormat() {
 }
 
 (async function runConversion() {
+  // Do not call
+  callGoogleMapsAPIs = process.argv.indexOf('--no-google-apis') === -1;
+  if (!callGoogleMapsAPIs) {
+    console.log('Not calling Google Maps APIs.');
+  }
+
   try {
     // Kick off the migration.
     await migrateToNewFormat();
