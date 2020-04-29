@@ -1,4 +1,5 @@
 import * as firebaseTesting from '@firebase/testing';
+import { NOTIFICATIONS_SETTINGS_DOC } from 'constants/firestorePaths';
 import indexUserOriginal from './index';
 
 const USER_UID = '123ABC';
@@ -33,11 +34,23 @@ const sampleUserData = {
   displayName: 'some',
   email: 'test@test.com',
 };
+const notificationSettings = {
+  newUser: ['someId'],
+  newRequest: ['someId'],
+};
 
 describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
   beforeEach(async () => {
     // Clean database before each test
     await firebaseTesting.clearFirestoreData({ projectId });
+    functionsTest.firestore.makeDocumentSnapshot(
+      notificationSettings,
+      NOTIFICATIONS_SETTINGS_DOC,
+    );
+    await adminApp
+      .firestore()
+      .doc(NOTIFICATIONS_SETTINGS_DOC)
+      .set(notificationSettings, { merge: true });
   });
 
   it('adds user to users_public on create event', async () => {
