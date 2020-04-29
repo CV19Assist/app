@@ -67,7 +67,7 @@ export default function useNewRequestPage() {
     const requestPublicInfo = {
       ...publicValues,
       firstName: values.firstName,
-      needFinancialAssistance: Boolean(values.needFinancialAssistance),
+      needFinancialAssistance: values.needFinancialAssistance === 'true',
       immediacy: parseInt(values.immediacy, 10),
       createdAt: FieldValue.serverTimestamp(),
       lastUpdatedAt: FieldValue.serverTimestamp(),
@@ -92,7 +92,6 @@ export default function useNewRequestPage() {
       phone,
       email,
     };
-
     const requestPrivateInfo = {
       firstName: values.firstName,
       lastName: values.lastName,

@@ -79,6 +79,7 @@ function NewRequestPage() {
     validationSchema: requestValidationSchema,
     defaultValues,
   });
+
   const {
     submitRequest,
     handleLocationChange,
@@ -324,7 +325,7 @@ function NewRequestPage() {
                   </Grid>
                 </Grid>
 
-                {dirty && Object.keys(errors).length && !isValid && (
+                {dirty && !!Object.keys(errors).length && !isValid && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
