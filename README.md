@@ -213,7 +213,7 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 [build-status-url]: https://github.com/CV19Assist/app/actions
 [climate-image]: https://img.shields.io/codeclimate/github/CV19Assist/app.svg?style=flat-square
 [climate-url]: https://codeclimate.com/github/CV19Assist/app
-[coverage-image]: https://img.shields.io/codecov/c/gh/CV19Assist/app&style=flat-square
+[coverage-image]: https://img.shields.io/codecov/c/github/CV19Assist/app.svg?style=flat-square
 [coverage-url]: https://codecov.io/gh/CV19Assist/app
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
 [license-url]: https://github.com/CV19Assist/app/blob/master/LICENSE

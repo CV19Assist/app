@@ -29,6 +29,20 @@
       ]
     },
     {
+      "collectionGroup": "requests_public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "d.owner",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "d.status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "requests",
       "queryScope": "COLLECTION",
       "fields": [

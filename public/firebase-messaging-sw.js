@@ -36,7 +36,7 @@ const nextConfig = {
   storageBucket: 'cv19assist-next.appspot.com',
   messagingSenderId: '971141009068',
   appId: '1:971141009068:web:6d7a40c5742c1c21ac5909',
-  measurementId: 'G-GB8SL2LGL0',
+  measurementId: 'G-WWBQXP76C2',
 };
 
 let fbConfig;
