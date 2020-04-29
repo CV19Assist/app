@@ -63,8 +63,8 @@ function DonatePage() {
         <Divider className={classes.divider} />
 
         <p>
-          Please <Link to="/contact">contact us</Link> if your organization will
-          like to help with this initiative and be listed on this page for
+          Please <Link to="/contact">contact us</Link> if your organization
+          would like to help with this initiative and be listed on this page for
           donations.
         </p>
       </Paper>

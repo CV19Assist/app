@@ -42,19 +42,18 @@ function Homepage() {
               variant="subtitle1"
               align="center">
               The spread of COVID19 is having a huge impact on our lives,
-              especially older adults and people of any age who have serious
-              underlying medical conditions might be at higher risk for severe
-              illness from COVID-19 (
+              especially older adults and people of any age who have underlying
+              medical conditions which put them at a higher risk for severe
+              illness from COVID-19. It is more important now than ever for us
+              to come together and support our communities. Our goal is to
+              connect those in such{' '}
               <a
                 href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
                 target="_blank"
                 rel="noopener noreferrer">
                 &quot;at-risk population&quot;
-              </a>
-              ). It is more important now than ever for us to come together and
-              support our communities, whether it be material support or
-              emotional support. Our goal is to connect those in such high-risk
-              population with those that are able to help.
+              </a>{' '}
+              with those that are able to help.
             </Typography>
           </Paper>
         </Container>
@@ -67,8 +66,8 @@ function Homepage() {
             <Paper className={classes.sectionContentPaper}>
               <Typography variant="body2" gutterBottom>
                 We provide free services for the most at-risk community members.
-                Request grocery delivery, prescription pick-up, or a phone call
-                for emotional support. There is no charge for the delivery.
+                Request grocery or prescription delivery, or any other delivery
+                assistance. There is no charge for the delivery.
               </Typography>
               <div className={classes.actionButtons}>
                 <Button
