@@ -43,10 +43,6 @@ describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
   beforeEach(async () => {
     // Clean database before each test
     await firebaseTesting.clearFirestoreData({ projectId });
-    functionsTest.firestore.makeDocumentSnapshot(
-      notificationSettings,
-      NOTIFICATIONS_SETTINGS_DOC,
-    );
     await adminApp
       .firestore()
       .doc(NOTIFICATIONS_SETTINGS_DOC)
