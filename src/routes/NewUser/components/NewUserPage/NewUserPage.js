@@ -91,7 +91,7 @@ function NewUser() {
     handleSubmit,
     errors,
     register,
-    formState: { isValid },
+    formState: { isValid, dirty },
   } = useForm({
     validationSchema: userProfileSchema,
     defaultValues,
@@ -312,7 +312,7 @@ function NewUser() {
               warranties, including any warranty of merchantability and warranty
               of fitness for a particular purpose.
             </Typography>
-            {!isValid && (
+            {dirty && errors && Object.keys(errors).length && !isValid && (
               <Typography variant="body2" className={classes.errorText}>
                 Please fix the errors above.
               </Typography>

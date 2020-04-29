@@ -96,8 +96,8 @@ export default function useNewRequestPage() {
     const requestPrivateInfo = {
       firstName: values.firstName,
       lastName: values.lastName,
-      immediacy: values.immediacy,
-      needs: values.needs,
+      immediacy: parseInt(values.immediacy, 10),
+      needs: requestPublicInfo.needs,
       status: 1,
       createdAt: FieldValue.serverTimestamp(),
       ...requestLocation,
@@ -178,6 +178,7 @@ export default function useNewRequestPage() {
     // Set location to form
     setRequestLocation(newLocation);
   }
+
   return {
     submitRequest,
     handleLocationChange,

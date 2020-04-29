@@ -87,7 +87,6 @@ function NewRequestPage() {
   } = useNewRequestPage();
   const currentNeeds = watch('needs');
   const groceryPickup = currentNeeds && currentNeeds['grocery-pickup'];
-  // const hasFinancialComponent = true;
 
   return (
     <Container maxWidth="md">
@@ -101,7 +100,6 @@ function NewRequestPage() {
         <div className={classes.heroContent}>
           <Container maxWidth="md">
             <form onSubmit={handleSubmit(submitRequest)}>
-              {/* {console.log('errors', errors)} */}
               <Container>
                 <FormGroup>
                   <Typography
@@ -282,9 +280,7 @@ function NewRequestPage() {
                       inputRef={register}
                       error={!!errors.firstName}
                       fullWidth
-                      helperText={
-                        errors && errors.firstName && errors.firstName.message
-                      }
+                      helperText={errors?.firstName?.message}
                     />
                   </Grid>
                   <Grid item sm={12} md={6}>
@@ -297,9 +293,7 @@ function NewRequestPage() {
                       fullWidth
                       inputRef={register}
                       error={!!errors.lastName}
-                      helperText={
-                        errors && errors.firstName && errors.firstName.message
-                      }
+                      helperText={errors?.firstName?.message}
                     />
                   </Grid>
                   <Grid item sm={12} md={6}>
@@ -312,9 +306,7 @@ function NewRequestPage() {
                       fullWidth
                       inputRef={register}
                       error={!!errors.phone}
-                      helperText={
-                        errors && errors.phone && errors.phone.message
-                      }
+                      helperText={errors?.phone?.message}
                     />
                   </Grid>
                   <Grid item sm={12} md={6}>
@@ -327,14 +319,12 @@ function NewRequestPage() {
                       fullWidth
                       inputRef={register}
                       error={!!errors.email}
-                      helperText={
-                        errors && errors.email && errors.email.message
-                      }
+                      helperText={errors?.email?.message}
                     />
                   </Grid>
                 </Grid>
 
-                {dirty && Object.keys(errors).length > 0 && !isValid && (
+                {dirty && Object.keys(errors).length && !isValid && (
                   <Typography variant="body2" className={classes.errorText}>
                     Please fix the errors above.
                   </Typography>
