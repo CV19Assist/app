@@ -106,7 +106,7 @@ async function indexUser(change, context) {
 
   // Only do this for new users.
   if (!change.before.exists) {
-    sendNewUserEmail(userId, newData);
+    await sendNewUserEmail(userId, newData);
   }
 
   // Default to 'user' role and do not allow changing role for now.

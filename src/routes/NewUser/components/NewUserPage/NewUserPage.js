@@ -82,10 +82,10 @@ function NewUser() {
 
   if (user && user.uid) {
     defaultValues.email = user.email;
-    const name = user.displayName?.split(' ');
-    if (name) {
-      [defaultValues.firstName] = name;
-      defaultValues.lastName = name.length > 1 ? name[1] : '';
+    const nameParts = user.displayName?.split(' ');
+    if (nameParts) {
+      [defaultValues.firstName] = nameParts;
+      defaultValues.lastName = nameParts.length > 1 ? nameParts[1] : '';
     }
   }
 

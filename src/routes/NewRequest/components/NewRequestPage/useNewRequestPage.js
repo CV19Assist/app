@@ -111,14 +111,13 @@ export default function useNewRequestPage() {
         `${USERS_PRIVILEGED_COLLECTION}/${user.uid}`,
       );
       const profile = (await userRef.get()).data();
-      // TODO: Test and verify after confirming the sign-in workflow.
-      let pieces = user.displayName.split(' ');
-      if (pieces.length < 2) {
-        pieces = [user.displayName, ''];
+      let nameParts = user.displayName?.split(' ');
+      if (nameParts.length < 2) {
+        nameParts = [user.displayName, ''];
       }
       if (profile) {
         profile.displayName = user.displayName;
-        [profile.firstName, profile.lastName] = pieces;
+        [profile.firstName, profile.lastName] = nameParts;
 
         userInfo = {
           uid: user.uid,
