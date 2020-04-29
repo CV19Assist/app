@@ -71,7 +71,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
-          $(yarn bin)/firebase-ci deploy -s
+          $(yarn bin)/firebase-ci deploy -s --force
 
       - name: Archive Debug Log
         uses: actions/upload-artifact@master

@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "The spread of Coronavirus (COVID-19) is having a huge impact on our lives, especially those at high risk. It is more important now than ever for us to come together and support our communities, whether it be material support or emotional support. Our goal is to connect those in need with those that are able to help and spread positive vibes.",
   "main": "index.js",
   "scripts": {
@@ -76,7 +76,7 @@
     "eslint-plugin-react-hooks": "^2.5.1",
     "eslint-plugin-standard": "^4.0.1",
     "firebase-admin": "^8.11.0",
-    "firebase-ci": "^0.12.2",
+    "firebase-ci": "^0.13.0",
     "firebase-tools": "^8.2.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.1.3",

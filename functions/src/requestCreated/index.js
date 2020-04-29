@@ -21,6 +21,7 @@ async function sendFcmToUser(userId) {
     const messageId = await pubSubClient
       .topic('sendFcm')
       .publish(messageBuffer);
+
     console.log(
       `Sent request for FCM message to user ${userId}, messageId: ${messageId}`,
     );
