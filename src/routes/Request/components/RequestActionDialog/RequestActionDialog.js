@@ -10,7 +10,7 @@ import {
   TextField,
 } from '@material-ui/core';
 import { useForm } from 'react-hook-form';
-import { useFirestore, useUser } from 'reactfire';
+import { useFirestore, useUser, useAnalytics } from 'reactfire';
 import { useNotifications } from 'modules/notification';
 import {
   REQUESTS_ACTIONS_COLLECTION,
@@ -30,6 +30,7 @@ function RequestActionDialog({
   const { FieldValue } = useFirestore;
   const { register, handleSubmit, errors, reset, isSubmitting } = useForm();
   const { showError, showSuccess } = useNotifications();
+  const analytics = useAnalytics();
 
   async function onSubmit(values) {
     const userProfileSnap = await firestore
@@ -98,6 +99,8 @@ function RequestActionDialog({
 
     const actionRef = firestore.collection(REQUESTS_ACTIONS_COLLECTION).doc();
     batch.set(actionRef, action);
+
+    analytics.logEvent(`request-action-${actionType}`);
 
     try {
       await batch.commit();

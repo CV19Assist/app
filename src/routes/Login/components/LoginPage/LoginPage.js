@@ -29,7 +29,8 @@ function LoginPage() {
         .doc(`${USERS_COLLECTION}/${authState.user.uid}`)
         .get();
       // Redirect to search page if user exists
-      if (userSnap.exists) {
+      if (userSnap.get('preciseLocation')) {
+        // if (userSnap.exists) {
         history.replace(SEARCH_PATH);
       } else {
         // Write user object then redirect to new user page

@@ -82,9 +82,11 @@ function NewUser() {
 
   if (user && user.uid) {
     defaultValues.email = user.email;
-    const name = user.displayName.split(' ');
-    [defaultValues.firstName] = name;
-    defaultValues.lastName = name.length > 1 ? name[1] : '';
+    const name = user.displayName?.split(' ');
+    if (name) {
+      [defaultValues.firstName] = name;
+      defaultValues.lastName = name.length > 1 ? name[1] : '';
+    }
   }
 
   const {
@@ -312,7 +314,7 @@ function NewUser() {
               warranties, including any warranty of merchantability and warranty
               of fitness for a particular purpose.
             </Typography>
-            {dirty && errors && Object.keys(errors).length && !isValid && (
+            {dirty && errors && !!Object.keys(errors).length && !isValid && (
               <Typography variant="body2" className={classes.errorText}>
                 Please fix the errors above.
               </Typography>
