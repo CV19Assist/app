@@ -1,11 +1,66 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { GeoFirestore } from 'geofirestore';
+import { to } from 'utils/async';
 import {
   USERS_PUBLIC_COLLECTION,
   USERS_PRIVILEGED_COLLECTION,
   USERS_COLLECTION,
+  NOTIFICATIONS_SETTINGS_DOC,
+  MAIL_COLLECTION,
 } from 'constants/firestorePaths';
+import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
+
+/**
+ * Sends an email when a new user is created.
+ * @param {string} userId - User ID of the new user.
+ * @param {object} userData - User document data.
+ */
+async function sendNewUserEmail(userId, userData) {
+  // Load settings doc
+  const settingsRef = admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC);
+  const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
+
+  // Handle errors loading settings docs
+  if (settingsDocErr) {
+    console.error(
+      `Error loading settings doc: ${settingsDocErr.message || ''}`,
+      settingsDocErr,
+    );
+  }
+
+  const projectId = getFirebaseConfig('projectId');
+  // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
+  const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
+
+  // Get list of UIDs to email based on notifications settings doc
+  const toUids = settingsDocSnap.get('newUser');
+
+  const [sendMailRequestsErr] = await to(
+    admin
+      .firestore()
+      .collection(MAIL_COLLECTION)
+      .add({
+        toUids,
+        template: {
+          name: 'new-user',
+          data: {
+            userId,
+            userData,
+            projectDomain,
+          },
+        },
+      }),
+  );
+
+  // Handle errors writing requests to send mail
+  if (sendMailRequestsErr) {
+    console.error(
+      `Error writing requests to send email: ${sendMailRequestsErr.message}`,
+    );
+    throw sendMailRequestsErr;
+  }
+}
 
 /**
  * Index user's by placing their displayName into the users_public collection
@@ -49,6 +104,11 @@ async function indexUser(change, context) {
   const previousData = change.before.data();
   const newData = change.after.data();
 
+  // Only do this for new users.
+  if (!change.before.exists) {
+    await sendNewUserEmail(userId, newData);
+  }
+
   // Default to 'user' role and do not allow changing role for now.
   if (!previousData || previousData.role !== newData.role) {
     newData.role = 'user';
@@ -73,7 +133,7 @@ async function indexUser(change, context) {
 
     await privilegedProfileRef.set(
       {
-        displayName: newData.displayName,
+        displayName: newData.displayName || '',
         email: newData.email || '',
         firstName: newData.firstName || '',
         lastName: newData.lastName || '',

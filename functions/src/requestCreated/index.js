@@ -5,7 +5,9 @@ import { to } from 'utils/async';
 import {
   REQUESTS_COLLECTION,
   NOTIFICATIONS_SETTINGS_DOC,
+  MAIL_COLLECTION,
 } from 'constants/firestorePaths';
+import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
@@ -58,6 +60,7 @@ async function sendFcms(userUids) {
 async function requestCreatedEvent(snap, context) {
   const { params } = context;
   const requestData = snap.data();
+  requestData.id = snap.id;
   console.log('requestCreated onCreate event:', requestData, { params });
 
   // Load settings doc
@@ -75,6 +78,37 @@ async function requestCreatedEvent(snap, context) {
   // Notify all users in newRequests parameter of system_settings/notification document
   const { newRequests: userUids } = settingsDocSnap.data() || {};
   await sendFcms(userUids);
+
+  const projectId = getFirebaseConfig('projectId');
+  // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
+  const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
+
+  // Get list of UIDs to email based on notifications settings doc
+  const toUids = settingsDocSnap.get('newRequests');
+
+  const [sendMailRequestsErr] = await to(
+    admin
+      .firestore()
+      .collection(MAIL_COLLECTION)
+      .add({
+        toUids,
+        template: {
+          name: 'new-request',
+          data: {
+            requestData,
+            projectDomain,
+          },
+        },
+      }),
+  );
+
+  // Handle errors writing requests to send mail
+  if (sendMailRequestsErr) {
+    console.error(
+      `Error writing requests to send email: ${sendMailRequestsErr.message}`,
+    );
+    throw sendMailRequestsErr;
+  }
 
   // End function execution by returning
   return null;
