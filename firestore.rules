@@ -100,10 +100,14 @@ service cloud.firestore {
       allow create: if true;
 
       allow write: if
-        isSystemAdmin() || isOwnerOfRequest(resource) || hasRequestContactAccess(requestId);
+        isSystemAdmin() ||
+        isOwnerOfRequest(get(/databases/$(database)/documents/requests_public/$(requestId))) ||
+        hasRequestContactAccess(requestId);
 
       allow read: if
-        hasRequestContactAccess(get(/databases/$(database)/documents/requests_public/$(requestId))) ||
+        hasRequestContactAccess(
+          get(/databases/$(database)/documents/requests_public/$(requestId))
+        ) ||
         isSystemAdmin();
     }
 

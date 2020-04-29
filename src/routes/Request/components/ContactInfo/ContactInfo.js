@@ -152,6 +152,11 @@ function ContactDetails({ requestId }) {
         Email:{' '}
         {email ? <a href={`mailto:${email}`}>{email}</a> : 'Not provided'}
       </Typography>
+      {contactInfo.get('contactInfo') && (
+        <Typography variant="body2">
+          Contact Info: {contactInfo.get('contactInfo')}
+        </Typography>
+      )}
     </div>
   );
 }

@@ -98,7 +98,6 @@ export default function useNewRequestPage() {
       lastName: values.lastName,
       immediacy: values.immediacy,
       needs: values.needs,
-      createdBy: user.uid,
       status: 1,
       createdAt: FieldValue.serverTimestamp(),
       ...requestLocation,
@@ -114,10 +113,9 @@ export default function useNewRequestPage() {
       );
       const profile = (await userRef.get()).data();
       // TODO: Test and verify after confirming the sign-in workflow.
-      const pieces = user.displayName.split(' ');
+      let pieces = user.displayName.split(' ');
       if (pieces.length < 2) {
-        showError("Temporary name approach didn't work");
-        return;
+        pieces = [user.displayName, ''];
       }
       if (profile) {
         profile.displayName = user.displayName;
