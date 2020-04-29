@@ -68,8 +68,12 @@ function RequestPage() {
         maxWidth={false}>
         <Container>
           <Typography variant="h5" gutterBottom>
-            {requestPublicSnap.get('d.firstName')} &ndash;{' '}
-            {requestPublicSnap.get('d.generalLocationName')}
+            {requestPublicSnap.get('d.firstName')}{' '}
+            {/* {user &&
+              user.uid &&
+              requestPublicSnap.get('d.owner') === user.uid &&
+              `${requestPublicSnap.get('d.lastName')} `} */}
+            &ndash; {requestPublicSnap.get('d.generalLocationName')}
           </Typography>
         </Container>
       </Container>
