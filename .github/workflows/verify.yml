@@ -1,4 +1,4 @@
-name: Verify
+name: Verify App
 
 on: [pull_request]
 
@@ -15,19 +15,184 @@ jobs:
         with:
           node-version: 10
 
-      - name: Cache npm dependencies
+      - name: Get Library Versions For Binary Caching
+        id: cache-settings
+        run: |
+          echo "::set-output name=dir::$(yarn cache dir)"
+          echo "::set-output name=firebase-tools::$(yarn info firebase-tools version --silent)"
+
+      - name: Cache Firebase Emulator Binaries
         uses: actions/cache@v1
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-${{ steps.cache-settings.outputs.firebase-tools }}
+
+      - name: Cache App Dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.cache-settings.outputs.dir }}
+          key: ${{ runner.os }}-app-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Dependencies
         env:
           CI: true
+          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
-          npm ci
-          npm --prefix functions ci
+          yarn install --frozen-lockfile
+          yarn --cwd functions install --frozen-lockfile
+
+      - name: Set Environment Settings
+        run: |
+          echo "Setting emulator settings to environment..."
+          echo "::set-env name=REACT_APP_FIREBASE_DATABASE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.database.port)"
+          echo "::set-env name=REACT_APP_FIRESTORE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.firestore.port)"
 
       - name: Verify App
         run: |
-          npm run build:staging
+          yarn lint # Check for lint in app code
+          yarn build:staging # Build app bundles
+
+      - name: Verify Functions
+        run: |
+          yarn functions:build
+          yarn functions:test:cov
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
+
+      - name: Archive Build Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: build
+          path: build
+
+  ui-tests:
+    name: UI Tests
+    runs-on: ubuntu-16.04
+    needs: verify
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Get Library Versions For Binary Caching
+        id: cache-settings
+        run: |
+          echo "::set-output name=dir::$(yarn cache dir)"
+          echo "::set-output name=firebase-tools::$(yarn info firebase-tools version --silent)"
+          echo "::set-output name=cypress::$(yarn info cypress version --silent)"
+
+      - name: Cache App Dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.cache-settings.outputs.dir }}
+          key: ${{ runner.os }}-app-${{ hashFiles('yarn.lock') }}
+  
+      - name: Cache Firebase Emulator Binaries
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-${{ steps.cache-settings.outputs.firebase-tools }}
+
+      - name: Cache Cypress Binary
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ steps.cache-settings.outputs.cypress }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
+        run: |
+          yarn install --frozen-lockfile
+          $(yarn bin)/cypress verify
+
+      - name: Set Test Environment Settings
+        env:
+          MASTER_SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          NEXT_SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
+          NEXT_TEST_UID: ${{ secrets.NEXT_TEST_UID }}
+          MASTER_TEST_UID: ${{ secrets.MASTER_TEST_UID }}
+          PRODUCTION_TEST_UID: ${{ secrets.PRODUCTION_TEST_UID }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_REF: ${{ github.ref }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -o pipefail
+
+          export GIT_BRANCH=${GITHUB_REF##*/}
+          export GCLOUD_PROJECT=$(cat .firebaserc | jq -r --arg GIT_BRANCH "$GIT_BRANCH" '.projects[$GIT_BRANCH] // .projects.next')
+          echo "::set-env name=GCLOUD_PROJECT::$GCLOUD_PROJECT"
+          echo "Environment set for branch: $GIT_BRANCH and project: $GCLOUD_PROJECT"
+  
+          echo "Setting emulator settings to environment..."
+          export FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat firebase.json | jq .emulators.database.port)
+          export FIRESTORE_EMULATOR_HOST=localhost:$(cat firebase.json | jq .emulators.firestore.port)
+          echo "::set-env name=FIREBASE_DATABASE_EMULATOR_HOST::$FIREBASE_DATABASE_EMULATOR_HOST"
+          echo "::set-env name=FIRESTORE_EMULATOR_HOST::$FIRESTORE_EMULATOR_HOST"
+          echo "::set-env name=CYPRESS_BASE_URL::http://localhost:$(cat package.json | jq .config.port)"
+          echo "::set-env name=CYPRESS_FB_databaseURL::http://$FIREBASE_DATABASE_EMULATOR_HOST?ns=$GCLOUD_PROJECT"
+          echo "::set-env name=CYPRESS_GCLOUD_PROJECT::$GCLOUD_PROJECT"
+
+          branchPrefix=$(echo $gitBranch | tr a-z A-Z | tr - _)
+
+          # Get value of SERVICE_ACCOUNT associated with branch (i.e. STAGE_SERVICE_ACCOUNT)
+          branchSaKey="${branchPrefix}_SERVICE_ACCOUNT"
+          branchSa=$(eval echo \$${branchSaKey})
+          serviceAccount=$(if [ ! -z "${branchSa}" ]; then echo $branchSa; else echo $NEXT_SERVICE_ACCOUNT; fi;)
+          echo "::set-env name=SERVICE_ACCOUNT::$serviceAccount"
+          
+          # Generate Service Account file required to prevent credential error (jq used to format)
+          echo "Generating service account for projectId $(echo $serviceAccount | jq .project_id)"
+          echo "$(echo $serviceAccount | jq .)" > $HOME/serviceAccount.json
+          echo "::set-env name=GOOGLE_APPLICATION_CREDENTIALS::$HOME/serviceAccount.json"
+
+          # Get value of TEST_UID associated with branch (i.e. MASTER_TEST_UID)
+          branchTestUidKey="${branchPrefix}_TEST_UID"
+          branchTestUid=$(eval echo \$${branchTestUidKey})
+          testUid=$(if [ ! -z "${branchTestUid}" ]; then echo $branchTestUid; else echo $NEXT_TEST_UID; fi;)
+          echo "::set-env name=CYPRESS_TEST_UID::$testUid"
+
+          branchEnvFileName=env.$gitBranch
+          envFileName=$(if [ -f "$branchEnvFileName" ]; then echo $branchEnvFileName; else echo .env.next; fi;)
+          echo "Loading config from file $envFileName"
+          for v in `cat $envFileName` ; do echo "::set-env name=CYPRESS_${v%%=*}::${v##*=}" ; done
+
+      - name: Print Environment Variables Context
+        if: matrix.app != 'horchata'
+        run: |
+          echo Available ENV vars:
+          env | sort
+
+      # Download Built app since we are testing locally
+      - name: Download Build Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: build
+          path: build
+
+      # Cypress action manages installing/caching npm dependencies and Cypress binary.
+      # This stage tests a version of the app which is running locally in the
+      # container on port 3000.
+      - name: Cypress Run
+        uses: cypress-io/github-action@v1
+        with:
+          record: true
+          # we have already installed all dependencies above
+          install: false
+          browser: chrome
+          group: 'UI Tests'
+          start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
+          wait-on: http://localhost:3000
+          # wait for 3 minutes for the server to respond
+          wait-on-timeout: 180
+        env:
+          CI: true
+          # pass the Dashboard record key as an environment variable
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_KEY }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_REF: ${{ github.ref }}

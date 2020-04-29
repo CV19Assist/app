@@ -1,14 +1,143 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+    function isAuthor(res) {
+      return res.data.createdBy == request.auth.uid
+    }
+    function isOwner(res) {
+      return res.data.owner == request.auth.uid
     }
 
-    match /aggregates/unfulfilledNeedsInfo {
+    function isSystemAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system-admin';
+    }
+
+    function isOwnerOfRequest(res) {
+      return res.data.d.owner == request.auth.uid;
+    }
+
+    function hasRequestContactAccess(res) {
+      return request.auth.uid in res.data.d.usersWithContactInfoAccess
+    }
+
+    // Private user profiles
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      allow update: if request.resource.auth.uid == userId // is user associated with user object
+        && !request.resource.data.role; // does not contain the role parameter
+    }
+
+    // Semi-private User info which can be shared
+    match /users_privileged/{userId} {
+      // TODO: Add read support for sharing this
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Public user profiles
+    match /users_public/{userId} {
+      allow read;
+      allow write: if false; // only written to by indexUser cloud function
+    }
+
+    // Private request data
+    match /requests/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt; // createdAt is created timestamp
+      allow write: if isAuthor(resource) && request.time == request.resource.data.lastUpdatedAt;
+      // TODO: Make read require data on request
+      // allow read: if request.auth.uid in resource.data.usersWithContactInfoAccess || isAuthor(resource)
+      allow read: if
+        request.auth.uid != null &&
+        isOwnerOfRequest(get(/databases/$(database)/documents/requests_public/$(requestId)));
+    }
+
+    // function addingContactInfo() {
+    //     // If user requesting contact info.
+    //     // TODO: How do we prevent a user from requesting on someone else's behalf?
+    //     return (
+    //       request.resource.data.d.usersWithContactInfoAccess.hasAll(resource.data.d.usersWithContactInfoAccess) &&
+    //       request.resource.data.d.usersWithContactInfoAccess.hasAll([request.auth.uid]) &&
+    //       request.resource.data.d.usersWithContactInfoAccess.size() == resource.data.d.usersWithContactInfoAccess.size() + 1
+    //     )
+    // }
+
+    // TODO: Fix these rules
+    // Public request data
+    match /requests_public/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt // createdAt is created timestamp
+        && isAuthor(request.resource)
+        && request.resource.data.d.status == 1;
       allow read: if true;
-      allow write: if false;
+      allow list: if request.query.limit <= 60;
+      // TODO: Limit writes to adding one's self as an owner. Should the UI have a verify?
+      // allow write: if (isAuthor(resource) || isOwner(resource)) && request.time == request.resource.data.d.lastUpdatedAt;
+      allow write: if true;
     }
 
+    // Taking assignment of a request
+    // match /requests_public/{requestId} {
+    //   allow update: if 
+    //     request.auth.uid != null &&
+    //     resource.d.owner == null &&   // Not already assigned.
+    //     request.resource.data.size == 1 &&
+    //     request.resource.data.d.size == 3 &&
+    //     request.resource.data.d.owner == request.auth.uid &&
+    //     request.resource.data.d.ownerInfo.firstName == get(/databases/$(database)/documents/users/$(request.auth.uid)).firstName &&
+    //     request.resource.data.d.ownerInfo.displayName == get(/databases/$(database)/documents/users/$(request.auth.uid)).displayName &&
+    //     request.resource.data.d.lastUpdatedAt == request.time;
+    // }
+
+    // Public request actions
+    match /requests_actions/{requestId} {
+      // allow create: if isOwnerOfRequest(request.resource);
+      // TODO: Fix this
+      allow create;
+      allow read;
+    }
+
+    // Contact info for a request - requires contact info access
+    match /requests_contact/{requestId} {
+      // Anyone can submit a request.
+      allow create: if true;
+
+      allow write: if
+        isSystemAdmin() ||
+        isOwnerOfRequest(get(/databases/$(database)/documents/requests_public/$(requestId))) ||
+        hasRequestContactAccess(requestId);
+
+      allow read: if
+        hasRequestContactAccess(
+          get(/databases/$(database)/documents/requests_public/$(requestId))
+        ) ||
+        isSystemAdmin();
+    }
+
+    // Private discussions
+    match /requests_discussions/{commentId} {
+      allow read: if
+        isOwnerOfRequest(
+          get(/databases/$(database)/documents/requests_public/$(resource.data.requestId))
+        ) || isSystemAdmin();
+
+      allow create: if
+        isOwnerOfRequest(
+          get(/databases/$(database)/documents/requests_public/$(request.resource.data.requestId))
+        ) || isSystemAdmin() && (
+          request.auth.uid == request.resource.data.createdBy &&
+          request.time == request.resource.data.createdAt &&
+          request.resource.data.contentType == 'text'
+        );
+    }
+
+    // Public comments
+    match /requests_comments_public/{commentId} {
+      allow read: if true;
+      allow create: if isSystemAdmin();
+    }
+
+    // Contact requests
+    match /contacts/{requestId} {
+      allow create: if request.time == request.resource.data.createdAt;
+      allow read: if false;
+    }
   }
 }
