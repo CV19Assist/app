@@ -46,22 +46,6 @@ function scrambleLocation(center, radiusInMeters = 300) {
 }
 
 /**
- * Run promises in a waterfall instead of all the same time (Promise.all)
- * @param {Array} callbacks - List of promises to run in order
- * @return {Promise} Resolves when all promises have completed in order
- */
-async function promiseWaterfall(callbacks) {
-  return callbacks.reduce(async (accumulator, callback) => {
-    accumulator.then(
-      typeof callback === 'function' ? callback : () => callback,
-    );
-
-    // Add a slight delay to address Google Maps API rate limiting.
-    await new Promise((resolve) => setTimeout(resolve, 800));
-  }, Promise.resolve());
-}
-
-/**
  * Get general location name from
  * @param {number} latitude - Location latitude
  * @param {number} longitude - Location longitude
@@ -348,7 +332,12 @@ async function convertUsers() {
   }
   // Covert each user profile to new format in waterfall (one at a time)
   try {
-    await promiseWaterfall(profilesSnap.docs.map(convertUser));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const profileSnap of profilesSnap.docs) {
+      // eslint-disable-next-line no-await-in-loop
+      await convertUser(profileSnap);
+    }
+    // await promiseWaterfall(profilesSnap.docs.map(convertUser));
     console.log('Successfully converted users');
   } catch (err) {
     console.log(`Error converting userProfiles -> users: ${err.message}`);

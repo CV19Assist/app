@@ -57,7 +57,7 @@ function loadServiceAccount() {
     }
   }
   try {
-    return require(`${__dirname}/../serviceAccount.json`); // eslint-disable-line import/no-dynamic-require, global-require
+    return require(`${__dirname}/../../serviceAccount.json`); // eslint-disable-line import/no-dynamic-require, global-require
   } catch (err) {
     console.log(`Error loading service account from file: ${err.message}`);
     throw err;
