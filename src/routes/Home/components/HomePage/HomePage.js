@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import { useUser } from 'reactfire';
-import { NEW_REQUEST_PATH } from 'constants/paths';
+import { NEW_REQUEST_PATH, SEARCH_PATH, LOGIN_PATH } from 'constants/paths';
 import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
 
@@ -101,13 +101,23 @@ function Homepage() {
               <RequestsMap />
 
               <div className={classes.actionButtons}>
-                <Button
-                  component={Link}
-                  to="/search"
-                  variant="contained"
-                  color="primary">
-                  {user ? 'View Requests for Assistance' : 'Sign Up'}
-                </Button>
+                {user ? (
+                  <Button
+                    component={Link}
+                    to={SEARCH_PATH}
+                    variant="contained"
+                    color="primary">
+                    View Requests for Assistance
+                  </Button>
+                ) : (
+                  <Button
+                    component={Link}
+                    to={LOGIN_PATH}
+                    variant="contained"
+                    color="primary">
+                    Sign Up
+                  </Button>
+                )}
               </div>
             </Paper>
           </Grid>
