@@ -46,6 +46,7 @@ jobs:
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           yarn install --frozen-lockfile
+          yarn --cwd functions install --frozen-lockfile
           $(yarn bin)/cypress verify
 
       - name: Set Test Environment Settings
