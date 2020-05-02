@@ -20,6 +20,10 @@ service cloud.firestore {
       return request.auth.uid in res.data.d.usersWithContactInfoAccess
     }
 
+    function isLoggedIn() {
+      return request.auth.uid != null
+    }
+
     // Private user profiles
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
@@ -66,7 +70,7 @@ service cloud.firestore {
       allow create: if request.time == request.resource.data.createdAt // createdAt is created timestamp
         && isAuthor(request.resource)
         && request.resource.data.d.status == 1;
-      allow read: if true;
+      allow read: if isLoggedIn();
       allow list: if request.query.limit <= 60;
       // TODO: Limit writes to adding one's self as an owner. Should the UI have a verify?
       // allow write: if (isAuthor(resource) || isOwner(resource)) && request.time == request.resource.data.d.lastUpdatedAt;
