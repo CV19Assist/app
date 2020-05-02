@@ -19,7 +19,7 @@ describe('Request Page', () => {
   });
 
   it('Shows not found message if request does not exist', () => {
-    cy.get(createSelector('request-not-found')).should('exist');
+    cy.get(createSelector('request-not-found'), { timeout: 30000 }).should('exist');
   });
 
   // it.skip('Shows not found message if request does not exist', () => {
