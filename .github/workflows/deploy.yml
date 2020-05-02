@@ -92,6 +92,7 @@ jobs:
           packageName=$(cat package.json | jq -r '.name')
           packageVersion=$(cat package.json | jq -r '.version')
           gcloudProject=$(cat .firebaserc | jq -r --arg alias "$gitBranch" '.projects[$alias] // .projects.default')
+          echo "::set-env name=PACKAGE_VERSION::$packageVersion"
 
           echo Updating DB path \"/versionInfo/${packageName}/current\" value to version \"$packageVersion\"
 
@@ -118,3 +119,14 @@ jobs:
           export SERVICE_ACCOUNT=$(if [ ! -z "${branchServiceAccount}" ]; then echo $branchServiceAccount; else echo $MASTER_SERVICE_ACCOUNT; fi;)
           echo "Service Account selected for projectId $(echo $SERVICE_ACCOUNT | jq .project_id)"
           bin/updateEmailTemplates.js
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: v${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: false

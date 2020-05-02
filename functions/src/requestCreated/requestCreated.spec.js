@@ -25,6 +25,7 @@ const adminApp = firebaseTesting.initializeAdminApp({
   databaseName: projectId,
 });
 
+// Skipped since pubsub emulator returns "Failed to parse target 8085:undefined"
 describe.skip('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   beforeEach(async () => {
     // Clean database before each test
