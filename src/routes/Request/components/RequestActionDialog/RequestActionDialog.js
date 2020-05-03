@@ -115,7 +115,7 @@ function RequestActionDialog({
   }
 
   return (
-    <Dialog open={open} maxWidth="md" data-test="requsetActionDialog">
+    <Dialog open={open} maxWidth="md" data-test="request-action-dialog">
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogTitle>
           {actionType === 'release' && 'Release'}
@@ -181,6 +181,7 @@ function RequestActionDialog({
               fullWidth
               multiline
               margin="dense"
+              data-test="request-action-comment"
               inputRef={register({ required: true })}
             />
           )}
@@ -191,7 +192,7 @@ function RequestActionDialog({
             type="submit"
             color="primary"
             disabled={isSubmitting}
-            data-test="submit-button">
+            data-test="request-action-submit-button">
             {actionType === 'complete' && 'Complete'}
             {actionType === 'release' && 'Release'}
             {actionType === 'accept' && 'OK'}

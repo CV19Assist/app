@@ -152,6 +152,7 @@ function RequestActions({ requestPublicSnapshot }) {
             onClick={() => setShowAcceptanceWorkflow(true)}
             variant="contained"
             color="primary"
+            data-test="request-assign-button"
             startIcon={<AcceptIcon />}>
             Assign to me
           </Button>
