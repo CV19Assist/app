@@ -29,7 +29,7 @@ function authedApp(auth) {
  * ============
  */
 
-const TEST_UID = "UID123";
+const TEST_UID = process.env.TEST_UID ? process.env.TEST_UID : "UID123";
 
 beforeEach(async () => {
   // Clear the database between tests
@@ -46,15 +46,33 @@ after(async () => {
 });
 
 describe("CV19Assist app", () => {
-  it("require users to log in before reading or writing profile", async () => {
+  it("prevent un-authenticated user from creating profile", async () => {
     let db = authedApp(null);
     let user_profile = db.collection("users").doc(TEST_UID);
     await firebase.assertFails(user_profile.set({ lastName: "Smith" }));
-    db = authedApp({uid: TEST_UID});
-    user_profile = db.collection("users").doc(TEST_UID);
+  });
+  it("allow authenticated user to create profile", async () => {
+    let db = authedApp({uid: TEST_UID});
+    let user_profile = db.collection("users").doc(TEST_UID);
     await firebase.assertSucceeds(user_profile.set({ lastName: "Smith" }));
   });
-
+  it("prevent un-authenticated user from reading profile", async () => {
+    let db = authedApp({uid: TEST_UID});
+    let user_profile = db.collection("users").doc(TEST_UID);
+    await user_profile.set({ lastName: "Smith" });
+    db = authedApp(null);
+    user_profile = db.collection("users").doc(TEST_UID);
+    await firebase.assertFails(user_profile.get());
+  });
+  it("allow authenticated user to read profile", async () => {
+    let db = authedApp({uid: TEST_UID});
+    let user_profile = db.collection("users").doc(TEST_UID);
+    await user_profile.set({ lastName: "Smith" });
+    db = authedApp({uid: TEST_UID});
+    user_profile = db.collection("users").doc(TEST_UID);
+    await firebase.assertSucceeds(user_profile.get());
+  });
+      
 //   it("should enforce the createdAt date in user profiles", async () => {
 //     const db = authedApp({ uid: "alice" });
 //     const profile = db.collection("users").doc("alice");

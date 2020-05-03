@@ -25,8 +25,8 @@
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
     "emulators": "firebase emulators:start --only firestore,database",
     "emulators:all": "firebase emulators:start --only firestore,database,hosting",
-    "test-firestore": "firebase emulators:exec --only firestore,database \"npm run test-firestore:base\"",
-    "test-firestore:base": "cross-env FIRESTORE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=$(cat ./firebase.json | jq '.emulators.pubsub.port') mocha --timeout 10000 ./firestore-test/*.js",
+    "test-rules": "firebase emulators:exec --only firestore,database \"npm run test-rules:base\"",
+    "test-rules:base": "cross-env FIRESTORE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=$(cat ./firebase.json | jq '.emulators.pubsub.port') mocha --timeout 10000 ./rules-tests/*.js",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --single-quote --no-semi --trailing-comma none --write \"src/**/*.js\""
