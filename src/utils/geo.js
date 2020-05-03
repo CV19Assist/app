@@ -76,3 +76,32 @@ export function scrambleLocation(center, radiusInMeters) {
 export function kmToMiles(km) {
   return km / KM_TO_MILES;
 }
+
+/**
+ * Returns the reverse geocoded results for the given latitude and logitude values using Google
+ * Maps api. This assumes that the Google Maps API is already loaded and available globally as
+ * window.google.maps.
+ * @param {Number} latitude Latitude
+ * @param {Number} longitude Latitude
+ */
+export async function reverseGeocode(latitude, longitude) {
+  if (!window.google?.maps?.Geocoder) {
+    // eslint-disable-next-line no-console
+    console.error('Google Maps API not found.');
+    return null;
+  }
+
+  return new Promise((resolve, reject) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        if (status !== window.google.maps.GeocoderStatus.OK) {
+          reject(status);
+        } else {
+          resolve({ status, results });
+        }
+      },
+    );
+  });
+}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import Geocode from 'react-geocode';
 import {
   GoogleMap,
   LoadScript,
@@ -15,13 +14,11 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import { useNotifications } from 'modules/notification';
-import { scrambleLocation } from 'utils/geo';
+import { scrambleLocation, reverseGeocode } from 'utils/geo';
 import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } from 'constants/geo';
 import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
-Geocode.setApiKey(process.env.REACT_APP_FIREBASE_API_KEY);
-Geocode.setRegion('us');
 
 function SelectedLocationMarker({
   position: { latitude: lat, longitude: lng },
@@ -83,16 +80,12 @@ function ClickableMap({ onLocationChange, locationInfo }) {
     const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
     // Detect locality
     try {
-      const response = await Geocode.fromLatLng(
+      const response = await reverseGeocode(
         location.latitude,
         location.longitude,
       );
-      if (response.status === 'ZERO_RESULTS') {
+      if (response.status === window.google.maps.GeocoderStatus.ZERO_RESULTS) {
         showError('Could not find the locality.');
-        return;
-      }
-      if (response.status !== 'OK') {
-        showError(`Geocoding error: ${response.status}`);
         return;
       }
       const [result] = response.results;
