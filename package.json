@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "The spread of Coronavirus (COVID-19) is having a huge impact on our lives, especially those at high risk. It is more important now than ever for us to come together and support our communities, whether it be material support or emotional support. Our goal is to connect those in need with those that are able to help and spread positive vibes.",
   "main": "index.js",
   "scripts": {
