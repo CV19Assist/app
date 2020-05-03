@@ -26,9 +26,16 @@ function initStackdriverErrorReporter() {
  */
 function initSentry() {
   if (process.env.REACT_APP_SENTRY_DSN) {
-    const [, environment] = /cv19assist-(.*)\.web.app/g.exec(
-      window.location.hostname,
-    );
+    let environment = '';
+    if (window.location.hostname === 'cv19assist.com') {
+      environment = 'production';
+    } else if (/cv19assist-(.*)\.web.app/g.test(window.location.hostname)) {
+      [, environment] = /cv19assist-(.*)\.web.app/g.exec(
+        window.location.hostname,
+      );
+    } else {
+      environment = `unknown-${window.location.hostname}`;
+    }
     Sentry.init({
       dsn: process.env.REACT_APP_SENTRY_DSN,
       environment,
