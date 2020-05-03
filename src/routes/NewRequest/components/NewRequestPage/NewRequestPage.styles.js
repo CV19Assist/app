@@ -6,7 +6,6 @@ export default (theme) => ({
     paddingBottom: theme.spacing(3),
   },
   paper: {
-    // paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(1),
   },
   optionalDivider: {
@@ -29,5 +28,8 @@ export default (theme) => ({
   },
   radio: {
     marginLeft: theme.spacing(1),
+  },
+  warrantyInfo: {
+    marginTop: theme.spacing(4),
   },
 });
