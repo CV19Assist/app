@@ -1,4 +1,4 @@
-# CV19Assist App
+# COVID-19 Assist App
 
 [![Build Status][build-status-image]][build-status-url]
 [![Coverage][coverage-image]][coverage-url]
@@ -14,8 +14,8 @@
 1. [Config Files](#config-files)
 1. [Application Structure](#application-structure)
 1. [Routing](#routing)
-   1. [Async Routes](#async-routes)
-   1. [Sync Routes](#sync-routes)
+   1. [Route Types](#route-types)
+   1. [Routes Requiring Auth](#routes-requiring-auth)
 1. [Testing](#testing)
    1. [UI Tests](#ui-tests)
    1. [Functions Unit Tests](#functions-unit-tests)
@@ -43,6 +43,10 @@ While developing, you will probably rely mostly on `yarn start`; however, there 
 | `start:dist`    | Builds the application to `./dist` then serves at `localhost:3000` using firebase hosting emulator                      |
 | `start:emulate` | Same as `start`, but pointed to database emulators (make sure to call `emulators` first to boot up emulators)           |
 | `build`         | Builds the application to `./dist`                                                                                      |
+| `emulators`     | Firebase database emulators                                                                                             |
+| `functions:test`| Start Firebase database emulators and run functions tests                                                               |
+| `functions:test:cov`| Start Firebase database emulators, run functions tests, and generate code coverage                                  |
+| `functions:test:base`| Run functions tests (requires `yarn emulators` to be running already)                                              |
 | `test`          | Runs ui tests with Cypress. See [testing](#testing)                                                                     |
 | `test:open`     | Opens ui tests runner (Cypress Dashboard). See [testing](#testing)                                                      |
 | `test:emulate`  | Same as `test:open` but with tests pointed at emulators                                                                 |
@@ -108,9 +112,11 @@ The application structure presented in this boilerplate is **fractal**, where fu
 
 We use `react-router-dom` [route matching](https://reacttraining.com/react-router/web/guides/basic-components/route-matching) (`<route>/index.js`) to define units of logic within our application. The application routes are defined within `src/routes/index.js`, which loads route settings which live in each route's `index.js`. The component with the suffix `Page` is the top level component of each route (i.e. `HomePage` is the top level component for `Home` route).
 
+### Route Types
+
 There are two types of routes definitions:
 
-### Sync Routes
+#### Sync Routes
 
 The most simple way to define a route is a simple object with `path` and `component`:
 
@@ -126,7 +132,7 @@ export default {
 };
 ```
 
-### Async Routes
+#### Async Routes
 
 Routes can also be seperated into their own bundles which are only loaded when visiting that route, which helps decrease the size of your main application bundle. Routes that are loaded asynchronously are defined using `loadable` function which uses `React.lazy` and `React.Suspense`:
 
@@ -147,6 +153,26 @@ export default {
 With this setting, the name of the file (called a "chunk") is defined as part of the code as well as a loading spinner showing while the bundle file is loading.
 
 More about how routing works is available in [the react-router-dom docs](https://reacttraining.com/react-router/web/guides/quick-start).
+
+### Routes Requiring Authentication
+
+Routes can require that the user is authenticated before visiting the route. In the case that the user is not authenticated, they will be redirected the the login page.
+
+_src/routes/Account/index.js_
+
+```js
+import loadable from "utils/components";
+import { ACCOUNT_PATH as path } from "constants/paths"
+
+export default {
+  path,
+  // Auth is required for page to load, otherwise redirects to login page
+  authRequired: true,
+  component: loadable(() =>
+    import(/* webpackChunkName: 'Account' */ "./components/AccountPage")
+  ),
+};
+```
 
 ## Testing
 
@@ -180,7 +206,7 @@ Mocha/Chai are used to run Functions unit tests. Unit tests are run against Fire
 
 Build code before deployment by running `yarn build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
 
-Before starting make sure to install Firebase Command Line Tool: `yarn i -g firebase-tools`
+Before starting make sure to install Firebase Command Line Tool: `npm i -g firebase-tools`
 
 #### CI Deploy (recommended)
 
@@ -207,7 +233,7 @@ For more options on CI settings checkout the [firebase-ci docs](https://github.c
 
 1. Why node `10` instead of a newer version?
 
-[Cloud Functions runtime runs on `10`](https://cloud.google.com/functions/docs/writing/#the_cloud_functions_runtime), which is why that is what is used for the CI build version.
+    [Cloud Functions runtime runs on `10`](https://cloud.google.com/functions/docs/writing/#the_cloud_functions_runtime), which is why that is what is used for the CI build version.
 
 [build-status-image]: https://img.shields.io/github/workflow/status/CV19Assist/app/Deploy?style=flat-square
 [build-status-url]: https://github.com/CV19Assist/app/actions

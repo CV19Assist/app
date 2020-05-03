@@ -49,7 +49,8 @@ describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
       .set(notificationSettings, { merge: true });
   });
 
-  it('adds user to users_public on create event', async () => {
+  it('adds user to users_public on create event', async function () {
+    this.retries(3);
     // Build a Firestore create event object on users path
     const beforeSnap = functionsTest.firestore.makeDocumentSnapshot(
       null,
