@@ -65,6 +65,7 @@ describe('New Request Page', () => {
       );
     });
   });
+
   it('Sets needs from the type query param', () => {
     cy.visit('/new-request?type=grocery-pickup');
     cy.get(createSelector('need-other')).find('input').should('not.be.checked');
@@ -77,7 +78,8 @@ describe('New Request Page', () => {
     before(() => {
       cy.login();
     });
-    it.only('Includes createdBy in request objects', () => {
+
+    it('Includes createdBy in new request object', () => {
       const phoneNumber = '123-456-7890';
       const email = 'test@example.com';
       cy.get(createSelector('need-other')).click();
@@ -88,6 +90,19 @@ describe('New Request Page', () => {
       cy.get(createSelector('phone')).type(phoneNumber);
       cy.get(createSelector('email')).type(email);
       cy.get(createSelector('submit-request')).click();
+      cy.waitUntil(() =>
+        cy
+          .callFirestore('get', 'requests', {
+            orderBy: ['createdAt', 'desc'],
+            limit: 1,
+          })
+          .then(
+            (requests) =>
+              requests &&
+              requests.length &&
+              requests[0].createdBy === Cypress.env('TEST_UID'),
+          ),
+      );
       cy.callFirestore('get', 'requests', {
         orderBy: ['createdAt', 'desc'],
         limit: 1,

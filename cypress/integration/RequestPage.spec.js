@@ -200,7 +200,7 @@ describe('Request Page', () => {
       });
     });
 
-    it.only('Allows admins to make a private comment on the request', () => {
+    it('Allows admins to make a private comment on the request', () => {
       // Set current user to super-admin role
       cy.callFirestore(
         'set',
