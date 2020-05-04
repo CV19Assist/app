@@ -4,71 +4,8 @@ on: [pull_request]
 
 jobs:
   verify:
-    name: Verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 10
-
-      - name: Get Library Versions For Binary Caching
-        id: cache-settings
-        run: |
-          echo "::set-output name=dir::$(yarn cache dir)"
-          echo "::set-output name=firebase-tools::$(yarn info firebase-tools version --silent)"
-
-      - name: Cache Firebase Emulator Binaries
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/firebase/emulators
-          key: ${{ runner.os }}-firebase-${{ steps.cache-settings.outputs.firebase-tools }}
-
-      - name: Cache App Dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.cache-settings.outputs.dir }}
-          key: ${{ runner.os }}-app-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install Dependencies
-        env:
-          CI: true
-          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
-          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
-        run: |
-          yarn install --frozen-lockfile
-          yarn --cwd functions install --frozen-lockfile
-
-      - name: Set Environment Settings
-        run: |
-          echo "Setting emulator settings to environment..."
-          echo "::set-env name=REACT_APP_FIREBASE_DATABASE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.database.port)"
-          echo "::set-env name=REACT_APP_FIRESTORE_EMULATOR_HOST::localhost:$(cat firebase.json | jq .emulators.firestore.port)"
-
-      - name: Verify App
-        run: |
-          yarn lint # Check for lint in app code
-          yarn build:staging # Build app bundles
-
-      - name: Verify Functions
-        run: |
-          yarn functions:build
-          yarn functions:test:cov
-          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
-
-      - name: Archive Build Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: build
-          path: build
-
-  ui-tests:
-    name: UI Tests
+    name: Verify + Test
     runs-on: ubuntu-16.04
-    needs: verify
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
@@ -109,6 +46,7 @@ jobs:
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           yarn install --frozen-lockfile
+          yarn --cwd functions install --frozen-lockfile
           $(yarn bin)/cypress verify
 
       - name: Set Test Environment Settings
@@ -132,6 +70,8 @@ jobs:
           echo "Setting emulator settings to environment..."
           export FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat firebase.json | jq .emulators.database.port)
           export FIRESTORE_EMULATOR_HOST=localhost:$(cat firebase.json | jq .emulators.firestore.port)
+          echo "::set-env name=REACT_APP_FIREBASE_DATABASE_EMULATOR_HOST::$FIREBASE_DATABASE_EMULATOR_HOST"
+          echo "::set-env name=REACT_APP_FIRESTORE_EMULATOR_HOST::$FIRESTORE_EMULATOR_HOST"
           echo "::set-env name=FIREBASE_DATABASE_EMULATOR_HOST::$FIREBASE_DATABASE_EMULATOR_HOST"
           echo "::set-env name=FIRESTORE_EMULATOR_HOST::$FIRESTORE_EMULATOR_HOST"
           echo "::set-env name=CYPRESS_BASE_URL::http://localhost:$(cat package.json | jq .config.port)"
@@ -168,12 +108,16 @@ jobs:
           echo Available ENV vars:
           env | sort
 
-      # Download Built app since we are testing locally
-      - name: Download Build Artifact
-        uses: actions/download-artifact@master
-        with:
-          name: build
-          path: build
+      - name: Verify App
+        run: |
+          yarn lint # Check for lint in app code
+          yarn build:staging # Build app bundles
+
+      - name: Verify Functions
+        run: |
+          yarn functions:build
+          yarn functions:test:cov
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
 
       # Cypress action manages installing/caching npm dependencies and Cypress binary.
       # This stage tests a version of the app which is running locally in the
@@ -187,7 +131,7 @@ jobs:
           browser: chrome
           group: 'UI Tests'
           start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
-          wait-on: http://localhost:3000
+          wait-on: ${{ env.CYPRESS_BASE_URL }}
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
         env:

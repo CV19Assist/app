@@ -8,7 +8,7 @@ module.exports = {
   },
   settings: {
     react: {
-      version: '16.12'
+      version: '16.13'
     },
     'import/resolver': {
       node: {
@@ -42,6 +42,56 @@ module.exports = {
     ]
   },
   overrides: [
+    {
+      files: ['./functions/**'],
+      'extends': ['plugin:jsdoc/recommended'],
+      plugins: ['jsdoc'],
+      settings: {
+        'import/resolver': {
+          node: {
+            moduleDirectory: ['functions/node_modules', 'functions/']
+          }
+        }
+      },
+      rules: {
+        'no-console': 0,
+        'jsdoc/newline-after-description': 0
+      }
+    },
+    {
+      files: ['functions/src/**/*.spec.js'],
+      env: {
+        mocha: true
+      },
+      globals: {
+        functionsTest: true,
+        projectId: true,
+        expect: true,
+        sinon: true
+      },
+      rules: {
+        'no-console': 0,
+        'func-names': 0,
+        'import/no-dynamic-require': 0,
+        'no-unused-expressions': 0,
+        'import/prefer-default-export': 0
+      }
+    },
+    {
+      files: ['functions/scripts/**.js'],
+      env: {
+        mocha: true
+      },
+      globals: {
+        functionsTest: true,
+        projectId: true,
+        expect: true,
+        sinon: true
+      },
+      rules: {
+        'import/no-extraneous-dependencies': 0
+      }
+    },
     {
       files: ['./public/firebase-messaging-sw.js'],
       env: {
