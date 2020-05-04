@@ -51,8 +51,7 @@ function CommentList({ requestId }) {
         const dataQuery = firestore
           .collection(`${REQUESTS_DISCUSSIONS_COLLECTION}`)
           .where('requestId', '==', requestId)
-          .orderBy('createdAt', 'asc')
-          .limit(1);
+          .orderBy('createdAt', 'asc');
         // Call it once because this will throw the permission exception.
         await dataQuery.get();
         setQuery(dataQuery); // Setting this will trigger the subscription useEffect.
