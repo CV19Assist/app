@@ -15,6 +15,7 @@ describe('Request Page', () => {
     //   createdBy: Cypress.env('TEST_UID'),
     // };
     // cy.callFirestore('set', `requests/${requestId}`, requestObj);
+    cy.logout()
     cy.visit(`/requests/${requestId}`);
   });
 
