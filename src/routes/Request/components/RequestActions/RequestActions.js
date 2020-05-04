@@ -80,6 +80,7 @@ function RequestActions({ requestPublicSnapshot }) {
           <Button
             variant="outlined"
             className={classes.actionButton}
+            data-test="request-release-button"
             onClick={() => setShowReleaseWorkflow(true)}
             startIcon={<ReleaseIcon />}>
             RELEASE
@@ -90,6 +91,7 @@ function RequestActions({ requestPublicSnapshot }) {
             className={classes.actionButton}
             variant="contained"
             color="primary"
+            data-test="request-complete-button"
             onClick={() => setShowCompletionWorkflow(true)}
             startIcon={<CompleteIcon />}>
             COMPLETE

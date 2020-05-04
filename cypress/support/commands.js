@@ -2,6 +2,7 @@ import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'cypress-wait-until';
 import { attachCustomCommands } from 'cypress-firebase';
 
 const projectId =
