@@ -120,7 +120,12 @@ jobs:
           echo "Service Account selected for projectId $(echo $SERVICE_ACCOUNT | jq .project_id)"
           bin/updateEmailTemplates.js
 
+      - name: Check if version has been updated
+        id: check
+        uses: EndBug/version-check@v1
+
       - name: Create Release
+        if: steps.check.outputs.changed == 'true'
         id: create_release
         uses: actions/create-release@latest
         env:
