@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { useUser } from 'reactfire';
+import { useFirestore, useUser, useFirestoreDoc } from 'reactfire';
 import { Alert } from '@material-ui/lab';
 import { LOGIN_PATH } from 'constants/paths';
 import { Button, Grid, Typography, makeStyles } from '@material-ui/core';
@@ -11,6 +11,7 @@ import {
   RemoveCircleOutline as ReleaseIcon,
   Add as LoginIcon,
 } from '@material-ui/icons';
+import { USERS_COLLECTION } from 'constants/collections';
 import RequestActionDialog from '../RequestActionDialog';
 import styles from './RequestActions.styles';
 
@@ -23,7 +24,10 @@ function RequestActions({ requestPublicSnapshot }) {
   const [showAcceptanceWorkflow, setShowAcceptanceWorkflow] = useState(false);
   const [showReleaseWorkflow, setShowReleaseWorkflow] = useState(false);
   const [showCompletionWorkflow, setShowCompletionWorkflow] = useState(false);
-
+  const firestore = useFirestore();
+  const userProfileSnap = useFirestoreDoc(
+    firestore.doc(`${USERS_COLLECTION}/${user.uid}`),
+  );
   let body = null;
   const status = requestPublicSnapshot.get('d.status');
 
@@ -58,7 +62,11 @@ function RequestActions({ requestPublicSnapshot }) {
         </Button>
       </Grid>
     );
-  } else if (user && user.uid === requestPublicSnapshot.get('d.owner')) {
+  } else if (
+    user &&
+    (user.uid === requestPublicSnapshot.get('d.owner') ||
+      userProfileSnap.get('role') === 'system-admin')
+  ) {
     // Logged, assigned to current user.
     body = (
       <>

@@ -123,7 +123,11 @@ function CommentEntry({ requestId }) {
   }
 
   if (!showForm) {
-    return <Button onClick={() => setShowForm(true)}>Add Comment</Button>;
+    return (
+      <Button onClick={() => setShowForm(true)} data-test="add-public-comment">
+        Add Comment
+      </Button>
+    );
   }
 
   async function onSubmit(values) {
@@ -170,6 +174,7 @@ function CommentEntry({ requestId }) {
         color="primary"
         variant="contained"
         type="submit"
+        data-test="submit-public-comment"
         disabled={isSubmitting}>
         Add Comment
       </Button>

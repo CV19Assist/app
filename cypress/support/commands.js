@@ -9,7 +9,9 @@ const projectId =
   Cypress.env('GCLOUD_PROJECT') || Cypress.env('FIREBASE_PROJECT_ID');
 
 const fbConfig = {
-  apiKey: Cypress.env('FIREBASE_API_KEY'),
+  apiKey:
+    Cypress.env('FIREBASE_API_KEY') ||
+    Cypress.env('REACT_APP_FIREBASE_API_KEY'),
   authDomain: `${projectId}.firebaseapp.com`,
   databaseURL:
     Cypress.env('FB_databaseURL') || `https://${projectId}.firebaseio.com`,

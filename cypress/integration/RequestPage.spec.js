@@ -9,6 +9,7 @@ describe('Request Page', () => {
       cy.get(createSelector('request-not-found')).should('exist');
     });
   });
+
   describe('with auth', () => {
     const phone = '123-456-7890';
     const email = 'test@example.com';
@@ -120,55 +121,145 @@ describe('Request Page', () => {
       });
     });
 
-    it.skip('Supports closing a request once completed', () => {
+    it('Supports closing a request once completed', () => {
+      // Confirm that correct data is written to Request
+      cy.callFirestore('set', publicPath, {
+        d: { status: 10, owner: Cypress.env('TEST_UID') },
+      });
       cy.get(createSelector('request-complete-button')).click();
       cy.get(createSelector('request-action-dialog')).should('exist');
       cy.get(createSelector('request-action-comment')).type('test');
       cy.get(createSelector('request-action-submit-button')).click();
-      // Confirm that correct data is written to Firestore
+      // Wait for Firestore update to occur before continuing
+      cy.waitUntil(() =>
+        cy
+          .callFirestore('get', publicPath)
+          .then((request) => request.d && request.d.status === 20),
+      );
+      // Confirm that correct data is written to request
       cy.callFirestore('get', publicPath).then((request) => {
-        cy.log('request', request);
         expect(request).to.have.nested.property(
           'd.owner',
           Cypress.env('TEST_UID'),
         );
-        expect(request).to.have.nested.property('d.status', 1); // switch status back
-        expect(request).to.have.nested.property('d.ownerInfo.takenAt');
+        expect(request).to.have.nested.property('d.status', 20);
       });
       // Confirm that request action is created
       cy.callFirestore('get', 'requests_actions', {
         where: ['requestId', '==', requestId],
+        orderBy: ['createdAt', 'desc'],
       }).then((requestActions) => {
         const [requestAction] = requestActions;
         expect(requestAction).to.have.property(
           'createdBy',
           Cypress.env('TEST_UID'),
         );
-        expect(requestAction).to.have.property('kind', 5); // took ownership
+        expect(requestAction).to.have.property('kind', 20); // request complete
       });
       // Confirm that request discussion is created
       cy.callFirestore('get', 'requests_discussions', {
         where: ['requestId', '==', requestId],
+        orderBy: ['createdAt', 'desc'],
       }).then((requestActions) => {
         const [requestAction] = requestActions;
         expect(requestAction).to.have.property(
           'createdBy',
           Cypress.env('TEST_UID'),
         );
-        expect(requestAction).to.have.property('kind', 5); // took ownership
+        expect(requestAction).to.have.property('kind', 20); // request complete
       });
     });
 
-    it.skip('Allows admins to make a private comment on the request', () => {
-      cy.get(createSelector('request-info')).should('exist');
+    it('Allows owner to make private comment on the request', () => {
+      const requestObj = {
+        status: 10,
+        owner: Cypress.env('TEST_UID'),
+      };
+      cy.callFirestore('update', `requests/${requestId}`, requestObj);
+      cy.callFirestore('update', publicPath, {
+        d: requestObj,
+      });
+      cy.get(createSelector('add-private-comment')).scrollIntoView().click();
+      const testComment = 'test comment';
+      cy.get(createSelector('private-comment-input')).type(testComment);
+      cy.get(createSelector('submit-private-comment')).click();
+      cy.get(createSelector('private-comment')).should('have.length.gte', 2);
+      // Confirm that request discussion is created
+      cy.callFirestore('get', 'requests_discussions', {
+        where: ['requestId', '==', requestId],
+        orderBy: ['createdAt', 'desc'],
+        limit: 1,
+      }).then(([requestAction]) => {
+        expect(requestAction).to.have.property(
+          'createdBy',
+          Cypress.env('TEST_UID'),
+        );
+        expect(requestAction).to.have.property('kind', 1);
+        expect(requestAction).to.have.property('content', testComment);
+        expect(requestAction).to.have.property('contentType', 'text');
+      });
     });
 
+    it.only('Allows admins to make a private comment on the request', () => {
+      // Set current user to super-admin role
+      cy.callFirestore(
+        'set',
+        `users/${Cypress.env('TEST_UID')}`,
+        {
+          role: 'system-admin',
+        },
+        { merge: true },
+      );
+      const requestObj = {
+        status: 10,
+        createdBy: 'BCD234',
+        owner: 'ABC123',
+      };
+      cy.callFirestore('set', `requests/${requestId}`, requestObj, {
+        merge: true,
+      });
+      cy.callFirestore(
+        'set',
+        publicPath,
+        {
+          d: requestObj,
+        },
+        { merge: true },
+      );
+      cy.get(createSelector('add-private-comment')).scrollIntoView().click();
+      const testComment = 'test comment';
+      cy.get(createSelector('private-comment-input')).type(testComment);
+      cy.get(createSelector('submit-private-comment')).click();
+      // Displays the comment in the list
+      cy.get(createSelector('private-comment')).should('have.length.gte', 2);
+      // Confirm that request discussion is created
+      cy.callFirestore('get', 'requests_discussions', {
+        where: ['requestId', '==', requestId],
+        orderBy: ['createdAt', 'desc'],
+        limit: 1,
+      }).then(([requestAction]) => {
+        expect(requestAction).to.have.property(
+          'createdBy',
+          Cypress.env('TEST_UID'),
+        );
+        expect(requestAction).to.have.property('kind', 1);
+        expect(requestAction).to.have.property('content', testComment);
+        expect(requestAction).to.have.property('contentType', 'text');
+      });
+    });
+
+    // Skipped since this is not currently supported in the UI
     it.skip('Allows request creator to make private comment on the request', () => {
-      cy.get(createSelector('request-info')).should('exist');
-    });
-
-    it.skip('Allows owner to make private comment on the request', () => {
-      cy.get(createSelector('request-info')).should('exist');
+      const requestObj = {
+        createdBy: Cypress.env('TEST_UID'),
+        status: 10,
+        owner: 'ABC123',
+      };
+      cy.callFirestore('update', `requests/${requestId}`, requestObj);
+      cy.callFirestore('update', publicPath, {
+        d: requestObj,
+      });
+      cy.get(createSelector('add-private-comment')).click();
     });
   });
 });
