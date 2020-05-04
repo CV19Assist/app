@@ -1,17 +1,20 @@
-const firebase = require("@firebase/testing");
-const fs = require("fs");
+const firebase = require('@firebase/testing');
+const fs = require('fs');
+
+/* eslint-env node, mocha */
 
 /*
  * ============
  *    Setup
  * ============
  */
-const projectId = "cv19assist-firestore-testing";
-const firebasePort = require("../firebase.json").emulators.firestore.port;
-const port = firebasePort /** Exists? */ ? firebasePort : 8080;
+const projectId = 'cv19assist-firestore-testing';
+const firebasePort = require('../firebase.json').emulators.firestore.port;
+
+const port = firebasePort || 8080;
 const coverageUrl = `http://localhost:${port}/emulator/v1/projects/${projectId}:ruleCoverage.html`;
 
-const rules = fs.readFileSync("./firestore.rules", "utf8");
+const rules = fs.readFileSync('./firestore.rules', 'utf8');
 
 /**
  * Creates a new app with authentication data matching the input.
@@ -32,8 +35,8 @@ function adminApp(auth) {
  * ============
  */
 
-const TEST_UID = "UID123";
-const TEST_UID2 = "UID456";
+const TEST_UID = 'UID123';
+const TEST_UID2 = 'UID456';
 
 beforeEach(async () => {
   // Clear the database between tests
@@ -45,120 +48,118 @@ before(async () => {
 });
 
 after(async () => {
-  await Promise.all(firebase.apps().map(app => app.delete()));
-  console.log(`View rule coverage information at ${coverageUrl}\n`);
+  await Promise.all(firebase.apps().map((app) => app.delete()));
+  console.log(`View rule coverage information at ${coverageUrl}\n`); // eslint-disable-line no-console
 });
 
-describe("CV19Assist app", () => {
-
+describe('CV19Assist app', () => {
   // users
-  it("prevents un-authenticated user from creating profile", async () => {
-    let db = authedApp(null);
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ lastName: "Smith" }));
+  it('prevents un-authenticated user from creating profile', async () => {
+    const db = authedApp(null);
+    const usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ lastName: 'Smith' }));
   });
-  it("allows authenticated user to create profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.set({ lastName: "Smith" }));
+  it('allows authenticated user to create profile', async () => {
+    const db = authedApp({ uid: TEST_UID });
+    const usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.set({ lastName: 'Smith' }));
   });
   it("doesn't allow a different user to create profile", async () => {
-    let db = authedApp({uid: TEST_UID2});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ lastName: "Smith" }));
+    const db = authedApp({ uid: TEST_UID2 });
+    const usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ lastName: 'Smith' }));
   });
-  it("prevents un-authenticated user from reading profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
+  it('prevents un-authenticated user from reading profile', async () => {
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
     db = authedApp(null);
-    user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertFails(user_profile.get());
+    usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.get());
   });
-  it("allows authenticated user to read profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
-    db = authedApp({uid: TEST_UID});
-    user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.get());
+  it('allows authenticated user to read profile', async () => {
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
+    db = authedApp({ uid: TEST_UID });
+    usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.get());
   });
   it("doesn't allow another user to read profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
-    db = authedApp({uid: TEST_UID2});
-    user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertFails(user_profile.get());
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
+    db = authedApp({ uid: TEST_UID2 });
+    usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.get());
   });
   it("doesn't allow setting of the role", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ role: "system-admin" }));
+    const db = authedApp({ uid: TEST_UID });
+    const usrProfile = db.collection('users').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ role: 'system-admin' }));
   });
 
   // users_privileged
-  it("prevents un-authenticated user from creating profile", async () => {
-    let db = authedApp(null);
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ lastName: "Smith" }));
+  it('prevents un-authenticated user from creating profile', async () => {
+    const db = authedApp(null);
+    const usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ lastName: 'Smith' }));
   });
-  it("allows authenticated user to create profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.set({ lastName: "Smith" }));
+  it('allows authenticated user to create profile', async () => {
+    const db = authedApp({ uid: TEST_UID });
+    const usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.set({ lastName: 'Smith' }));
   });
   it("doesn't allow a different user to create profile", async () => {
-    let db = authedApp({uid: TEST_UID2});
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ lastName: "Smith" }));
+    const db = authedApp({ uid: TEST_UID2 });
+    const usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ lastName: 'Smith' }));
   });
-  it("prevents un-authenticated user from reading profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
+  it('prevents un-authenticated user from reading profile', async () => {
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
     db = authedApp(null);
-    user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertFails(user_profile.get());
+    usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.get());
   });
-  it("allows authenticated user to read profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
-    db = authedApp({uid: TEST_UID});
-    user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.get());
+  it('allows authenticated user to read profile', async () => {
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
+    db = authedApp({ uid: TEST_UID });
+    usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.get());
   });
   it("doesn't allow another user to read profile", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
-    db = authedApp({uid: TEST_UID2});
-    user_profile = db.collection("users_privileged").doc(TEST_UID);
-    await firebase.assertFails(user_profile.get());
+    let db = authedApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
+    db = authedApp({ uid: TEST_UID2 });
+    usrProfile = db.collection('users_privileged').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.get());
   });
 
   // users_public
-  it("prevents any creation of profiles", async () => {
-    let db = authedApp({uid: TEST_UID});
-    let user_profile = db.collection("users_public").doc(TEST_UID);
-    await firebase.assertFails(user_profile.set({ d: { firstName: "Tim" } }));
+  it('prevents any creation of profiles', async () => {
+    const db = authedApp({ uid: TEST_UID });
+    const usrProfile = db.collection('users_public').doc(TEST_UID);
+    await firebase.assertFails(usrProfile.set({ d: { firstName: 'Tim' } }));
   });
-  it("allows un-authenticated user to read profile", async () => {
-    let db = adminApp({uid: TEST_UID});
-    let user_profile = db.collection("users_public").doc(TEST_UID);
-    await user_profile.set({ d: { firstName: "Tim" } });
+  it('allows un-authenticated user to read profile', async () => {
+    let db = adminApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users_public').doc(TEST_UID);
+    await usrProfile.set({ d: { firstName: 'Tim' } });
     db = authedApp(null);
-    user_profile = db.collection("users_public").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.get());
+    usrProfile = db.collection('users_public').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.get());
   });
-  it("allows authenticated other user to read profile", async () => {
-    let db = adminApp({uid: TEST_UID});
-    let user_profile = db.collection("users_public").doc(TEST_UID);
-    await user_profile.set({ lastName: "Smith" });
-    db = authedApp({uid: TEST_UID2});
-    user_profile = db.collection("users_public").doc(TEST_UID);
-    await firebase.assertSucceeds(user_profile.get());
+  it('allows authenticated other user to read profile', async () => {
+    let db = adminApp({ uid: TEST_UID });
+    let usrProfile = db.collection('users_public').doc(TEST_UID);
+    await usrProfile.set({ lastName: 'Smith' });
+    db = authedApp({ uid: TEST_UID2 });
+    usrProfile = db.collection('users_public').doc(TEST_UID);
+    await firebase.assertSucceeds(usrProfile.get());
   });
-
 });
