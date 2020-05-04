@@ -121,11 +121,12 @@ jobs:
           bin/updateEmailTemplates.js
 
       - name: Check if version has been updated
+        if: github.ref == 'refs/heads/production'
         id: check
         uses: EndBug/version-check@v1
 
       - name: Create Release
-        if: steps.check.outputs.changed == 'true'
+        if: github.ref == 'refs/heads/production' && steps.check.outputs.changed == 'true'
         id: create_release
         uses: actions/create-release@latest
         env:
