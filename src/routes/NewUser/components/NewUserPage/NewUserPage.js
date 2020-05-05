@@ -119,7 +119,7 @@ function NewUser() {
     addressTypeFormat = 'long_name',
   ) {
     if (
-      googleResultComponent.types.indexOf(addressType) !== -1 &&
+      googleResultComponent.types.includes(addressType) &&
       !allFieldValues[fieldName]
     ) {
       setValue(fieldName, googleResultComponent[addressTypeFormat]);
@@ -143,10 +143,10 @@ function NewUser() {
           'short_name',
         );
         setValueIfNotAlreadySet('zipcode', values, component, 'postal_code');
-        if (component.types.indexOf('street_number') !== -1) {
+        if (component.types.includes('street_number')) {
           streetNumber = component.short_name;
         }
-        if (component.types.indexOf('route') !== -1) {
+        if (component.types.includes('route')) {
           streetAddress = component.short_name;
         }
       });
@@ -205,7 +205,7 @@ function NewUser() {
     delete userLocationInfo.lookedUpAddress;
 
     // Default the displayName if it isn't already set (e.g., when signing up using email).
-    if (userData.get('displayName') === null) {
+    if (!userData.get('displayName')) {
       newValues.displayName = `${values.firstName} ${values.lastName}`;
     }
 

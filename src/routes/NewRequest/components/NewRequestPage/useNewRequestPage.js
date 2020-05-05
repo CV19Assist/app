@@ -60,7 +60,8 @@ export default function useNewRequestPage() {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
-    delete requestLocation.lookedUpAddress;
+    const loc = { ...requestLocation };
+    delete loc.lookedUpAddress;
 
     const { lastName, phone, email, ...publicValues } = values;
 
@@ -74,10 +75,10 @@ export default function useNewRequestPage() {
       usersWithContactInfoAccess: [],
       status: 1,
       generalLocation: new GeoPoint(
-        requestLocation.generalLocation.latitude,
-        requestLocation.generalLocation.longitude,
+        loc.generalLocation.latitude,
+        loc.generalLocation.longitude,
       ),
-      generalLocationName: requestLocation.generalLocationName,
+      generalLocationName: loc.generalLocationName,
     };
 
     // Convert needs to an array
@@ -99,7 +100,7 @@ export default function useNewRequestPage() {
       needs: requestPublicInfo.needs,
       status: 1,
       createdAt: FieldValue.serverTimestamp(),
-      ...requestLocation,
+      ...loc,
     };
 
     let userInfo = null;
@@ -112,7 +113,7 @@ export default function useNewRequestPage() {
       userInfo = {
         uid: user.uid,
         firstName: profile.firstName,
-        displayName: profile.displayName,
+        displayName: profile.displayName || '',
       };
       requestPublicInfo.createdByInfo = userInfo;
     }

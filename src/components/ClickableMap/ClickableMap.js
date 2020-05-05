@@ -27,6 +27,7 @@ import PlacesAutocomplete, {
 } from 'react-places-autocomplete';
 import { MyLocation as DetectLocationIcon } from '@material-ui/icons';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import * as Sentry from '@sentry/browser';
 import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
@@ -209,20 +210,36 @@ function ClickableMap({ onLocationChange, locationInfo }) {
     setCurrentPlaceLabel(address);
   }
 
-  function handlePlaceSelect(_event, selection) {
-    if (!selection) return;
+  // function handlePlaceSelect(_event, selection) {
+  //   if (!selection) return;
 
-    geocodeByAddress(selection.description)
-      .then((results) => getLatLng(results[0]))
-      .then((latLng) => {
-        map.setZoom(15);
-        setLocation({ latitude: latLng.lat, longitude: latLng.lng });
-      })
-      .catch((error) => {
-        showError('Failed to get the location from address.');
-        // eslint-disable-next-line no-console
-        console.error('Error', error);
-      });
+  //   geocodeByAddress(selection.description)
+  //     .then((results) => getLatLng(results[0]))
+  //     .then((latLng) => {
+  //       map.setZoom(15);
+  //       setLocation({ latitude: latLng.lat, longitude: latLng.lng });
+  //     })
+  //     .catch((error) => {
+  //       showError('Failed to get the location from address.');
+  //       // eslint-disable-next-line no-console
+  //       console.error('Error', error);
+  //     });
+  // }
+
+  async function handlePlaceSelect(_event, selection) {
+    if (!selection) return;
+    try {
+      const [address] = await geocodeByAddress(selection.description);
+      const loc = await getLatLng(address);
+      map.setZoom(15);
+      map.panTo(loc);
+      setLocation({ latitude: loc.lat, longitude: loc.lng });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to get the location from address:', err.message);
+      showError('Failed to get the location from address.');
+      Sentry.captureException(err);
+    }
   }
 
   return (

@@ -1,4 +1,5 @@
 import { KM_TO_MILES } from 'constants/geo';
+import * as Sentry from '@sentry/browser';
 
 /**
  * Calculates the distance between two points (given the latitude/longitude of those points).
@@ -88,6 +89,7 @@ export async function reverseGeocode(latitude, longitude) {
   if (!window.google?.maps?.Geocoder) {
     // eslint-disable-next-line no-console
     console.error('Google Maps API not found.');
+    Sentry.captureMessage('Google Maps API not found', Sentry.Severity.Error);
     return null;
   }
 
