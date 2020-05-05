@@ -54,16 +54,11 @@ jobs:
           yarn functions:test:cov
 
       - name: Archive Build Artifact
+        if: github.ref == 'refs/heads/production'
         uses: actions/upload-artifact@master
         with:
           name: build
           path: build
-
-      - name: Archive Functions Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: functions-build
-          path: functions/dist
 
       - name: Deploy to Firebase
         env:
@@ -130,7 +125,7 @@ jobs:
           envName=$(if [ $gitBranch == "master" ]; then echo staging; else echo $gitBranch; fi;)
           releaseSuffix=$envName@$version
           releaseName=cv19assist-$releaseSuffix
-          export SENTRY_PROJECT=app
+          export SENTRY_PROJECT=cv19-assist
           echo ""
           echo Creating Sentry release \"$releaseName\" for project \"$SENTRY_PROJECT\"
           $(yarn bin)/sentry-cli releases new $releaseName --finalize
