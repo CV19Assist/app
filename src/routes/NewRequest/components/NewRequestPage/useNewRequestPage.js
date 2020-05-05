@@ -60,8 +60,7 @@ export default function useNewRequestPage() {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
-    const loc = { ...requestLocation };
-    delete loc.lookedUpAddress;
+    const { lookedUpAddress, ...loc } = requestLocation;
 
     const { lastName, phone, email, ...publicValues } = values;
 
