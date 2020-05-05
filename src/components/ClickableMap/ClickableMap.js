@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import Geocode from 'react-geocode';
 import {
   GoogleMap,
   LoadScript,
@@ -12,16 +11,26 @@ import {
   Button,
   CircularProgress,
   Backdrop,
+  TextField,
   makeStyles,
 } from '@material-ui/core';
 import { useNotifications } from 'modules/notification';
-import { scrambleLocation } from 'utils/geo';
-import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } from 'constants/geo';
+import { scrambleLocation, reverseGeocode } from 'utils/geo';
+import {
+  DEFAULT_LATITUDE,
+  DEFAULT_LONGITUDE,
+  USED_GOOGLE_MAPS_LIBRARIES,
+} from 'constants/geo';
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from 'react-places-autocomplete';
+import { MyLocation as DetectLocationIcon } from '@material-ui/icons';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import * as Sentry from '@sentry/browser';
 import styles from './ClickableMap.styles';
 
 const useStyles = makeStyles(styles);
-Geocode.setApiKey(process.env.REACT_APP_FIREBASE_API_KEY);
-Geocode.setRegion('us');
 
 function SelectedLocationMarker({
   position: { latitude: lat, longitude: lng },
@@ -78,21 +87,18 @@ function ClickableMap({ onLocationChange, locationInfo }) {
   const { showSuccess, showError } = useNotifications();
   const [map, setMap] = useState(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [currentPlaceLabel, setCurrentPlaceLabel] = useState('');
 
   async function setLocation(location) {
     const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
     // Detect locality
     try {
-      const response = await Geocode.fromLatLng(
+      const response = await reverseGeocode(
         location.latitude,
         location.longitude,
       );
-      if (response.status === 'ZERO_RESULTS') {
+      if (response.status === window.google.maps.GeocoderStatus.ZERO_RESULTS) {
         showError('Could not find the locality.');
-        return;
-      }
-      if (response.status !== 'OK') {
-        showError(`Geocoding error: ${response.status}`);
         return;
       }
       const [result] = response.results;
@@ -129,6 +135,7 @@ function ClickableMap({ onLocationChange, locationInfo }) {
           latitude: location.latitude,
           longitude: location.longitude,
         },
+        lookedUpAddress: result,
       });
       // setMarkerLocation(location);
     } catch (err) {
@@ -168,6 +175,7 @@ function ClickableMap({ onLocationChange, locationInfo }) {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        map.setZoom(15);
         setLocation(loc);
         showSuccess('Location detected');
         setDetectingLocation(false);
@@ -198,50 +206,122 @@ function ClickableMap({ onLocationChange, locationInfo }) {
     }
   }
 
+  function handlePlaceChange(address) {
+    setCurrentPlaceLabel(address);
+  }
+
+  // function handlePlaceSelect(_event, selection) {
+  //   if (!selection) return;
+
+  //   geocodeByAddress(selection.description)
+  //     .then((results) => getLatLng(results[0]))
+  //     .then((latLng) => {
+  //       map.setZoom(15);
+  //       setLocation({ latitude: latLng.lat, longitude: latLng.lng });
+  //     })
+  //     .catch((error) => {
+  //       showError('Failed to get the location from address.');
+  //       // eslint-disable-next-line no-console
+  //       console.error('Error', error);
+  //     });
+  // }
+
+  async function handlePlaceSelect(_event, selection) {
+    if (!selection) return;
+    try {
+      const [address] = await geocodeByAddress(selection.description);
+      const loc = await getLatLng(address);
+      map.setZoom(15);
+      map.panTo(loc);
+      setLocation({ latitude: loc.lat, longitude: loc.lng });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to get the location from address:', err.message);
+      showError('Failed to get the location from address.');
+      Sentry.captureException(err);
+    }
+  }
+
   return (
-    <>
-      <LoadScript
-        id="script-loader"
-        googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
-        <Backdrop
-          open={detectingLocation}
-          className={classes.backdrop}
-          color="inherit">
-          <CircularProgress
-            color="inherit"
-            size="2em"
-            className={classes.progress}
-          />
-          <Typography variant="h5" gutterBottom color="inherit" display="block">
-            Detecting Location...
-          </Typography>
-        </Backdrop>
-        <GoogleMap
-          onLoad={onGoogleMapLoad}
-          mapContainerClassName={classes.map}
-          zoom={4}
-          options={{ streetViewControl: false, mapTypeControl: false }}
-          onClick={handleLocationClick}>
-          {preciseLocation && (
-            <SelectedLocationMarker
-              position={preciseLocation}
-              title={generalLocationName}
-            />
+    <LoadScript
+      id="script-loader"
+      libraries={USED_GOOGLE_MAPS_LIBRARIES}
+      googleMapsApiKey={process.env.REACT_APP_FIREBASE_API_KEY}>
+      <Backdrop
+        open={detectingLocation}
+        className={classes.backdrop}
+        color="inherit">
+        <CircularProgress
+          color="inherit"
+          size="2em"
+          className={classes.progress}
+        />
+        <Typography variant="h5" gutterBottom color="inherit" display="block">
+          Detecting Location...
+        </Typography>
+      </Backdrop>
+      <div className={classes.entryOptions}>
+        <PlacesAutocomplete
+          value={currentPlaceLabel}
+          onChange={handlePlaceChange}>
+          {({ getInputProps, suggestions, loading }) => (
+            <>
+              {/* {console.log(suggestions)} */}
+              <Autocomplete
+                data-test="places-autocomplete"
+                className={classes.autocomplete}
+                onChange={handlePlaceSelect}
+                options={suggestions}
+                loading={loading}
+                getOptionLabel={(sug) => sug.description}
+                noOptionsText="No matches"
+                renderInput={(params) => (
+                  <TextField
+                    className={classes.autocompleteInputContainer}
+                    data-test="address-entry"
+                    {...getInputProps({
+                      ...params,
+                      placeholder: 'Enter Address',
+                    })}
+                    InputProps={{
+                      ...params.InputProps,
+                      className: classes.autocompleteInput,
+                      endAdornment: loading && (
+                        <CircularProgress color="inherit" size={20} />
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </>
           )}
-        </GoogleMap>
+        </PlacesAutocomplete>
+        <div className={classes.entryOptionsSeparator}>
+          <Typography>- OR -</Typography>
+        </div>
         <Button
+          size="small"
           variant="outlined"
           onClick={handleDetectLocation}
+          startIcon={<DetectLocationIcon fontSize="small" />}
           className={classes.detectButton}>
           Detect Location
         </Button>
-        {generalLocationName !== '' && (
-          <Typography variant="body2" display="inline">
-            General location: {generalLocationName || 'Not selected yet'}
-          </Typography>
+      </div>
+      <GoogleMap
+        onLoad={onGoogleMapLoad}
+        mapContainerClassName={classes.map}
+        zoom={4}
+        options={{ streetViewControl: false, mapTypeControl: false }}
+        onClick={handleLocationClick}>
+        {preciseLocation && (
+          <SelectedLocationMarker
+            position={preciseLocation}
+            title={generalLocationName}
+          />
         )}
-      </LoadScript>
-    </>
+      </GoogleMap>
+    </LoadScript>
   );
 }
 
@@ -257,6 +337,8 @@ ClickableMap.propTypes = {
       latitude: PropTypes.number.isRequired,
       longitude: PropTypes.number.isRequired,
     }),
+    // If the user enters an address then this will be populated with the entry.
+    lookedUpAddress: PropTypes.object,
   }),
 };
 

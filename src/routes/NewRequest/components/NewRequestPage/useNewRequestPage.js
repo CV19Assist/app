@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom';
 import { useFirestore, useUser, useAnalytics } from 'reactfire';
 import { useNotifications } from 'modules/notification';
 import {
-  USERS_PRIVILEGED_COLLECTION,
   USERS_COLLECTION,
   REQUESTS_COLLECTION,
   REQUESTS_PUBLIC_COLLECTION,
@@ -61,6 +60,7 @@ export default function useNewRequestPage() {
       alert('Please select a location by clicking on the map above.'); // eslint-disable-line no-alert
       return;
     }
+    const { lookedUpAddress, ...loc } = requestLocation;
 
     const { lastName, phone, email, ...publicValues } = values;
 
@@ -74,10 +74,10 @@ export default function useNewRequestPage() {
       usersWithContactInfoAccess: [],
       status: 1,
       generalLocation: new GeoPoint(
-        requestLocation.generalLocation.latitude,
-        requestLocation.generalLocation.longitude,
+        loc.generalLocation.latitude,
+        loc.generalLocation.longitude,
       ),
-      generalLocationName: requestLocation.generalLocationName,
+      generalLocationName: loc.generalLocationName,
     };
 
     // Convert needs to an array
@@ -99,7 +99,7 @@ export default function useNewRequestPage() {
       needs: requestPublicInfo.needs,
       status: 1,
       createdAt: FieldValue.serverTimestamp(),
-      ...requestLocation,
+      ...loc,
     };
 
     let userInfo = null;
@@ -107,25 +107,14 @@ export default function useNewRequestPage() {
       requestPublicInfo.createdBy = user.uid;
       requestPrivateInfo.createdBy = user.uid;
 
-      const userRef = firestore.doc(
-        `${USERS_PRIVILEGED_COLLECTION}/${user.uid}`,
-      );
+      const userRef = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
       const profile = (await userRef.get()).data();
-      let nameParts = user.displayName?.split(' ');
-      if (nameParts.length < 2) {
-        nameParts = [user.displayName, ''];
-      }
-      if (profile) {
-        profile.displayName = user.displayName;
-        [profile.firstName, profile.lastName] = nameParts;
-
-        userInfo = {
-          uid: user.uid,
-          firstName: profile.firstName,
-          displayName: profile.displayName,
-        };
-        requestPublicInfo.createdByInfo = userInfo;
-      }
+      userInfo = {
+        uid: user.uid,
+        firstName: profile.firstName,
+        displayName: profile.displayName || '',
+      };
+      requestPublicInfo.createdByInfo = userInfo;
     }
 
     /* eslint-disable no-console */
@@ -163,7 +152,7 @@ export default function useNewRequestPage() {
 
       showSuccess('Request submitted!');
       analytics.logEvent('new-request', action);
-      history.replace(REQUEST_SUCCESSFUL_PATH);
+      history.replace(`${REQUEST_SUCCESSFUL_PATH}?id=${requestRef.id}`);
     } catch (err) {
       showError(err.message || 'Error submitting request');
     }
