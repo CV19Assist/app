@@ -1,0 +1,452 @@
+{
+  "$id": "https://github.com/CV19Assist/app/blob/master/db-json-schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoSQL database layout for CV19 Assist",
+
+  "definitions": {
+    "collection": {
+      "$id": "#collection",
+      "description": "Firestore collection"
+    },
+
+    "uid": {
+      "$id": "#uid",
+      "type": "string",
+      "description": "User's Firebase Auth UID."
+    },
+
+    "timestamp": {
+      "$id": "#timestamp",
+      "type": "string",
+      "description": "Firebase Timestamp"
+    },
+
+    "geopoint": {
+      "$id": "#geopoint",
+      "type": "string",
+      "description": "Firebase Geopoint"
+    },
+
+    "author": {
+      "$id": "#author",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "displayName": { "type": "string" }
+      }
+    },
+
+    "request_status": {
+      "$id": "#request_status",
+      "type": "number",
+      "description": "Status of this request",
+      "oneOf": [
+        { "const": 1, "description": "New or release" },
+        {
+          "const": 5,
+          "description": "Released - Not currently used"
+        },
+        { "const": 10, "description": "Assigned" },
+        {
+          "const": 15,
+          "description": "In progress - Not currently used"
+        },
+        { "const": 20, "description": "Completed" },
+        {
+          "const": 30,
+          "description": "Close, cannot be completed. e.g., could not find a volunteer."
+        }
+      ]
+    },
+
+    "user_common_properties": {
+      "$id": "#user_common_properties",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "displayName": { "type": "string" }
+      },
+      "required": ["firstName", "displayName"]
+    },
+
+    "request_common_properties": {
+      "$id": "#request_common_properties",
+      "type": "object",
+      "properties": {
+        "status": { "$ref": "#request_status" },
+        "firstName": { "type": "string" },
+        "displayName": { "type": "string" },
+        "needs": {
+          "type": "array",
+          "items": {
+            "description": "Requested help",
+            "type": "string",
+            "oneOf": [
+              { "const": "grocery-pickup", "description": "Grocery pickup" },
+              {
+                "const": "other",
+                "description": "Other"
+              }
+            ]
+          }
+        },
+        "otherDetails": { "type": "string" },
+        "needFinancialAssistance": {
+          "type": "boolean",
+          "description": "Whether the person requested financial assistance."
+        },
+        "createdAt": { "$ref": "$timestamp" },
+        "lastUpdatedAt": { "$ref": "$timestamp" },
+        "createdBy": {
+          "$ref": "#uid",
+          "description": "Optional - This is created if a logged in user created it."
+        },
+        "createdByInfo": {
+          "type": "object",
+          "description": "Optional - Info about the user that created it.",
+          "properties": {
+            "uid": { "$ref": "#uid" },
+            "firstName": { "type": "string" },
+            "displayName": { "type": "string" }
+          },
+          "required": ["uid", "firstName"]
+        },
+        "immediacy": {
+          "type": "number",
+          "description": "Immediacy",
+          "oneOf": [
+            { "const": 1, "description": "Not urgent" },
+            { "const": 5, "description": "Not very urgent" },
+            { "const": 10, "description": "Urgent" }
+          ]
+        }
+      },
+      "required": ["status", "firstName", "needs", "createdAt", "immediacy"]
+    }
+  },
+
+  "type": "object",
+
+  "properties": {
+    "users": {
+      "description": "This collection will have one document for each user so the records are keyed by the auth uid.",
+      "allOf": [
+        { "$ref": "#collection" },
+        { "$ref": "#user_common_properties" },
+        {
+          "properties": {
+            "email": { "type": "string" },
+            "lastName": { "type": "string" },
+            "role": {
+              "type": "string",
+              "description": "User role",
+              "oneOf": [
+                { "const": "user", "description": "Regular user" },
+                {
+                  "const": "system-admin",
+                  "description": "System administrator"
+                }
+              ]
+            },
+            "preciseLocation": {
+              "$ref": "#geopoint",
+              "description": "Precise location"
+            },
+            "generalLocation": {
+              "$ref": "#geopoint",
+              "description": "For privacy, randomly adjusted version of the user's preciseLocation."
+            },
+            "generalLocationName": {
+              "type": "string",
+              "description": "A name for the precise location, generally 'City, State'."
+            },
+            "providerData": {
+              "description": "TODO: Add more here."
+            }
+          },
+          "required": [
+            "email",
+            "lastName",
+            "preciseLocation",
+            "generalLocation",
+            "generalLocationName",
+            "role"
+          ]
+        }
+      ]
+    },
+
+    "users_privileged": {
+      "description": "This collection will have one document for each user so the records are keyed by the auth uid.",
+      "allOf": [
+        { "$ref": "#collection" },
+        { "$ref": "#user_common_properties" },
+        {
+          "properties": {
+            "email": { "type": "string" },
+            "lastName": { "type": "string" },
+            "address1": { "type": "string" },
+            "address2": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "zipcode": { "type": "string" },
+            "phone": { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "users_public": {
+      "description": "Public information about this user.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "d": {
+              "allOf": [
+                { "$ref": "#user_common_properties" },
+                {
+                  "properties": {
+                    "generalLocation": {
+                      "$ref": "#geopoint",
+                      "description": "For privacy, randomly adjusted version of the user's preciseLocation."
+                    },
+                    "generalLocationName": {
+                      "type": "string",
+                      "description": "A name for the location, generally 'City, State'."
+                    }
+                  },
+                  "required": ["generalLocation", "generalLocationName"]
+                }
+              ]
+            },
+            "g": {
+              "type": "string",
+              "description": "Geofirestore managed geohash"
+            },
+            "l": {
+              "type": "string",
+              "description": "Geofirestore managed GeoPoint"
+            }
+          }
+        }
+      ]
+    },
+
+    "requests": {
+      "description": "This data should only be accessible by privileged users (e.g, admins or other future privileged users). This collection will drive the main requests and thus be the main 'request id.'",
+      "allOf": [
+        { "$ref": "#collection" },
+        { "$ref": "#request_common_properties" },
+        {
+          "properties": {
+            "lastName": { "type": "string" },
+            "preciseLocation": {
+              "$ref": "#geopoint",
+              "description": "Precise location of the request."
+            },
+            "generalLocation": {
+              "$ref": "#geopoint",
+              "description": "For privacy, randomly adjusted version of the preciseLocation."
+            },
+            "generalLocationName": {
+              "type": "string",
+              "description": "A name for the precise location, generally 'City, State'."
+            }
+          },
+          "required": ["status", "firstName", "displayName", "needs"]
+        }
+      ]
+    },
+
+    "requests_public": {
+      "description": "Public geofirestore collection about a request",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "d": {
+              "allOf": [
+                { "$ref": "#request_common_properties" },
+                {
+                  "properties": {
+                    "generalLocation": {
+                      "$ref": "#geopoint",
+                      "description": "For privacy, randomly adjusted version of the preciseLocation."
+                    },
+                    "generalLocationName": {
+                      "type": "string",
+                      "description": "A name for the location, generally 'City, State'."
+                    },
+                    "usersWithContactInfoAccess": {
+                      "type": "array",
+                      "description": "Users that have requested to see the contact info.",
+                      "items": { "$ref": "#uid" }
+                    },
+                    "owner": {
+                      "$ref": "#uid",
+                      "description": "The current owner of this request."
+                    },
+                    "ownerInfo": {
+                      "type": "object",
+                      "description": "Info about the current owner of this request.",
+                      "properties": {
+                        "takenAt": { "$ref": "$timestamp" },
+                        "uid": { "$ref": "#uid" },
+                        "firstName": { "type": "string" },
+                        "displayName": { "type": "string" }
+                      },
+                      "required": ["uid", "firstName"]
+                    }
+                  },
+                  "required": ["generalLocation", "generalLocationName"]
+                }
+              ]
+            },
+            "g": {
+              "type": "string",
+              "description": "Geofirestore managed geohash"
+            },
+            "l": {
+              "type": "string",
+              "description": "Geofirestore managed GeoPoint"
+            }
+          },
+          "required": ["d", "g", "l"]
+        }
+      ]
+    },
+
+    "requests_contact": {
+      "description": "This data can be shared with any volunteers, but we will first require an entry in the requests_public.usersWithContactInfoAccess collection.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "phone": { "type": "string" },
+            "email": { "type": "string" }
+          },
+          "required": ["phone", "email"]
+        }
+      ]
+    },
+
+    "requests_actions": {
+      "description": "Request actions. Only visible to admins.  No functionality needed in the UI for now.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "createdAt": { "$ref": "#timestamp" },
+            "uid": { "$ref": "#uid" },
+            "kind": {
+              "type": "number",
+              "description": "Kind of action.",
+              "oneOf": [
+                { "const": 1, "description": "Created" },
+                { "const": 2, "description": "Viewed contact information" },
+                { "const": 5, "description": "Released" },
+                { "const": 10, "description": "Took Ownership" },
+                {
+                  "const": 15,
+                  "description": "Started - for future functionality"
+                },
+                { "const": 20, "description": "Completed" },
+                {
+                  "const": 25,
+                  "description": "Assigned to someone other than self - for future functionality"
+                }
+              ]
+            },
+
+            "firstName": { "type": "string" },
+            "displayName": { "type": "string" },
+            "assignedBy": {
+              "$ref": "#uid",
+              "description": "If 15-assigned, for future functionality"
+            }
+          },
+          "required": [
+            "requestId",
+            "createdAt",
+            "action",
+            "firstName",
+            "displayName"
+          ]
+        }
+      ]
+    },
+
+    "request_comments_public": {
+      "description": "Public comments about the request, e.g. volunteer follow-up.",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "createdAt": { "$ref": "#timestamp" },
+            "createdBy": { "$ref": "#uid" },
+            "author": { "$ref": "#author" },
+            "content": { "type": "string" },
+            "contentType": {
+              "type": "string",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "enum": ["text"]
+            }
+          },
+          "required": [
+            "requestId",
+            "createdAt",
+            "createdBy",
+            "author",
+            "content",
+            "contentType"
+          ]
+        }
+      ]
+    },
+
+    "requests_discussions": {
+      "description": "Private discussion about this specific request between the requestor, volunteer and other privileged users. This will only be displayed to the requestor, volunteer and privileged users (e.g., admins).",
+      "allOf": [
+        { "$ref": "#collection" },
+        {
+          "properties": {
+            "requestId": { "type": "string" },
+            "kind": {
+              "type": "number",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "oneOf": [
+                { "const": 1, "description": "Discussion" },
+                { "const": 5, "description": "Release comment" },
+                { "const": 8, "description": "Admin comment" },
+                { "const": 10, "description": "Acceptance comment" },
+                { "const": 15, "description": "Assignment comment" },
+                { "const": 20, "description": "Completion comment" }
+              ]
+            },
+            "createdAt": { "$ref": "timestamp" },
+            "createdBy": { "$ref": "#uid" },
+            "author": { "$ref": "#author" },
+            "content": { "type": "string" },
+            "contentType": {
+              "type": "string",
+              "description": "Content type.  Currently, only 'text' will be supported.",
+              "enum": ["text"]
+            }
+          },
+          "required": [
+            "requestId",
+            "kind",
+            "createdAt",
+            "createdBy",
+            "author",
+            "content",
+            "contentType"
+          ]
+        }
+      ]
+    }
+  }
+}

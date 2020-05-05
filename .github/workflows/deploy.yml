@@ -1,0 +1,150 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+      - next
+      - production
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
+      - name: Get yarn cache
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        env:
+          CI: true
+          CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
+          HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
+        run: |
+          yarn install --frozen-lockfile
+          yarn --cwd functions install --frozen-lockfile
+
+      - name: Verify App
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          yarn lint # Check for lint in app code
+          gitBranch=${GITHUB_REF##*/}
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
+          yarn $buildCommand
+
+      - name: Verify Functions
+        run: |
+          yarn functions:build
+          yarn functions:test:cov
+
+      - name: Archive Build Artifact
+        if: github.ref == 'refs/heads/production'
+        uses: actions/upload-artifact@master
+        with:
+          name: build
+          path: build
+
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          $(yarn bin)/firebase-ci deploy -s --force
+
+      - name: Archive Debug Log
+        uses: actions/upload-artifact@master
+        if: failure()
+        with:
+          name: firebase-debug
+          path: firebase-debug.log
+
+      # Write new version to core database (causes client to refresh)
+      - name: Update Version In Database
+        if: success()
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          gitBranch=${GITHUB_REF##*/}
+          packageName=$(cat package.json | jq -r '.name')
+          packageVersion=$(cat package.json | jq -r '.version')
+          gcloudProject=$(cat .firebaserc | jq -r --arg alias "$gitBranch" '.projects[$alias] // .projects.default')
+          echo "::set-env name=PACKAGE_VERSION::$packageVersion"
+
+          echo Updating DB path \"/versionInfo/${packageName}/current\" value to version \"$packageVersion\"
+
+          $(yarn bin)/firebase database:update \
+            -d "$(jq -n --arg version "$packageVersion" '{current: $version}')" \
+            -y --project $gcloudProject \
+            "/versionInfo/${packageName}"
+
+      # Update Firestore "email_templates" collection with contents of email templates
+      - name: Update Email Templates
+        if: success()
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          NEXT_SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
+          MASTER_SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          PRODUCTION_SERVICE_ACCOUNT: ${{ secrets.PRODUCTION_SERVICE_ACCOUNT }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          gitBranch=${GITHUB_REF##*/}
+          # Get value of Service Account associated with branch (i.e. NEXT_SERVICE_ACCOUNT)
+          serviceAccountKey="${secretsPrefix}_SERVICE_ACCOUNT"
+          branchServiceAccount=$(eval echo \$${serviceAccountKey})
+          export SERVICE_ACCOUNT=$(if [ ! -z "${branchServiceAccount}" ]; then echo $branchServiceAccount; else echo $MASTER_SERVICE_ACCOUNT; fi;)
+          echo "Service Account selected for projectId $(echo $SERVICE_ACCOUNT | jq .project_id)"
+          bin/updateEmailTemplates.js
+
+      - name: Upload SourceMaps to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: cv19-assist
+        run: |
+          version=$(cat package.json | jq  .version -r)
+          gitBranch=${GITHUB_REF##*/}
+          envName=$(if [ $gitBranch == "master" ]; then echo staging; else echo $gitBranch; fi;)
+          releaseSuffix=$envName@$version
+          releaseName=cv19assist-$releaseSuffix
+          export SENTRY_PROJECT=cv19-assist
+          echo ""
+          echo Creating Sentry release \"$releaseName\" for project \"$SENTRY_PROJECT\"
+          $(yarn bin)/sentry-cli releases new $releaseName --finalize
+          echo Uploading source maps to Sentry
+          $(yarn bin)/sentry-cli releases files $releaseName upload-sourcemaps ./build/static/js --no-rewrite
+
+      - name: Check if version has been updated
+        if: github.ref == 'refs/heads/production'
+        id: check
+        uses: EndBug/version-check@v1
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/production' && steps.check.outputs.changed == 'true'
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: v${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: false

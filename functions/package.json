@@ -1,30 +1,53 @@
 {
-  "name": "functions",
-  "description": "Cloud Functions for Firebase",
+  "name": "app-functions",
+  "description": "Cloud Functions for app",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": "10"
+  },
   "scripts": {
-    "lint": "eslint .",
-    "serve": "firebase emulators:start --only functions",
-    "shell": "firebase functions:shell",
+    "lint": "eslint -c .eslintrc.js .",
+    "lint:fix": "npm run lint -- --fix",
+    "clean": "rimraf dist etc",
+    "build": "npm run clean && babel src -d --out-dir dist",
+    "build:prod": "cross-env BABEL_ENV=production npm run build",
+    "watch": "npm run build -- --watch",
+    "serve": "npm run build && firebase serve --only functions",
+    "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
-  },
-  "engines": {
-    "node": "8"
+    "logs": "npm run build && firebase functions:log",
+    "emulators": "firebase emulators:start --only database,firestore",
+    "test": "firebase emulators:exec --only firestore,database \"npm run test:base\"",
+    "test:cov": "firebase emulators:exec --only firestore,database \"npm run test:cov:base\"",
+    "test:base": "cross-env GCLOUD_PROJECT=unit-test-project FIRESTORE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=$(cat ../firebase.json | jq '.emulators.pubsub.port') mocha ./src/**/*.spec.js",
+    "test:cov:base": "rimraf coverage && nyc --reporter=lcov npm run test:base",
+    "test:watch": "npm test -- --watch"
   },
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "express-validation": "^3.0.2",
-    "firebase-admin": "^8.6.0",
+    "@google-cloud/pubsub": "^1.7.2",
+    "firebase-admin": "^8.11.0",
     "firebase-functions": "^3.6.0",
-    "geofirestore": "^3.4.1"
+    "geofirestore": "^3.4.1",
+    "glob": "^7.1.6",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "eslint": "^5.12.0",
-    "eslint-plugin-promise": "^4.0.1",
-    "firebase-functions-test": "^0.1.6"
-  },
-  "private": true
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/register": "^7.9.0",
+    "@firebase/testing": "^0.19.2",
+    "babel-plugin-lodash": "^3.3.4",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "firebase-functions-test": "^0.2.1",
+    "mocha": "^7.1.1",
+    "nyc": "^15.0.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.1"
+  }
 }
