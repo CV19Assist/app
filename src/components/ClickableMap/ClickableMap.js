@@ -87,7 +87,7 @@ function ClickableMap({ onLocationChange, locationInfo }) {
   const { showSuccess, showError } = useNotifications();
   const [map, setMap] = useState(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [currentPlaceLabel, setCurrentPlaceLabel] = React.useState('');
+  const [currentPlaceLabel, setCurrentPlaceLabel] = useState('');
 
   async function setLocation(location) {
     const scrambledLocation = scrambleLocation(location, 300); // Roughly within 1,000 feet.
