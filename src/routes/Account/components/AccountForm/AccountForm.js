@@ -5,6 +5,8 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import { validateEmail } from 'utils/form';
 import ProviderDataForm from '../ProviderDataForm';
 import styles from './AccountForm.styles';
@@ -54,6 +56,31 @@ function AccountForm({ account, onSubmit }) {
           <ProviderDataForm providerData={account.providerData} />
         </div>
       )}
+      <div className={classes.settings}>
+        <Typography variant="h5">Email Settings</Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              name="emailNotifications"
+              color="primary"
+              inputRef={register}
+              defaultChecked={account?.emailNotifications}
+            />
+          }
+          label="Email Notifications"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              name="browserNotifications"
+              color="primary"
+              inputRef={register}
+              defaultChecked={account?.browserNotifications}
+            />
+          }
+          label="Browser Notifications"
+        />
+      </div>
       <Button
         color="primary"
         type="submit"

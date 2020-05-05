@@ -8,6 +8,7 @@ import {
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
 import defaultUserImageUrl from 'static/User.png';
+import LoadingSpinner from 'components/LoadingSpinner';
 import AccountForm from '../AccountForm';
 import styles from './AccountEditor.styles';
 
@@ -21,6 +22,7 @@ function AccountEditor() {
   const accountRef = firestore.doc(`users/${user.uid}`);
   const profileSnap = useFirestoreDoc(accountRef);
   const profile = profileSnap.data();
+  console.log('project', profileSnap, profile);
 
   async function updateAccount(changedAccount) {
     analytics.logEvent('account-update');
@@ -38,6 +40,10 @@ function AccountEditor() {
       console.error('Error updating profile', error.message || error); // eslint-disable-line no-console
       throw error;
     }
+  }
+
+  if (profileSnap.metadata.fromCache) {
+    return <LoadingSpinner />;
   }
 
   return (

@@ -9,4 +9,7 @@ export default (theme) => ({
     width: '100%',
     marginBottom: '2rem',
   },
+  settings: {
+    marginBottom: theme.spacing(4),
+  },
 });

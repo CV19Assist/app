@@ -36,6 +36,14 @@ async function morningEmailCentralEvent(context) {
     throw requestsErr;
   }
 
+  // Exit if there are no open requests
+  if (!unclaimedRequestsSnap.size) {
+    console.log(
+      'There are currently no unclaimed requests, great work volunteers! Exiting...',
+    );
+    return null;
+  }
+
   // Map doc snaps into an array of doc values
   const requests = unclaimedRequestsSnap.docs.map((docSnap) => {
     return {
