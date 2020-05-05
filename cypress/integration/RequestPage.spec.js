@@ -3,14 +3,14 @@ import { createSelector } from '../utils';
 const requestId = '123ABC';
 
 describe('Request Page', () => {
-  describe('without auth', () => {
+  describe('when not authenticated', () => {
     it('Shows not found message if request does not exist', () => {
       cy.visit(`/requests/asdf`);
       cy.get(createSelector('request-not-found')).should('exist');
     });
   });
 
-  describe('with auth', () => {
+  describe('when authenticated', () => {
     const phone = '123-456-7890';
     const email = 'test@example.com';
     const publicPath = `requests_public/${requestId}`;
@@ -27,6 +27,7 @@ describe('Request Page', () => {
         generalLocationName: 'Madison, WI',
         createdBy: 'ABC123',
       };
+      // Seed request info in Firestore
       cy.callFirestore('set', `requests/${requestId}`, requestObj);
       cy.callFirestore('set', publicPath, {
         d: requestObj,
@@ -35,6 +36,9 @@ describe('Request Page', () => {
         email,
         phone,
       });
+      // Authenticate user
+      cy.login();
+      // Visit request page
       cy.visit(`/requests/${requestId}`);
     });
 
