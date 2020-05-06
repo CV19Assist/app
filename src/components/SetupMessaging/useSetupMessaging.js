@@ -1,4 +1,4 @@
-import { useMessaging, useUser, useFirestore } from 'reactfire';
+import { useMessaging, useUser, useFirestore, useAnalytics } from 'reactfire';
 import { useNotifications } from 'modules/notification';
 import { USERS_COLLECTION } from 'constants/collections';
 
@@ -11,6 +11,7 @@ let messagingInitialized = false;
 export default function useSetupMessaging() {
   const messaging = useMessaging();
   const firestore = useFirestore();
+  const analytics = useAnalytics();
   const { FieldValue } = useFirestore;
   const user = useUser();
   const { showSuccess } = useNotifications();
@@ -100,7 +101,7 @@ export default function useSetupMessaging() {
       .then(() => getTokenAndWriteToProfile(messaging))
       .catch((err) => {
         console.error('Unable to get permission to notify: ', err); // eslint-disable-line no-console
-        return Promise.reject(err);
+        analytics.logEvent('notification-no-permission', err);
       });
   }
   return { initializeMessaging };
