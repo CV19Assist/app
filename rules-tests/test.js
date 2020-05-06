@@ -1,4 +1,4 @@
-const firebase = require('@firebase/testing');
+const firebase = require('@firebase/testing'); // eslint-disable-line import/no-extraneous-dependencies
 const fs = require('fs');
 
 /* eslint-env node, mocha */
