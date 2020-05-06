@@ -8,7 +8,7 @@ const fs = require('fs');
  *    Setup
  * ============
  */
-const projectId = 'cv19assist-firestore-testing';
+const projectId = process.env.GCLOUD_PROJECT || 'cv19assist-firestore-testing';
 const firebasePort = require('../firebase.json').emulators.firestore.port;
 
 const port = firebasePort || 8080;
