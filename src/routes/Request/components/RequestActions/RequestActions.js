@@ -11,7 +11,6 @@ import {
   RemoveCircleOutline as ReleaseIcon,
   Add as LoginIcon,
 } from '@material-ui/icons';
-import { USERS_COLLECTION } from 'constants/collections';
 import RequestActionDialog from '../RequestActionDialog';
 import styles from './RequestActions.styles';
 
@@ -24,10 +23,6 @@ function RequestActions({ requestPublicSnapshot }) {
   const [showAcceptanceWorkflow, setShowAcceptanceWorkflow] = useState(false);
   const [showReleaseWorkflow, setShowReleaseWorkflow] = useState(false);
   const [showCompletionWorkflow, setShowCompletionWorkflow] = useState(false);
-  const firestore = useFirestore();
-  const userProfileSnap = useFirestoreDoc(
-    firestore.doc(`${USERS_COLLECTION}/${user.uid}`),
-  );
   let body = null;
   const status = requestPublicSnapshot.get('d.status');
 
@@ -62,11 +57,7 @@ function RequestActions({ requestPublicSnapshot }) {
         </Button>
       </Grid>
     );
-  } else if (
-    user &&
-    (user.uid === requestPublicSnapshot.get('d.owner') ||
-      userProfileSnap.get('role') === 'system-admin')
-  ) {
+  } else if (user && user.uid === requestPublicSnapshot.get('d.owner')) {
     // Logged, assigned to current user.
     body = (
       <>
