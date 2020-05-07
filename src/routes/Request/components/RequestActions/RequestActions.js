@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { useFirestore, useUser, useFirestoreDoc } from 'reactfire';
+import { useUser } from 'reactfire';
 import { Alert } from '@material-ui/lab';
 import { LOGIN_PATH } from 'constants/paths';
 import { Button, Grid, Typography, makeStyles } from '@material-ui/core';
