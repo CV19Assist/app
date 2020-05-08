@@ -42,6 +42,18 @@ describe('Request Page', () => {
       cy.visit(`/requests/${requestId}`);
     });
 
+    after(() => {
+      // Set current user to super-admin role
+      cy.callFirestore(
+        'set',
+        `users/${Cypress.env('TEST_UID')}`,
+        {
+          role: null,
+        },
+        { merge: true },
+      );
+    });
+
     it('Renders request info', () => {
       cy.get(createSelector('request-info')).should('exist');
     });
@@ -249,6 +261,59 @@ describe('Request Page', () => {
         expect(requestAction).to.have.property('kind', 1);
         expect(requestAction).to.have.property('content', testComment);
         expect(requestAction).to.have.property('contentType', 'text');
+      });
+    });
+
+    it.only('Allows admins to create public comments', () => {
+      const firstName = 'tester';
+      const requestObj = {
+        createdBy: Cypress.env('TEST_UID'),
+        status: 10,
+        owner: 'ABC123',
+      };
+      cy.callFirestore(
+        'set',
+        `users/${Cypress.env('TEST_UID')}`,
+        {
+          role: 'system-admin',
+          firstName,
+          displayName: 'test user',
+        },
+        { merge: true },
+      );
+      cy.callFirestore('set', `requests/${requestId}`, requestObj, {
+        merge: true,
+      });
+      cy.callFirestore(
+        'set',
+        publicPath,
+        {
+          d: requestObj,
+        },
+        { merge: true },
+      );
+      cy.get(createSelector('add-public-comment')).scrollIntoView().click();
+      const testComment = 'test comment';
+      cy.get(createSelector('public-comment-input')).type(testComment);
+      cy.get(createSelector('submit-public-comment')).click();
+      // Displays the comment in the list
+      cy.get(createSelector('public-comment')).should('have.length.gte', 1);
+      cy.get(createSelector('comment-author')).should('contain', firstName);
+      cy.get(createSelector('comment-content')).should('contain', testComment);
+      // Confirm that request discussion is created
+      cy.callFirestore('get', 'requests_comments_public', {
+        where: ['requestId', '==', requestId],
+        orderBy: ['createdAt', 'desc'],
+        limit: 1,
+      }).then(([requestAction]) => {
+        expect(requestAction).to.have.property(
+          'createdBy',
+          Cypress.env('TEST_UID'),
+        );
+        expect(requestAction).to.have.property('requestId');
+        expect(requestAction).to.have.property('content', testComment);
+        expect(requestAction).to.have.property('contentType', 'text');
+        expect(requestAction).to.have.nested.property('author.firstName');
       });
     });
 

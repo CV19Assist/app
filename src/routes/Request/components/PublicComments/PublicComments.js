@@ -61,14 +61,18 @@ function CommentList({ requestId }) {
           // When new comment is added locally, the createdAt can be the serverTimestamp() value.
           // So, we wait on rendering until any new snapshot has finished writing.
           !docSnap.metadata.hasPendingWrites && (
-            <ListItem key={docSnap.id} divider alignItems="flex-start">
+            <ListItem
+              key={docSnap.id}
+              divider
+              alignItems="flex-start"
+              data-test="public-comment">
               <ListItemAvatar>
                 <Avatar>{docSnap.get('author.firstName').slice(0, 1)}</Avatar>
               </ListItemAvatar>
               <ListItemText
                 disableTypography
                 primary={
-                  <Typography variant="subtitle2">
+                  <Typography variant="subtitle2" data-test="comment-author">
                     {docSnap.get('author.firstName')} &ndash;{' '}
                     <Typography
                       variant="body2"
@@ -82,8 +86,13 @@ function CommentList({ requestId }) {
                   .get('content')
                   .split('\n')
                   .map((content, key) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <Typography variant="body1" key={key} gutterBottom>
+                    <Typography
+                      variant="body1"
+                      /* eslint-disable react/no-array-index-key */
+                      key={key}
+                      /* eslint-enable react/no-array-index-key */
+                      gutterBottom
+                      data-test="comment-content">
                       {content}
                     </Typography>
                   ))}
@@ -165,6 +174,7 @@ function CommentEntry({ requestId }) {
         variant="outlined"
         fullWidth
         margin="dense"
+        data-test="public-comment-input"
         error={!!errors.comment}
         helperText={errors.comment && 'Please enter a comment.'}
         inputRef={register({ required: true })}
