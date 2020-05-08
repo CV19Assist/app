@@ -52,6 +52,7 @@ function NewUser() {
 
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
   // Because of timing issues, this component will likely get run before the server has applied
@@ -63,7 +64,7 @@ function NewUser() {
       try {
         const ref = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
         // Call it once because this will throw the permission exception.
-        await ref.get();
+        setUserData(await ref.get());
         setUserProfile(await ref.get());
         setUserRef(ref);
       } catch (err) {
@@ -94,11 +95,66 @@ function NewUser() {
     errors,
     register,
     formState: { isValid, dirty },
+    getValues,
+    setValue,
   } = useForm({
     validationSchema: userProfileSchema,
     defaultValues,
   });
   const [userLocationInfo, setUserLocationInfo] = useState(null);
+
+  /**
+   * Sets the value for the given field if it isn't already populated.
+   * @param {string} fieldName name of the field which will be set
+   * @param {string} allFieldValues current value of all fields
+   * @param {object} googleResultComponent address component returned by the Google Maps API
+   * @param {object} addressType type of address component to lookup
+   * @param {string} addressTypeFormat short_name or long_name
+   */
+  function setValueIfNotAlreadySet(
+    fieldName,
+    allFieldValues,
+    googleResultComponent,
+    addressType,
+    addressTypeFormat = 'long_name',
+  ) {
+    if (
+      googleResultComponent.types.includes(addressType) &&
+      !allFieldValues[fieldName]
+    ) {
+      setValue(fieldName, googleResultComponent[addressTypeFormat]);
+    }
+  }
+
+  function handleSetUserLocationInfo(locationInfo) {
+    setUserLocationInfo(locationInfo);
+    const result = locationInfo.lookedUpAddress;
+    if (result) {
+      const values = getValues();
+      let streetNumber = '';
+      let streetAddress = '';
+      result.address_components.forEach((component) => {
+        setValueIfNotAlreadySet('city', values, component, 'locality');
+        setValueIfNotAlreadySet(
+          'state',
+          values,
+          component,
+          'administrative_area_level_1',
+          'short_name',
+        );
+        setValueIfNotAlreadySet('zipcode', values, component, 'postal_code');
+        if (component.types.includes('street_number')) {
+          streetNumber = component.short_name;
+        }
+        if (component.types.includes('route')) {
+          streetAddress = component.short_name;
+        }
+      });
+      if (streetNumber && streetAddress && !values.address1) {
+        setValue('address1', `${streetNumber} ${streetAddress}`);
+      }
+    }
+  }
 
   if (userProfile && userProfile.preciseLocation) {
     return (
@@ -140,12 +196,20 @@ function NewUser() {
   // };
 
   async function handleFormSubmit(values) {
+    const newValues = values;
     if (!userLocationInfo) {
       alert('Please select a location above.'); // eslint-disable-line no-alert
       return;
     }
 
-    const userUpdates = { ...values, ...userLocationInfo };
+    delete userLocationInfo.lookedUpAddress;
+
+    // Default the displayName if it isn't already set (e.g., when signing up using email).
+    if (!userData.get('displayName')) {
+      newValues.displayName = `${values.firstName} ${values.lastName}`;
+    }
+
+    const userUpdates = { ...newValues, ...userLocationInfo };
     await userRef.set(userUpdates, { merge: true });
     history.replace(SEARCH_PATH);
   }
@@ -218,29 +282,29 @@ function NewUser() {
                   fullWidth
                   inputRef={register}
                   error={!!errors.phone}
-                  helperText={errors.phone && 'phone must be valid'}
+                  helperText={errors.phone && 'Phone must be valid'}
                 />
               </Grid>
             </Grid>
             <Divider className={classes.optionalDivider} />
             <Typography variant="h6" gutterBottom>
-              Please click or tap on your location
+              Your Location
             </Typography>
             <Typography gutterBottom>
               A rough location is needed to allow us to efficiently and quickly
-              find a match. You can either click on the &quot;Detect
-              Location&quot; button below the map or click on the map to specify
-              the location.
+              find a match. You can do this in three ways: by entering your
+              address in the address field, by clicking the &quot;Detect
+              Location&quot; button, or by clicking on the map.{' '}
             </Typography>
             <Card>
               <ClickableMap
-                onLocationChange={setUserLocationInfo}
+                onLocationChange={handleSetUserLocationInfo}
                 locationInfo={userLocationInfo}
               />
             </Card>
             <Divider className={classes.optionalDivider} />
             <Typography variant="h6" gutterBottom>
-              Optional &ndash; Address
+              Address &ndash; Optional, but recommended
             </Typography>
             <Grid container>
               <Grid item sm={12}>
@@ -251,6 +315,7 @@ function NewUser() {
                   margin="normal"
                   fullWidth
                   inputRef={register}
+                  InputLabelProps={{ shrink: true }}
                   error={!!errors.address1}
                   helperText={errors.address1 && 'address1 must be valid'}
                 />
@@ -263,6 +328,7 @@ function NewUser() {
                   margin="normal"
                   fullWidth
                   inputRef={register}
+                  InputLabelProps={{ shrink: true }}
                   error={!!errors.address2}
                   helperText={errors.address2 && 'Address 2 must be valid'}
                 />
@@ -277,6 +343,7 @@ function NewUser() {
                   margin="normal"
                   fullWidth
                   inputRef={register}
+                  InputLabelProps={{ shrink: true }}
                   error={!!errors.city}
                   helperText={errors.city && 'City must be valid'}
                 />
@@ -289,6 +356,7 @@ function NewUser() {
                   margin="normal"
                   fullWidth
                   inputRef={register}
+                  InputLabelProps={{ shrink: true }}
                   error={!!errors.state}
                   helperText={errors.state && 'State must be valid'}
                 />
@@ -301,6 +369,7 @@ function NewUser() {
                   margin="normal"
                   fullWidth
                   inputRef={register}
+                  InputLabelProps={{ shrink: true }}
                   error={!!errors.zipcode}
                   helperText={errors.zipcode && 'State must be valid'}
                 />

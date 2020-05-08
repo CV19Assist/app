@@ -52,14 +52,16 @@ function RequestPage() {
     immediacy = parseInt(requestPublicSnap.get('d.immediacy'), 10);
   }
 
-  const { latitude, longitude } = requestPublicSnap.get('d.generalLocation');
-
+  const { latitude, longitude } =
+    requestPublicSnap.get('d.generalLocation') || {};
+  const generalLocationName =
+    requestPublicSnap.get('d.generalLocationName') || '';
   return (
     <>
       <Helmet>
         <title>
-          {requestPublicSnap.get('d.firstName')} &ndash;{' '}
-          {requestPublicSnap.get('d.generalLocationName')}
+          {requestPublicSnap.get('d.firstName') || ''} &ndash;{' '}
+          {generalLocationName}
         </title>
       </Helmet>
       <Container
@@ -73,7 +75,7 @@ function RequestPage() {
               user.uid &&
               requestPublicSnap.get('d.owner') === user.uid &&
               `${requestPublicSnap.get('d.lastName')} `} */}
-            &ndash; {requestPublicSnap.get('d.generalLocationName')}
+            &ndash; {generalLocationName}
           </Typography>
         </Container>
       </Container>
