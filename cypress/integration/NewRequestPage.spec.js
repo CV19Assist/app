@@ -35,6 +35,16 @@ describe('New Request Page', () => {
     cy.get(createSelector('phone')).type(phoneNumber);
     cy.get(createSelector('email')).type(email);
     cy.get(createSelector('submit-request')).click();
+    // Confirm that request is created before continuing
+    cy.waitUntil(() =>
+      cy
+        .callFirestore('get', 'requests', {
+          orderBy: ['createdAt', 'desc'],
+          limit: 1,
+        })
+        .then((requests) => requests && requests.length),
+    );
+    // Confirm request is created with correct data
     cy.callFirestore('get', 'requests', {
       orderBy: ['createdAt', 'desc'],
       limit: 1,
@@ -48,6 +58,7 @@ describe('New Request Page', () => {
       );
       expect(lastRequest).to.have.property('preciseLocation');
       expect(lastRequest).to.have.property('createdAt');
+      // Confirm that public request is created with id of request
       cy.callFirestore('get', `requests_public/${lastRequest.id}`).then(
         (publicRequest) => {
           cy.log('public request object', publicRequest);
@@ -56,6 +67,7 @@ describe('New Request Page', () => {
           expect(publicRequest).to.have.nested.property('d.createdAt');
         },
       );
+      // Confirm that public request contact is created with id of request
       cy.callFirestore('get', `requests_contact/${lastRequest.id}`).then(
         (requestContact) => {
           cy.log('public request object', requestContact);

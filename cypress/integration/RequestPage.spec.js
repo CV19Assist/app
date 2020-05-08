@@ -264,7 +264,7 @@ describe('Request Page', () => {
       });
     });
 
-    it.only('Allows admins to create public comments', () => {
+    it('Allows admins to create public comments', () => {
       const firstName = 'tester';
       const requestObj = {
         createdBy: Cypress.env('TEST_UID'),
