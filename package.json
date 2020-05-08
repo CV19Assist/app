@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "The spread of Coronavirus (COVID-19) is having a huge impact on our lives, especially those at high risk. It is more important now than ever for us to come together and support our communities, whether it be material support or emotional support. Our goal is to connect those in need with those that are able to help and spread positive vibes.",
   "main": "index.js",
   "scripts": {
@@ -20,8 +20,8 @@
     "functions:test": "npm run test --prefix functions",
     "functions:test:base": "npm run test:base --prefix functions",
     "functions:test:cov": "npm run test:cov --prefix functions",
-    "test": "cypress run",
-    "test:open": "cypress open",
+    "test": "env-cmd -f .env.next cypress run",
+    "test:open": "env-cmd -f .env.next cypress open",
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
     "emulators": "firebase emulators:start --only firestore,database",
     "emulators:all": "firebase emulators:start --only firestore,database,hosting",
@@ -56,11 +56,13 @@
   },
   "devDependencies": {
     "@googlemaps/google-maps-services-js": "^2.6.0",
+    "@sentry/cli": "^1.52.3",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
     "cypress": "^4.5.0",
     "cypress-firebase": "^1.1.0",
     "cypress-log-to-output": "^1.0.8",
+    "cypress-wait-until": "^1.6.1",
     "env-cmd": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
