@@ -23,7 +23,6 @@ function RequestActions({ requestPublicSnapshot }) {
   const [showAcceptanceWorkflow, setShowAcceptanceWorkflow] = useState(false);
   const [showReleaseWorkflow, setShowReleaseWorkflow] = useState(false);
   const [showCompletionWorkflow, setShowCompletionWorkflow] = useState(false);
-
   let body = null;
   const status = requestPublicSnapshot.get('d.status');
 
@@ -80,6 +79,7 @@ function RequestActions({ requestPublicSnapshot }) {
           <Button
             variant="outlined"
             className={classes.actionButton}
+            data-test="request-release-button"
             onClick={() => setShowReleaseWorkflow(true)}
             startIcon={<ReleaseIcon />}>
             RELEASE
@@ -90,6 +90,7 @@ function RequestActions({ requestPublicSnapshot }) {
             className={classes.actionButton}
             variant="contained"
             color="primary"
+            data-test="request-complete-button"
             onClick={() => setShowCompletionWorkflow(true)}
             startIcon={<CompleteIcon />}>
             COMPLETE
@@ -152,6 +153,7 @@ function RequestActions({ requestPublicSnapshot }) {
             onClick={() => setShowAcceptanceWorkflow(true)}
             variant="contained"
             color="primary"
+            data-test="request-assign-button"
             startIcon={<AcceptIcon />}>
             Assign to me
           </Button>
