@@ -1,11 +1,14 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { PubSub } from '@google-cloud/pubsub';
+import { GeoFirestore } from 'geofirestore';
 import { to } from 'utils/async';
 import {
   REQUESTS_COLLECTION,
   NOTIFICATIONS_SETTINGS_DOC,
   MAIL_COLLECTION,
+  USERS_PUBLIC_COLLECTION,
+  USERS_COLLECTION,
 } from 'constants/firestorePaths';
 import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
 
@@ -48,6 +51,8 @@ async function sendFcms(userUids) {
   }
 }
 
+const KM_TO_MILES = 1.609344;
+
 /**
  * Send messages for every new request that is created based on settings
  * in system_settings/notification document in Firestore
@@ -58,44 +63,82 @@ async function sendFcms(userUids) {
  * @returns {Promise} Results of request event create
  */
 async function requestCreatedEvent(snap, context) {
-  const { params } = context;
   const requestData = snap.data();
-  requestData.id = snap.id;
-  console.log('requestCreated onCreate event:', requestData, { params });
+  const { requestId } = context.params;
+  console.log('requestCreated onCreate event:', requestData, { requestId });
+  const { generalLocation } = requestData;
+  console.log('General location of request', generalLocation);
 
-  // Load settings doc
-  const settingsRef = admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC);
-  const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
+  // Load users within 60 miles of the request (limited to 50 users)
+  const searchDistance = 60;
+  const geofirestore = new GeoFirestore(admin.firestore());
+  const nearbyUsersSnap = await geofirestore
+    .collection(USERS_PUBLIC_COLLECTION)
+    .near({
+      /* eslint-disable no-underscore-dangle */
+      center: new admin.firestore.GeoPoint(
+        generalLocation._latitude,
+        generalLocation._longitude,
+      ),
+      /* eslint-enable no-underscore-dangle */
+      radius: KM_TO_MILES * searchDistance,
+    })
+    .limit(50);
 
-  // Handle errors loading settings docs
-  if (settingsDocErr) {
-    console.error(
-      `Error loading settings doc: ${settingsDocErr.message || ''}`,
-      settingsDocErr,
-    );
-  }
+  console.log('Nearby users results:', nearbyUsersSnap.size);
 
-  // Notify all users in newRequests parameter of system_settings/notification document
-  const { newRequests: userUids } = settingsDocSnap.data() || {};
-  await sendFcms(userUids);
+  // Load user accounts of nearby users (to check notification settings)
+  // TODO: Look into if a where with ids and notification settings performs better
+  const nearbyUsersAccountSnaps = await Promise.all(
+    nearbyUsersSnap.docs.map((userSnap) =>
+      admin.firestore().doc(`${USERS_COLLECTION}/${userSnap.id}`).get(),
+    ),
+  );
+  console.log('Nearby users accounts loaded:');
+
+  // Filter nearby users into ids of users with emails or browser notifications enabled
+  const { browserNotifUids, emailNotifUids } = nearbyUsersAccountSnaps.reduce(
+    (acc, userDocSnap) => {
+      // Browser notifications to users which have browser notifications enabled
+      if (userDocSnap.get('browserNotifications')) {
+        acc.browserNotifUids.push(userDocSnap.id);
+      }
+      // Email notifications to users which have super-admin role
+      if (userDocSnap.get('role') === 'super-admin') {
+        acc.emailNotifUids.push(userDocSnap.id);
+      }
+      return acc;
+    },
+    {
+      browserNotifUids: [],
+      emailNotifUids: [],
+    },
+  );
+  console.log('Notification settings:', {
+    browserNotifUids,
+    emailNotifUids,
+  });
+
+  // Send FCMs to all of the nearby users with browser notification setting enabled
+  await sendFcms(browserNotifUids);
 
   const projectId = getFirebaseConfig('projectId');
   // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
   const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
-
-  // Get list of UIDs to email based on notifications settings doc
-  const toUids = settingsDocSnap.get('newRequests');
-
+  // Send emails to users with email enabled
   const [sendMailRequestsErr] = await to(
     admin
       .firestore()
       .collection(MAIL_COLLECTION)
       .add({
-        toUids,
+        toUids: emailNotifUids,
         template: {
           name: 'new-request',
           data: {
-            requestData,
+            requestData: {
+              ...requestData,
+              id: requestId,
+            },
             projectDomain,
           },
         },
@@ -120,5 +163,5 @@ async function requestCreatedEvent(snap, context) {
  * @type {functions.CloudFunction}
  */
 export default functions.firestore
-  .document(`${REQUESTS_COLLECTION}/{docId}`)
+  .document(`${REQUESTS_COLLECTION}/{requestId}`)
   .onCreate(requestCreatedEvent);

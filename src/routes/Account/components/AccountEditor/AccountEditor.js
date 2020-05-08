@@ -22,7 +22,6 @@ function AccountEditor() {
   const accountRef = firestore.doc(`users/${user.uid}`);
   const profileSnap = useFirestoreDoc(accountRef);
   const profile = profileSnap.data();
-  console.log('project', profileSnap, profile);
 
   async function updateAccount(changedAccount) {
     analytics.logEvent('account-update');
