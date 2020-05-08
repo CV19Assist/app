@@ -13,6 +13,7 @@ import { useUser } from 'reactfire';
 import { NEW_REQUEST_PATH, SEARCH_PATH, LOGIN_PATH } from 'constants/paths';
 import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
+import HowItWorks from './HowItWorks';
 
 const useStyles = makeStyles(styles);
 
@@ -121,6 +122,8 @@ function Homepage() {
               </div>
             </Paper>
           </Grid>
+
+          <HowItWorks />
 
           <Grid item md={12}>
             <Typography variant="h6">Press Coverage</Typography>
