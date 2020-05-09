@@ -3,6 +3,7 @@ export const ACCOUNT_PATH = '/account';
 export const LOGIN_PATH = '/login';
 export const LOGOUT_PATH = '/logout';
 export const SEARCH_PATH = '/search';
+export const USER_PROFILE_PATH = '/user-profile';
 
 export const PRIVACY_POLICY_PATH = '/privacy-policy';
 export const TERMS_OF_SERVICE_PATH = '/terms-of-service';
