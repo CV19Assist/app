@@ -5,7 +5,7 @@ export default {
   path,
   component: loadable(() =>
     import(
-      /* webpackChunkName: 'User Profile */ './components/UserProfilePage'
+      /* webpackChunkName: 'User Profile' */ './components/UserProfilePage'
     ),
   ),
 };

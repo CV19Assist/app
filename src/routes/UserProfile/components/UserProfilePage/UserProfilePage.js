@@ -5,30 +5,22 @@ import {
   Paper,
   Divider,
   Button,
-  Card,
-  CardActions,
-  CardContent,
   Container,
   Grid,
   makeStyles,
 } from '@material-ui/core';
-import {
-  ExitToApp as LogoutIcon,
-  Person as AccountIcon,
-} from '@material-ui/icons';
 import { Link, useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import Check from '@material-ui/icons/Check';
 import * as Yup from 'yup';
 import { useFirestore, useUser } from 'reactfire';
-import { USERS_COLLECTION } from 'constants/collections';
+import { USERS_PRIVILEGED_COLLECTION } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from 'utils/form';
-import { ACCOUNT_PATH, LOGOUT_PATH, SEARCH_PATH } from 'constants/paths';
+import { SEARCH_PATH } from 'constants/paths';
 import styles from './UserProfilePage.styles';
 
 const useStyles = makeStyles(styles);
@@ -46,24 +38,10 @@ const userProfileSchema = Yup.object().shape({
   state: Yup.string(),
   zipcode: Yup.string(),
 });
+const userFields = Object.keys(userProfileSchema.describe().fields);
 
 function getSteps() {
   return ['Email', 'Password', 'Contact Info', 'Location'];
-}
-
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return 'Email';
-    case 1:
-      return 'Password';
-    case 2:
-      return 'Contact Info';
-    case 3:
-      return 'Where Are You?';
-    default:
-      return 'Unknown step';
-  }
 }
 
 function isLoggedIn(user) {
@@ -84,18 +62,10 @@ function UserProfile() {
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+  const [formValues, setFormValues] = useState(null);
 
   const [activeStep, setActiveStep] = useState(0);
   const steps = getSteps();
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
 
   // Because of timing issues, this component will likely get run before the server has applied
   // the requested document access resulting in almost a guranteed permission-denied error. So,
@@ -104,10 +74,9 @@ function UserProfile() {
   useEffect(() => {
     async function getData() {
       try {
-        const ref = firestore.doc(`${USERS_COLLECTION}/${user.uid}`);
+        const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
         // Call it once because this will throw the permission exception.
         setUserData(await ref.get());
-        setUserProfile(await ref.get());
         setUserRef(ref);
       } catch (err) {
         // We only try reloading if insufficient permissions.
@@ -120,17 +89,15 @@ function UserProfile() {
       }
     }
     getData();
+    console.log('Got data');
+    if (userData) {
+      userFields.forEach(function getDefaults(key) {
+        defaultValues[key] = userData.get(key);
+      });
+      console.log('Loaded data into defaults', defaultValues);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retries]);
-
-  if (user && user.uid) {
-    defaultValues.email = user.email;
-    const nameParts = user.displayName?.split(' ');
-    if (nameParts) {
-      [defaultValues.firstName] = nameParts;
-      defaultValues.lastName = nameParts.length > 1 ? nameParts[1] : '';
-    }
-  }
 
   const {
     handleSubmit,
@@ -143,6 +110,27 @@ function UserProfile() {
     validationSchema: userProfileSchema,
     defaultValues,
   });
+
+  console.log('Form values', formValues);
+  if (formValues) {
+    Object.keys(formValues).forEach(function getDefaults(key) {
+      defaultValues[key] = formValues[key];
+    });
+    console.log('Updated data into defaults', defaultValues);
+  }
+
+  const handleNext = () => {
+    console.log('Data from this form (Next)', { ...getValues() });
+    setFormValues({ ...formValues, ...getValues() });
+    setActiveStep(activeStep + 1);
+  };
+
+  const handleBack = () => {
+    console.log('Data from this form (Back)', { ...getValues() });
+    setFormValues({ ...formValues, ...getValues() });
+    setActiveStep(activeStep - 1);
+  };
+
   const [userLocationInfo, setUserLocationInfo] = useState(null);
 
   /**
@@ -363,7 +351,25 @@ function UserProfile() {
             </Stepper>
           </Container>
           <Container>
-            {renderFields(activeStep)}
+            <div>{renderFields(activeStep)}</div>
+            <div>
+              <Button disabled={activeStep === 0} onClick={handleBack}>
+                Back
+              </Button>
+              {activeStep === steps.length - 1 ? (
+                <Button variant="contained" color="primary" type="submit">
+                  Finish
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}>
+                  Next
+                </Button>
+              )}
+            </div>
+
             <Typography className={classes.warrantyInfo}>
               Note: This website and all related work products are provided
               &quot;AS IS&quot;. The provider of this service makes no other
@@ -376,28 +382,6 @@ function UserProfile() {
                 Please fix the errors above.
               </Typography>
             )}
-            <div>
-              <div>
-                <Typography>{getStepContent(activeStep)}</Typography>
-                <div>
-                  <Button disabled={activeStep === 0} onClick={handleBack}>
-                    Back
-                  </Button>
-                  {activeStep === steps.length - 1 ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleNext}>
-                      Next
-                    </Button>
-                  ) : (
-                    <Button variant="contained" color="primary" type="submit">
-                      Finish
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
           </Container>
         </form>
       </Paper>
