@@ -66,18 +66,14 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   });
 
   it('exits if general location does not exist', async () => {
-    const requestId = 'ABC123';
     const requestObj = { some: 'data' };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
-      `requests/${requestId}`,
+      `requests/${REQUEST_ID}`,
     );
-    // topic.on('message', messageHandler);
     // Calling wrapped function with fake snap and context
     const result = await requestCreated(snap, context);
     expect(result).to.be.null;
-    // Listen for new messages until timeout is hit
-    // Load data to confirm user has been deleted
   });
 
   it('exits if no users are nearby request', async () => {
@@ -91,7 +87,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
-      'requests/ABC123',
+      `requests/${REQUEST_ID}`,
     );
     // Calling wrapped function with fake snap and context
     const result = await requestCreated(snap, context);
@@ -99,7 +95,6 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   });
 
   it('Exits if none of the found users have browser notifications enabled', async () => {
-    const requestId = 'ABC123';
     // TODO: Switch to a Geopoint once it is supported for Firebase testing
     // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
     const requestObj = {
@@ -110,7 +105,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
-      `requests/${requestId}`,
+      `requests/${REQUEST_ID}`,
     );
     const userId = 'DBC123';
     const userObject = {
@@ -150,8 +145,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   });
 
   // Skipped since Firestore Emulator doesn't currently support Geopoints
-  it('sends message to users within range', async () => {
-    const requestId = 'ABC123';
+  it('sends message to users within range with browserNotifications: true', async () => {
     // TODO: Switch to a Geopoint once it is supported for Firebase testing
     // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
     const requestObj = {
@@ -162,7 +156,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
-      `requests/${requestId}`,
+      `requests/${REQUEST_ID}`,
     );
     const userId = 'DBC123';
     const userObject = {
@@ -214,5 +208,78 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     topic.on('message', messageHandler);
     // Trigger function with fake request data and context (expectations in message handler)
     await requestCreated(snap, context);
+  });
+
+  // Skipped since Firestore Emulator doesn't currently support Geopoints
+  it.only('sends emails to users with role "super-admin"', async () => {
+    // TODO: Switch to a Geopoint once it is supported for Firebase testing
+    // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
+    const requestObj = {
+      preciseLocation: {
+        latitude: 43.074586,
+        longitude: DEFAULT_LONGITUDE,
+      },
+    };
+    const snap = functionsTest.firestore.makeDocumentSnapshot(
+      requestObj,
+      `requests/${REQUEST_ID}`,
+    );
+    const userId = 'DBC123';
+    const userObject = {
+      d: {
+        displayName: 'asdf',
+        generalLocation: {
+          latitude: DEFAULT_LATITUDE,
+          longitude: DEFAULT_LONGITUDE,
+        },
+      },
+      g: 'dp84p4x9e9',
+      l: {
+        latitude: DEFAULT_LATITUDE,
+        longitude: DEFAULT_LONGITUDE,
+      },
+    };
+    await adminApp.firestore().doc(`users_public/${userId}`).set(userObject);
+    await adminApp
+      .firestore()
+      .doc(`users/${userId}`)
+      .set({ role: 'super-admin' });
+
+    // TODO: Switch to this when geopoint is supported in emulator
+    // const userObject = {
+    //   displayName: 'asdf',
+    //   generalLocation: new admin.firestore.GeoPoint(
+    //     DEFAULT_LATITUDE,
+    //     DEFAULT_LONGITUDE,
+    //   ),
+    // };
+    // const geofirestore = new GeoFirestore(adminApp.firestore());
+    // await geofirestore
+    //   .collection('users_public')
+    //   .doc('ABC123')
+    //   .set(userObject, { customKey: 'generalLocation' });
+    // console.log('After user create', usersPublic);
+    // Create fake topic and subscription in Pubsub
+    // Trigger function with fake request data and context (expectations in message handler)
+    await requestCreated(snap, context);
+
+    const mailSnaps = await adminApp.firestore().collection('mail').get();
+    const mailDocs = mailSnaps.docs.map((mailDoc) => ({
+      id: mailDoc.id,
+      ...mailDoc.data(),
+    }));
+    const [firstMailDoc] = mailDocs;
+    expect(firstMailDoc).to.have.nested.property(
+      'template.name',
+      'new-request',
+    );
+    expect(firstMailDoc).to.have.nested.property(
+      'template.data.projectDomain',
+      `${process.env.GCLOUD_PROJECT}.web.app`,
+    );
+    expect(firstMailDoc).to.have.nested.property(
+      'template.data.requestData.id',
+      REQUEST_ID,
+    );
   });
 });

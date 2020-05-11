@@ -145,7 +145,11 @@ function NewUser() {
       return;
     }
 
-    const userUpdates = { ...values, ...userLocationInfo };
+    const userUpdates = {
+      ...values,
+      ...userLocationInfo,
+      browserNotifications: true,
+    };
     await userRef.set(userUpdates, { merge: true });
     history.replace(SEARCH_PATH);
   }
