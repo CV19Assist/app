@@ -76,6 +76,7 @@ The application structure presented in this boilerplate is **fractal**, where fu
 │   └── index.html           # Main HTML page container for app
 ├── public                   # All build-related configuration
 │   └── index.html           # Main HTML page container for app
+├── rules-tests              # Rules tests
 ├── src                      # Application source code
 │   ├── components           # Global Reusable Presentational Components
 │   ├── constants            # Project constants such as firebase paths and form names
@@ -201,6 +202,12 @@ Mocha/Chai are used to run Functions unit tests. Unit tests are run against Fire
 
 - Start emulators and run functions unit tests: `yarn functions:test`
 - Start emulators and run functions unit tests, generating coverage: `yarn functions:test:cov`
+
+### Rules Tests
+
+Mocha/Chai are used to run Rules tests, for example against Firestore Security Rules. This script will start the emulators and run the tests:
+
+`yarn test-rules`
 
 ## Deployment
 
