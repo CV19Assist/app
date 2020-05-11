@@ -13,7 +13,7 @@ import { useUser } from 'reactfire';
 import { NEW_REQUEST_PATH, SEARCH_PATH, LOGIN_PATH } from 'constants/paths';
 import RequestsMap from './RequestsMap';
 import styles from './HomePage.styles';
-import HowItWorks from './HowItWorks';
+import HowItWorks from '../HowItWorks/HowItWorks';
 
 const useStyles = makeStyles(styles);
 

@@ -15,25 +15,20 @@ export default (theme) => ({
     marginBottom: theme.spacing(4),
   },
   SubtitleCard: {
-    margin: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    marginRight: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+    marginBottom: theme.spacing(4),
   },
   contentCard: {
     marginTop: theme.spacing(2),
   },
   image: {
-    height: 160,
-    maxWidth: 160,
+    width: '160px',
+    marginBottom: theme.spacing(1),
   },
   divider: {
     margin: theme.spacing(2),
-    zIndex: 5,
-  },
-  titleIndications: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-  contentIndications: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+    width: '100%',
   },
 });
