@@ -40,12 +40,13 @@ jobs:
 
       - name: Install Dependencies
         env:
-          CI: true
+          CI: 1
           CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           yarn install --frozen-lockfile
           yarn --cwd functions install --frozen-lockfile
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
 
       - name: Verify Functions
         # NOTE: Project name is hardcoded since emulators are being used
