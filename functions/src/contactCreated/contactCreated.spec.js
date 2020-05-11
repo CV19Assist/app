@@ -10,7 +10,7 @@ const eventPath = 'users';
 
 const contactCreated = functionsTest.wrap(contactCreatedOriginal);
 
-describe('contactCreated Firestore Cloud Function (onCreate)', () => {
+describe.skip('contactCreated Firestore Cloud Function (onCreate)', () => {
   beforeEach(async () => {
     // Clean database before each test
     await firebaseTesting.clearFirestoreData({
@@ -19,7 +19,7 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
   });
   // Skipped because test will sometimes timeout within CI as seen
   // here: https://github.com/CV19Assist/app/runs/621415013?check_suite_focus=true#step:8:78
-  it.skip('writes request to mail collection when contact is created', async function () {
+  it('writes request to mail collection when contact is created', async function () {
     this.retries(3);
     this.timeout(5000);
     const eventData = { message: '' };
