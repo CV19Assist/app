@@ -86,7 +86,7 @@ describe('New Request Page', () => {
       .should('be.checked');
   });
 
-  describe('when authenticated', () => {
+  describe.skip('when authenticated', () => {
     before(() => {
       cy.login();
     });
