@@ -52,9 +52,9 @@ jobs:
       - name: Set Test Environment Settings
         env:
           MASTER_SERVICE_ACCOUNT: ${{ secrets.MASTER_SERVICE_ACCOUNT }}
+          MASTER_TEST_UID: ${{ secrets.MASTER_TEST_UID }}
           NEXT_SERVICE_ACCOUNT: ${{ secrets.NEXT_SERVICE_ACCOUNT }}
           NEXT_TEST_UID: ${{ secrets.NEXT_TEST_UID }}
-          MASTER_TEST_UID: ${{ secrets.MASTER_TEST_UID }}
           PRODUCTION_TEST_UID: ${{ secrets.PRODUCTION_TEST_UID }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF: ${{ github.ref }}
@@ -63,7 +63,7 @@ jobs:
           set -o pipefail
 
           export GIT_BRANCH=${GITHUB_REF##*/}
-          export GCLOUD_PROJECT=$(cat .firebaserc | jq -r --arg GIT_BRANCH "$GIT_BRANCH" '.projects[$GIT_BRANCH] // .projects.next')
+          export GCLOUD_PROJECT=$(cat .firebaserc | jq -r --arg GIT_BRANCH "$GIT_BRANCH" '.projects[$GIT_BRANCH] // .projects.default')
           echo "::set-env name=GCLOUD_PROJECT::$GCLOUD_PROJECT"
           echo "Environment set for branch: $GIT_BRANCH and project: $GCLOUD_PROJECT"
   
@@ -80,10 +80,10 @@ jobs:
 
           branchPrefix=$(echo $gitBranch | tr a-z A-Z | tr - _)
 
-          # Get value of SERVICE_ACCOUNT associated with branch (i.e. STAGE_SERVICE_ACCOUNT)
+          # Get value of SERVICE_ACCOUNT associated with branch (i.e. NEXT_SERVICE_ACCOUNT)
           branchSaKey="${branchPrefix}_SERVICE_ACCOUNT"
           branchSa=$(eval echo \$${branchSaKey})
-          serviceAccount=$(if [ ! -z "${branchSa}" ]; then echo $branchSa; else echo $NEXT_SERVICE_ACCOUNT; fi;)
+          serviceAccount=$(if [ ! -z "${branchSa}" ]; then echo $branchSa; else echo $MASTER_SERVICE_ACCOUNT; fi;)
           echo "::set-env name=SERVICE_ACCOUNT::$serviceAccount"
           
           # Generate Service Account file required to prevent credential error (jq used to format)
@@ -94,11 +94,11 @@ jobs:
           # Get value of TEST_UID associated with branch (i.e. MASTER_TEST_UID)
           branchTestUidKey="${branchPrefix}_TEST_UID"
           branchTestUid=$(eval echo \$${branchTestUidKey})
-          testUid=$(if [ ! -z "${branchTestUid}" ]; then echo $branchTestUid; else echo $NEXT_TEST_UID; fi;)
+          testUid=$(if [ ! -z "${branchTestUid}" ]; then echo $branchTestUid; else echo $MASTER_TEST_UID; fi;)
           echo "::set-env name=CYPRESS_TEST_UID::$testUid"
 
           branchEnvFileName=env.$gitBranch
-          envFileName=$(if [ -f "$branchEnvFileName" ]; then echo $branchEnvFileName; else echo .env.next; fi;)
+          envFileName=$(if [ -f "$branchEnvFileName" ]; then echo $branchEnvFileName; else echo .env.staging; fi;)
           echo "Loading config from file $envFileName"
           for v in `cat $envFileName` ; do echo "::set-env name=CYPRESS_${v%%=*}::${v##*=}" ; done
 
@@ -111,7 +111,8 @@ jobs:
       - name: Verify App
         run: |
           yarn lint # Check for lint in app code
-          yarn build:staging # Build app bundles
+          buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
+          yarn $buildCommand
 
       - name: Verify Functions
         run: |

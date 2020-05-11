@@ -113,7 +113,11 @@ function CommentList({ requestId }) {
           // When new comment is added locally, the createdAt can be the serverTimestamp() value.
           // So, we wait on rendering until any new snapshot has finished writing.
           !docSnap.metadata.hasPendingWrites && (
-            <ListItem key={docSnap.id} divider alignItems="flex-start">
+            <ListItem
+              key={docSnap.id}
+              divider
+              alignItems="flex-start"
+              data-test="private-comment">
               <ListItemAvatar>
                 <Avatar>{docSnap.get('author.firstName').slice(0, 1)}</Avatar>
               </ListItemAvatar>
@@ -175,7 +179,11 @@ function CommentEntry({ requestId }) {
   );
 
   if (!showForm) {
-    return <Button onClick={() => setShowForm(true)}>Add Comment</Button>;
+    return (
+      <Button onClick={() => setShowForm(true)} data-test="add-private-comment">
+        Add Comment
+      </Button>
+    );
   }
 
   async function onSubmit(values) {
@@ -185,8 +193,8 @@ function CommentEntry({ requestId }) {
       createdBy: user.uid,
       createdAt: FieldValue.serverTimestamp(),
       author: {
-        firstName: userProfile.get('firstName'),
-        displayName: userProfile.get('displayName'),
+        firstName: userProfile.get('firstName') || '',
+        displayName: userProfile.get('displayName') || '',
       },
       contentType: 'text',
       content: values.comment,
@@ -212,6 +220,7 @@ function CommentEntry({ requestId }) {
         variant="outlined"
         fullWidth
         margin="dense"
+        data-test="private-comment-input"
         error={!!errors.comment}
         helperText={errors.comment && 'Please enter a comment.'}
         inputRef={register({ required: true })}
@@ -221,6 +230,7 @@ function CommentEntry({ requestId }) {
         color="primary"
         variant="contained"
         type="submit"
+        data-test="submit-private-comment"
         disabled={isSubmitting}>
         Add Comment
       </Button>
