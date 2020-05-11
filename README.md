@@ -32,8 +32,8 @@
 
 ## Getting Started
 
-1. Install app and functions dependencies: `yarn install && yarn install --prefix functions`
-1. Copy settings from one of the `.env.*` files into `.env.local` - this is not tracked by git and will be how your local development project gets Firebase config.
+1. Install app and functions dependencies: `yarn install && yarn install --cwd functions`
+1. Copy settings from one of the `.env.*` files, such as `.env.next` into `.env.local` <!-- - this is not tracked by git and will be how your local development project gets Firebase config. -->
 1. Start Development server: `yarn start`
 
 While developing, you will probably rely mostly on `yarn start`; however, there are additional scripts at your disposal:
@@ -177,6 +177,15 @@ export default {
 
 ## Testing
 
+### Testing Setup
+
+1. Visit the [Firebase Console](https://console.firebase.google.com/)
+1. Select your project
+1. Navigate to Project Settings (gear icon button at the top left of the page).
+1. Navigate to "Service Accounts" tab
+1. Click "Generate New Private Key"
+1. Save the service account file to the root of the repo under `serviceAccount.json`
+
 ### UI Tests
 
 Cypress is used to write and run UI tests which live in the `cypress` folder. The following scripts can be used to run tests:
@@ -193,7 +202,6 @@ To run tests against emulators:
 To Run tests in CI add the following environment variables within your CI provider:
 
 - `SERVICE_ACCOUNT` - Used to create custom auth tokens for test user login
-- `FIREBASE_APP_NAME` - name of Firebase app (used to load SDK config)
 - `TEST_UID` - UID of the user used for testing
 
 ### Functions Unit Tests
@@ -202,33 +210,6 @@ Mocha/Chai are used to run Functions unit tests. Unit tests are run against Fire
 
 - Start emulators and run functions unit tests: `yarn functions:test`
 - Start emulators and run functions unit tests, generating coverage: `yarn functions:test:cov`
-
-## Deployment
-
-Build code before deployment by running `yarn build`. There are multiple options below for types of deployment, if you are unsure, checkout the Firebase section.
-
-Before starting make sure to install Firebase Command Line Tool: `npm i -g firebase-tools`
-
-#### CI Deploy (recommended)
-
-**Note**: Config for this is located within
-`firebase-ci` has been added to simplify the CI deployment process. All that is required is providing authentication with Firebase:
-
-1. Login: `firebase login:ci` to generate an authentication token (will be used to give CI rights to deploy on your behalf)
-1. Set `FIREBASE_TOKEN` environment variable within CI environment
-1. Run a build on CI
-
-If you would like to deploy to different Firebase instances for different branches (i.e. `prod`), change `ci` settings within `.firebaserc`.
-
-For more options on CI settings checkout the [firebase-ci docs](https://github.com/prescottprue/firebase-ci)
-
-#### Manual deploy
-
-1. Run `firebase:login`
-1. Build Project: `yarn build`
-1. Deploy to Firebase (everything including Hosting and Functions): `firebase deploy`
-
-**NOTE:** You can use `yarn start:dist` to test how your application will work when deployed to Firebase.
 
 ## FAQ
 

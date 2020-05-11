@@ -20,7 +20,7 @@
     "functions:test": "firebase emulators:exec --only firestore,database,pubsub \"npm run functions:test:base\"",
     "functions:test:cov": "firebase emulators:exec --only firestore,database,pubsub \"npm run functions:test:cov:base\"",
     "functions:test:base": "npm run test:base --prefix functions",
-    "functions:test:cov:base": "npm run test:cov --prefix functions",
+    "functions:test:cov:base": "npm run test:cov:base --prefix functions",
     "test": "env-cmd -f .env.next cypress run",
     "test:open": "env-cmd -f .env.next cypress open",
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
