@@ -98,7 +98,7 @@ service cloud.firestore {
       // allow create: if isOwnerOfRequest(request.resource);
       // TODO: Fix this
       allow create;
-      allow read;
+      allow read: if isSystemAdmin();
     }
 
     // Contact info for a request - requires contact info access
