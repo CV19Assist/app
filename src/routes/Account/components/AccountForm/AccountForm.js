@@ -64,7 +64,7 @@ function AccountForm({ account, onSubmit }) {
               name="emailNotifications"
               color="primary"
               inputRef={register}
-              defaultChecked={account?.emailNotifications}
+              defaultChecked={account?.emailNotifications || false}
             />
           }
           label="Email Notifications"
@@ -75,7 +75,7 @@ function AccountForm({ account, onSubmit }) {
               name="browserNotifications"
               color="primary"
               inputRef={register}
-              defaultChecked={account?.browserNotifications}
+              defaultChecked={account?.browserNotifications || false}
             />
           }
           label="Browser Notifications"

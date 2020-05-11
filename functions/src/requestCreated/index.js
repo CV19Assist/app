@@ -67,34 +67,52 @@ async function requestCreatedEvent(snap, context) {
   const requestData = snap.data();
   const { requestId } = context.params;
   console.log('requestCreated onCreate event:', requestData, { requestId });
-  const { generalLocation } = requestData;
-  if (!generalLocation) {
-    console.error(`General location not found on request with id ${requestId}`);
+  const { preciseLocation } = requestData;
+
+  // Exit if precise location is not on request object
+  if (!preciseLocation) {
+    console.error(`Precise location not found on request with id ${requestId}`);
     return null;
   }
-  console.log('General location of request', generalLocation);
 
-  // Load users within 60 miles of the request (limited to 50 users)
+  console.log('Precise location of request', preciseLocation);
+
+  // Query user public accounts within 60 miles of the request
   const searchDistance = 60;
   const geofirestore = new GeoFirestore(admin.firestore());
-  const nearbyUsersSnap = await geofirestore
-    .collection(USERS_PUBLIC_COLLECTION)
-    .near({
-      /* eslint-disable no-underscore-dangle */
-      center: new admin.firestore.GeoPoint(
-        generalLocation.latitude,
-        generalLocation.longitude,
-      ),
-      /* eslint-enable no-underscore-dangle */
-      radius: KM_TO_MILES * searchDistance,
-    })
-    .limit(50);
+  const [nearbyUsersErr, nearbyUsersSnaps] = await to(
+    geofirestore
+      .collection(USERS_PUBLIC_COLLECTION)
+      .near({
+        /* eslint-disable no-underscore-dangle */
+        center: new admin.firestore.GeoPoint(
+          preciseLocation.latitude,
+          preciseLocation.longitude,
+        ),
+        /* eslint-enable no-underscore-dangle */
+        radius: KM_TO_MILES * searchDistance,
+      })
+      // Limit was causing issue
+      // .limit(50)
+      .get(),
+  );
 
-  console.log('Nearby users results:', nearbyUsersSnap.size);
+  if (nearbyUsersErr) {
+    console.error(
+      `Error querying for nearby users for request "${requestId}":`,
+      nearbyUsersErr.message,
+    );
+    throw nearbyUsersErr;
+  }
+
+  console.log(
+    `Nearby user results for request "${requestId}":`,
+    nearbyUsersSnaps.docs.map((nearbyUserDoc) => nearbyUserDoc.id),
+  );
 
   // Exit if no users found nearby
   // TODO: Discuss switching this searching again within a bigger radius
-  if (!nearbyUsersSnap.size) {
+  if (!nearbyUsersSnaps.docs.length) {
     console.log('No nearby users found, exiting');
     return null;
   }
@@ -102,12 +120,15 @@ async function requestCreatedEvent(snap, context) {
   // Load user accounts of nearby users (to check notification settings)
   // TODO: Look into if a where with ids and notification settings performs better
   const nearbyUsersAccountSnaps = await Promise.all(
-    nearbyUsersSnap.docs.map((userSnap) =>
+    nearbyUsersSnaps.docs.map((userSnap) =>
       admin.firestore().doc(`${USERS_COLLECTION}/${userSnap.id}`).get(),
     ),
   );
   console.log('Nearby users accounts loaded:', nearbyUsersAccountSnaps.length);
-
+  console.log(
+    `Nearby user accounts for request "${requestId}":`,
+    nearbyUsersAccountSnaps.map((nearbyUserDoc) => nearbyUserDoc.data()),
+  );
   // Filter nearby users into ids of users with emails or browser notifications enabled
   const { browserNotifUids, emailNotifUids } = nearbyUsersAccountSnaps.reduce(
     (acc, userDocSnap) => {
@@ -130,6 +151,12 @@ async function requestCreatedEvent(snap, context) {
     browserNotifUids,
     emailNotifUids,
   });
+
+  // Exit if none of the users within range have notifications enabled
+  if (!browserNotifUids.length && !emailNotifUids.length) {
+    console.log('No users have browser notifications enabled. Exiting...');
+    return null;
+  }
 
   // Send FCMs to all of the nearby users with browser notification setting enabled
   await sendFcms(browserNotifUids);

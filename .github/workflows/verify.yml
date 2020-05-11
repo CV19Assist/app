@@ -130,7 +130,7 @@ jobs:
           install: false
           browser: chrome
           group: 'UI Tests'
-          start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
+          start: yarn emulators:serve --project ${{ env.GCLOUD_PROJECT }}
           wait-on: ${{ env.CYPRESS_BASE_URL }}
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180

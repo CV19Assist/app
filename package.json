@@ -25,7 +25,8 @@
     "test:open": "cypress open",
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
     "emulators": "firebase emulators:start --only firestore,database,pubsub",
-    "emulators:all": "firebase emulators:start",
+    "emulators:serve": "firebase emulators:start --only firestore,database,pubsub,hosting",
+    "emulators:all": "firebase emulators:start --only firestore,database,pubsub,functions",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --single-quote --no-semi --trailing-comma none --write \"src/**/*.js\""
