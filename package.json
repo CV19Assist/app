@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.6.3",
+  "version": "0.6.5",
   "description": "The spread of Coronavirus (COVID-19) is having a huge impact on our lives, especially those at high risk. It is more important now than ever for us to come together and support our communities, whether it be material support or emotional support. Our goal is to connect those in need with those that are able to help and spread positive vibes.",
   "main": "index.js",
   "scripts": {
@@ -20,11 +20,13 @@
     "functions:test": "npm run test --prefix functions",
     "functions:test:base": "npm run test:base --prefix functions",
     "functions:test:cov": "npm run test:cov --prefix functions",
-    "test": "cypress run",
-    "test:open": "cypress open",
+    "test": "env-cmd -f .env.next cypress run",
+    "test:open": "env-cmd -f .env.next cypress open",
     "test:emulate": "cross-env FIREBASE_DATABASE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.database.port)\"  FIRESTORE_EMULATOR_HOST=\"localhost:$(cat firebase.json | jq .emulators.firestore.port)\" npm run test:open",
     "emulators": "firebase emulators:start --only firestore,database",
     "emulators:all": "firebase emulators:start --only firestore,database,hosting",
+    "test-rules": "firebase emulators:exec --only firestore,database \"npm run test-rules:base\"",
+    "test-rules:base": "cross-env FIRESTORE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ./firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=$(cat ./firebase.json | jq '.emulators.pubsub.port') mocha --timeout 10000 ./rules-tests/*.js",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --single-quote --no-semi --trailing-comma none --write \"src/**/*.js\""
@@ -56,12 +58,14 @@
   },
   "devDependencies": {
     "@googlemaps/google-maps-services-js": "^2.6.0",
+    "@firebase/testing": "^0.19.0",
     "@sentry/cli": "^1.52.3",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
     "cypress": "^4.5.0",
     "cypress-firebase": "^1.1.0",
     "cypress-log-to-output": "^1.0.8",
+    "cypress-wait-until": "^1.6.1",
     "env-cmd": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
@@ -80,6 +84,7 @@
     "firebase-tools": "^8.2.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.1.3",
+    "mocha": "^7.1.1",
     "prettier": "^2.0.5",
     "react-scripts": "^3.4.0"
   },
