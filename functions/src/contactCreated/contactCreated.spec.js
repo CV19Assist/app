@@ -21,6 +21,7 @@ describe('contactCreated Firestore Cloud Function (onCreate)', () => {
   // here: https://github.com/CV19Assist/app/runs/621415013?check_suite_focus=true#step:8:78
   it('writes request to mail collection when contact is created', async function () {
     this.retries(3);
+    this.timeout(5000);
     const eventData = { message: '' };
     const userUid = '123ABC';
     // Build onCreate

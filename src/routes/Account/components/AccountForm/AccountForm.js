@@ -57,7 +57,7 @@ function AccountForm({ account, onSubmit }) {
         </div>
       )}
       <div className={classes.settings}>
-        <Typography variant="h5">Email Settings</Typography>
+        <Typography variant="h5">Notification Settings</Typography>
         <FormControlLabel
           control={
             <Switch
