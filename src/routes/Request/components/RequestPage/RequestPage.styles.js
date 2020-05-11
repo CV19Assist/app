@@ -19,6 +19,15 @@ export default (theme) => ({
     position: 'relative',
     marginTop: theme.spacing(-11),
   },
+  basicInfoContainer: {
+    display: 'flex',
+  },
+  mobileImageContainer: {
+    textAlign: 'center',
+  },
+  basicInfo: {
+    flexGrow: 1,
+  },
   actionButton: {
     merginRight: theme.spacing(2),
     merginLeft: theme.spacing(2),

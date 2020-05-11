@@ -245,11 +245,14 @@ function NewRequestPage() {
                 <Typography variant="h5" gutterBottom>
                   Your Location
                 </Typography>
-                <Typography variant="body2" className={classes.intro}>
+                <Typography className={classes.intro}>
                   A rough location is needed to allow us to efficiently and
-                  quickly find a match for your need. You can either click on
-                  the &quot;Detect Location&quot; button below the map or click
-                  on the map to specify the location.
+                  quickly find a match for your need. You can do this in three
+                  ways: by entering your address in the address field, by
+                  clicking the &quot;Detect Location&quot; button, or by
+                  clicking on the map. If you decide to enter the address, we
+                  will not save the actual address and instead use it to get the
+                  location.
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
@@ -269,9 +272,16 @@ function NewRequestPage() {
                 <Typography variant="h5" gutterBottom>
                   Contact Information
                 </Typography>
+                <Typography gutterBottom>
+                  To minimize exposing your contact information, we do not
+                  display it unless a volunteer specifically requests to see it.
+                  To further discourage any abuse, we do not display your last
+                  name and also keep track of all the volunteers who have looked
+                  up your contact information.
+                </Typography>
 
                 <Grid container spacing={2}>
-                  <Grid item sm={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       name="firstName"
                       data-test="firstName"
@@ -284,7 +294,7 @@ function NewRequestPage() {
                       helperText={errors?.firstName?.message}
                     />
                   </Grid>
-                  <Grid item sm={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       name="lastName"
                       data-test="lastName"
@@ -297,7 +307,7 @@ function NewRequestPage() {
                       helperText={errors?.firstName?.message}
                     />
                   </Grid>
-                  <Grid item sm={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       name="phone"
                       data-test="phone"
@@ -310,7 +320,7 @@ function NewRequestPage() {
                       helperText={errors?.phone?.message}
                     />
                   </Grid>
-                  <Grid item sm={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       name="email"
                       type="text"
@@ -324,6 +334,14 @@ function NewRequestPage() {
                     />
                   </Grid>
                 </Grid>
+
+                <Typography className={classes.warrantyInfo}>
+                  Note: This website and all related work products are provided
+                  &quot;AS IS&quot;. The provider of this service makes no other
+                  warranties, express or implied, and hereby disclaims all
+                  implied warranties, including any warranty of merchantability
+                  and warranty of fitness for a particular purpose.
+                </Typography>
 
                 {dirty && !!Object.keys(errors).length && !isValid && (
                   <Typography variant="body2" className={classes.errorText}>
