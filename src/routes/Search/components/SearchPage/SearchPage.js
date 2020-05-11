@@ -316,14 +316,14 @@ function SearchPage() {
         nearbyRequests.map((result) => (
           <Paper className={classes.resultPaper} key={result.id}>
             <Grid container>
-              <Hidden smDown>
+              <Hidden xsDown>
                 <Grid item className={classes.distanceContainer} sm={2}>
                   {result.distance}
                   <br />
                   miles
                 </Grid>
               </Hidden>
-              <Grid item className={classes.requestSummary} sm={10}>
+              <Grid item className={classes.requestSummary} xs={12} sm={10}>
                 {parseInt(result.immediacy, 10) > 5 && (
                   <img
                     align="right"

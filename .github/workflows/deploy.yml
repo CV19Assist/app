@@ -131,6 +131,8 @@ jobs:
           $(yarn bin)/sentry-cli releases new $releaseName --finalize
           echo Uploading source maps to Sentry
           $(yarn bin)/sentry-cli releases files $releaseName upload-sourcemaps ./build/static/js --no-rewrite
+          echo Associate commits with the release
+          $(yarn bin)/sentry-cli releases set-commits --auto $version
 
       - name: Check if version has been updated
         if: github.ref == 'refs/heads/production'
