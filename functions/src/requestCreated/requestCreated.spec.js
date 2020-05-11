@@ -45,7 +45,7 @@ async function createTopic() {
 }
 
 /**
- *
+ * Create subscription used by message handler within test
  */
 async function createSubscription() {
   // Creates a new subscription

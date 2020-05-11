@@ -28,6 +28,7 @@
 - node `^10.18.0`
 - npm `^6.0.0`
 - yarn `^1.0.0`
+- jq `^1.5` - Commandline JSON tool (can be installed through homebrew: `brew install jq`)
 
 ## Getting Started
 

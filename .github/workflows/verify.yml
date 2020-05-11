@@ -108,17 +108,17 @@ jobs:
           echo Available ENV vars:
           env | sort
 
+      - name: Verify Functions
+        run: |
+          yarn functions:build
+          yarn functions:test:cov --project ${{ env.GCLOUD_PROJECT }}
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
+
       - name: Verify App
         run: |
           yarn lint # Check for lint in app code
           buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
           yarn $buildCommand
-
-      - name: Verify Functions
-        run: |
-          yarn functions:build
-          yarn functions:test:cov
-          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
 
       # Cypress action manages installing/caching npm dependencies and Cypress binary.
       # This stage tests a version of the app which is running locally in the
