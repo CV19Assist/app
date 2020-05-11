@@ -371,7 +371,7 @@ function NewUser() {
                   inputRef={register}
                   InputLabelProps={{ shrink: true }}
                   error={!!errors.zipcode}
-                  helperText={errors.zipcode && 'State must be valid'}
+                  helperText={errors.zipcode && 'Zip code must be valid'}
                 />
               </Grid>
             </Grid>
