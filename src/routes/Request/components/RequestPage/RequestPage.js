@@ -9,6 +9,7 @@ import {
   Container,
   Typography,
   Paper,
+  Hidden,
   Chip,
   Box,
   makeStyles,
@@ -56,6 +57,15 @@ function RequestPage() {
     requestPublicSnap.get('d.generalLocation') || {};
   const generalLocationName =
     requestPublicSnap.get('d.generalLocationName') || '';
+
+  const mapImage = (
+    <img
+      alt={requestPublicSnap.get('d.generalLocationName')}
+      title={requestPublicSnap.get('d.generalLocationName')}
+      src={`https://maps.googleapis.com/maps/api/staticmap?key=${process.env.REACT_APP_FIREBASE_API_KEY}&center=${latitude},${longitude}&markers=${latitude},${longitude}&size=280x280&zoom=10`}
+    />
+  );
+
   return (
     <>
       <Helmet>
@@ -82,70 +92,75 @@ function RequestPage() {
 
       <Container className={classes.bodyContainer}>
         <Paper className={classes.paper} data-test="request-info">
-          <img
-            style={{ float: 'right' }}
-            alt="Request's location"
-            src={`https://maps.googleapis.com/maps/api/staticmap?key=${process.env.REACT_APP_FIREBASE_API_KEY}&center=${latitude},${longitude}&markers=${latitude},${longitude}&size=280x280&zoom=10`}
-          />
+          <Hidden smUp>
+            <div className={classes.mobileImageContainer}>{mapImage}</div>
+          </Hidden>
 
-          <Typography variant="h6" gutterBottom>
-            {immediacy === 1
-              ? 'URGENT'
-              : immediacy <= 5
-              ? 'Not very urgent: '
-              : 'URGENT: '}
-            {requestPublicSnap.get('d.needs') &&
-              requestPublicSnap
-                .get('d.needs')
-                .map((item) => (
-                  <React.Fragment key={item}>
-                    {allCategoryMap[item] ? (
-                      <Chip
-                        label={allCategoryMap[item].shortDescription}
-                        className={classes.needChip}
-                      />
-                    ) : (
-                      <Alert severity="error">
-                        Could not find &apos;{item}&apos; in all category map.
-                      </Alert>
-                    )}
-                  </React.Fragment>
-                ))}
-          </Typography>
-
-          <Typography variant="caption" gutterBottom>
-            REQUESTED
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            {requestPublicSnap.get('d.createdAt') &&
-              format(
-                requestPublicSnap.get('d.createdAt').toDate(),
-                'EEE, MMM d, yyyy h:mm a',
-              )}
-          </Typography>
-
-          <Typography variant="caption">CONTACT</Typography>
-          <Typography variant="h6" gutterBottom>
-            <ContactInfo requestId={requestId} />
-          </Typography>
-
-          <Typography variant="caption" gutterBottom>
-            OTHER DETAILS
-          </Typography>
-          {requestPublicSnap.get('d.otherDetails') ? (
-            <Typography variant="h6" gutterBottom>
-              {requestPublicSnap.get('d.otherDetails')}
-            </Typography>
-          ) : (
-            <Box color="text.disabled">
-              <Typography
-                variant="body2"
-                gutterBottom
-                className={classes.noDetails}>
-                No other details provided.
+          <div className={classes.basicInfoContainer}>
+            <div className={classes.basicInfo}>
+              <Typography variant="h6" gutterBottom>
+                {immediacy === 1
+                  ? 'Not urgent'
+                  : immediacy <= 5
+                  ? 'Not very urgent'
+                  : 'URGENT'}
+                :{' '}
+                {requestPublicSnap.get('d.needs') &&
+                  requestPublicSnap
+                    .get('d.needs')
+                    .map((item) => (
+                      <React.Fragment key={item}>
+                        {allCategoryMap[item] ? (
+                          <Chip
+                            label={allCategoryMap[item].shortDescription}
+                            className={classes.needChip}
+                          />
+                        ) : (
+                          <Alert severity="error">
+                            Could not find &apos;{item}&apos; in all category
+                            map.
+                          </Alert>
+                        )}
+                      </React.Fragment>
+                    ))}
               </Typography>
-            </Box>
-          )}
+
+              <Typography variant="caption" gutterBottom>
+                REQUESTED
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {requestPublicSnap.get('d.createdAt') &&
+                  format(
+                    requestPublicSnap.get('d.createdAt').toDate(),
+                    'EEE, MMM d, yyyy h:mm a',
+                  )}
+              </Typography>
+
+              <Typography variant="caption">CONTACT</Typography>
+              <Typography variant="h6" gutterBottom>
+                <ContactInfo requestId={requestId} />
+              </Typography>
+
+              <Typography variant="caption" gutterBottom>
+                OTHER DETAILS
+              </Typography>
+              {requestPublicSnap.get('d.otherDetails') ? (
+                <Typography variant="h6" gutterBottom>
+                  {requestPublicSnap.get('d.otherDetails')}
+                </Typography>
+              ) : (
+                <Box color="text.disabled">
+                  <Typography
+                    variant="body2"
+                    gutterBottom
+                    className={classes.noDetails}>
+                    No other details provided.
+                  </Typography>
+                </Box>
+              )}
+            </div>
+            <Hidden xsDown>{mapImage}</Hidden>
+          </div>
 
           <Divider className={classes.divider} />
 

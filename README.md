@@ -11,6 +11,7 @@
 
 1. [Requirements](#requirements)
 1. [Getting Started](#getting-started)
+1. [Data Model Concepts and Conventions](#data-model-concepts-and-conventions)
 1. [Config Files](#config-files)
 1. [Application Structure](#application-structure)
 1. [Routing](#routing)
@@ -56,6 +57,34 @@ While developing, you will probably rely mostly on `yarn start`; however, there 
 
 [Husky](https://github.com/typicode/husky) is used to enable `prepush` hook capability. The `prepush` script currently runs `eslint`, which will keep you from pushing if there is any lint within your code. If you would like to disable this, remove the `prepush` script from the `package.json`.
 
+## Data Model Concepts and Conventions
+
+Below are some data model concepts and conventions to be aware of.
+
+### User document types
+
+| Document           | Description                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `users`            | Private user info that only the user themselves and the system admins can see.                                      |
+| `users_privileged` | Semi-private data which, in the future, folks like organizational admins which a user might associate with can see. |
+| `users_public`     | Public user information that anyone can see.                                                                        |
+
+### Request document types
+
+| Document          | Description                                                                      |
+| ----------------- | -------------------------------------------------------------------------------- |
+| `requests`        | Private request info that only the user themselves and the system admin can see. |
+| `requests_public` | Public request information that anyone can see.                                  |
+
+
+### Location conventions
+
+| Property              | Description                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `preciseLocation`     | The exact location that we might have gotten from the user by clicking, using location API or by entering address. |
+| `generalLocation`     | A "scrambled" version of the preciseLocation that randomly moves the lat/lng within a 1,000 feet.                  |
+| `generalLocationName` | A "general" name for the preciseLocation which can be publicly shared, e.g. "Madison, WI," or "Milwaukee, MI."     |
+
 ## Config Files
 
 There are multiple configuration files:
@@ -77,6 +106,7 @@ The application structure presented in this boilerplate is **fractal**, where fu
 │   └── index.html           # Main HTML page container for app
 ├── public                   # All build-related configuration
 │   └── index.html           # Main HTML page container for app
+├── rules-tests              # Rules tests
 ├── src                      # Application source code
 │   ├── components           # Global Reusable Presentational Components
 │   ├── constants            # Project constants such as firebase paths and form names
@@ -210,6 +240,12 @@ Mocha/Chai are used to run Functions unit tests. Unit tests are run against Fire
 
 - Start emulators and run functions unit tests: `yarn functions:test`
 - Start emulators and run functions unit tests, generating coverage: `yarn functions:test:cov`
+
+### Rules Tests
+
+Mocha/Chai are used to run Rules tests, for example against Firestore Security Rules. This script will start the emulators and run the tests:
+
+`yarn test-rules`
 
 ## FAQ
 

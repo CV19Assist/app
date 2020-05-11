@@ -1,19 +1,23 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, generatePath } from 'react-router-dom';
+import queryString from 'query-string';
 import { makeStyles } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import { Helmet } from 'react-helmet';
+import { REQUEST_PATH } from 'constants/paths';
 import styles from './RequestSuccessfulPage.styles';
 
 const useStyles = makeStyles(styles);
 
 function RequestSuccessfulPage() {
   const classes = useStyles();
+  const location = useLocation();
+  const qs = queryString.parse(location.search);
+  const requestId = (qs && qs.id) || null;
 
   return (
     <>
@@ -26,7 +30,7 @@ function RequestSuccessfulPage() {
         </Typography>
         <Paper className={classes.container}>
           <Typography variant="h5" color="textSecondary" paragraph>
-            Here’s what to expect:
+            Here’s what to expect
           </Typography>
 
           <ol>
@@ -70,19 +74,31 @@ function RequestSuccessfulPage() {
           until the volunteer has left the premises.
         </Typography> */}
 
+          <Typography gutterBottom>
+            Please note that we will try our best to match you with a volunteer,
+            but we cannot guarantee that we will find a match.
+          </Typography>
+
+          <Typography gutterBottom>Stay safe!</Typography>
           <div className={classes.buttons}>
-            <Grid container spacing={2} justify="center">
-              <Grid item>
-                <Button
-                  component={Link}
-                  to="/"
-                  variant="contained"
-                  color="primary"
-                  startIcon={<HomeIcon />}>
-                  Home
-                </Button>
-              </Grid>
-            </Grid>
+            {requestId && (
+              <Button
+                component={Link}
+                to={generatePath(REQUEST_PATH, { requestId })}
+                variant="contained"
+                disableElevation>
+                View Your Request
+              </Button>
+            )}
+            <Button
+              component={Link}
+              to="/"
+              variant="contained"
+              color="primary"
+              disableElevation
+              startIcon={<HomeIcon />}>
+              Home
+            </Button>
           </div>
         </Paper>
       </Container>

@@ -20,17 +20,24 @@ service cloud.firestore {
       return request.auth.uid in res.data.d.usersWithContactInfoAccess
     }
 
+    function isLoggedIn() {
+      return request.auth.uid != null
+    }
+
+    function isThisUser(userId) {
+      return request.auth.uid == userId
+    }
+
     // Private user profiles
     match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
-      allow update: if request.resource.auth.uid == userId // is user associated with user object
-        && !request.resource.data.role; // does not contain the role parameter
+      allow read: if isThisUser(userId);
+      allow write: if isThisUser(userId) && !("role" in request.resource.data); // don't allow setting or updating the role through this path
     }
 
     // Semi-private User info which can be shared
     match /users_privileged/{userId} {
       // TODO: Add read support for sharing this
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if isThisUser(userId);
     }
 
     // Public user profiles
@@ -91,7 +98,7 @@ service cloud.firestore {
       // allow create: if isOwnerOfRequest(request.resource);
       // TODO: Fix this
       allow create;
-      allow read;
+      allow read: if isSystemAdmin();
     }
 
     // Contact info for a request - requires contact info access
