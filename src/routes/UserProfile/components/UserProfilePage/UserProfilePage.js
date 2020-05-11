@@ -62,43 +62,10 @@ function UserProfile() {
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [formValues, setFormValues] = useState(null);
+  // const [formValues, setFormValues] = useState(null);
 
   const [activeStep, setActiveStep] = useState(0);
   const steps = getSteps();
-
-  // Because of timing issues, this component will likely get run before the server has applied
-  // the requested document access resulting in almost a guranteed permission-denied error. So,
-  // we use this effect to monitor for permission-denied until the change has propagated, at which
-  // point, we do the actual doc subscription (next useEffect);
-  useEffect(() => {
-    async function getData() {
-      try {
-        const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
-        // Call it once because this will throw the permission exception.
-        setUserData(await ref.get());
-        setUserRef(ref);
-      } catch (err) {
-        // We only try reloading if insufficient permissions.
-        if (err.code !== 'permission-denied') {
-          throw err;
-        }
-        window.setTimeout(() => {
-          setRetries(retries + 1);
-        }, 1000);
-      }
-    }
-    getData();
-    console.log('Got data');
-    if (userData) {
-      userFields.forEach(function getDefaults(key) {
-        defaultValues[key] = userData.get(key);
-      });
-      console.log('Loaded data into defaults', defaultValues);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [retries]);
-
   const {
     handleSubmit,
     errors,
@@ -111,23 +78,52 @@ function UserProfile() {
     defaultValues,
   });
 
-  console.log('Form values', formValues);
-  if (formValues) {
-    Object.keys(formValues).forEach(function getDefaults(key) {
-      defaultValues[key] = formValues[key];
-    });
-    console.log('Updated data into defaults', defaultValues);
-  }
+  // Because of timing issues, this component will likely get run before the server has applied
+  // the requested document access resulting in almost a guranteed permission-denied error. So,
+  // we use this effect to monitor for permission-denied until the change has propagated, at which
+  // point, we do the actual doc subscription (next useEffect);
+  useEffect(() => {
+    console.log('User', user.uid);
+    const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
+    let data = {};
+    async function getData() {
+      try {
+        console.log('ref', ref);
+        // Call it once because this will throw the permission exception.
+        const snap = await ref.get();
+        data = snap.data();
+        setUserData(data);
+        setUserRef(ref);
+        console.log('Got data', data, ref);
+        if (Object.keys(data).length) {
+          userFields.forEach(function getDefaults(key) {
+            defaultValues[key] = data[key];
+            setValue(key, data[key]);
+          });
+          console.log('Loaded data into defaults', defaultValues);
+        }
+      } catch (err) {
+        // We only try reloading if insufficient permissions.
+        if (err.code !== 'permission-denied') {
+          console.log('permission denied');
+          throw err;
+        }
+        window.setTimeout(() => {
+          setRetries(retries + 1);
+        }, 1000);
+      }
+    }
+    getData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retries]);
 
   const handleNext = () => {
     console.log('Data from this form (Next)', { ...getValues() });
-    setFormValues({ ...formValues, ...getValues() });
     setActiveStep(activeStep + 1);
   };
 
   const handleBack = () => {
     console.log('Data from this form (Back)', { ...getValues() });
-    setFormValues({ ...formValues, ...getValues() });
     setActiveStep(activeStep - 1);
   };
 
@@ -192,139 +188,147 @@ function UserProfile() {
 
   async function handleFormSubmit(values) {
     const newValues = values;
-    if (!userLocationInfo) {
-      alert('Please select a location above.'); // eslint-disable-line no-alert
-      return;
-    }
+    console.log('In submit', userData, userRef);
+    // if (!userLocationInfo) {
+    //   alert('Please select a location above.'); // eslint-disable-line no-alert
+    //   return;
+    // }
 
-    delete userLocationInfo.lookedUpAddress;
+    //     delete userLocationInfo.lookedUpAddress;
 
     // Default the displayName if it isn't already set (e.g., when signing up using email).
-    if (!userData.get('displayName')) {
+    if (!userData.displayName) {
       newValues.displayName = `${values.firstName} ${values.lastName}`;
     }
 
-    const userUpdates = { ...newValues, ...userLocationInfo };
+    //    const userUpdates = { ...newValues, ...userLocationInfo };
+    const userUpdates = { ...newValues };
+    console.log('Updating with', userUpdates);
     await userRef.set(userUpdates, { merge: true });
+    console.log('Updated');
     history.replace(SEARCH_PATH);
   }
 
   function renderFields(step) {
-    switch (step) {
-      case 0:
-        return (
-          <Grid container spacing={1} direction="row">
-            <Grid item xs={6}>
-              <TextField
-                name="email"
-                type="text"
-                label="Email"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.email}
-                helperText={errors.email && 'Enter a valid email address'}
-              />
-            </Grid>
+    return (
+      <div>
+        <Grid
+          style={{ display: step === 0 ? 'block' : 'none' }}
+          container
+          spacing={1}
+          direction="row">
+          <Grid item xs={6}>
+            <TextField
+              name="email"
+              type="text"
+              label="Email"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.email}
+              helperText={errors.email && 'Enter a valid email address'}
+            />
           </Grid>
-        );
-      case 1:
-        return (
-          <Grid container spacing={1} direction="row">
-            <Grid item xs={6}>
-              <TextField
-                name="password"
-                type="text"
-                label="Password"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.password}
-                helperText={errors.password && 'Password must be...'}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                name="confirmPassword"
-                type="text"
-                label="Confirm Password"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword && 'Passwords must match'}
-              />
-            </Grid>
+        </Grid>
+        <Grid
+          style={{ display: step === 1 ? 'block' : 'none' }}
+          container
+          spacing={1}
+          direction="row">
+          <Grid item xs={6}>
+            <TextField
+              name="password"
+              type="text"
+              label="Password"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.password}
+              helperText={errors.password && 'Password must be...'}
+            />
           </Grid>
-        );
-      case 2:
-        return (
-          <Grid container spacing={1} direction="row">
-            <Grid item xs={6}>
-              <TextField
-                name="firstName"
-                type="text"
-                label="First Name"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.firstName}
-                helperText={errors.firstName && 'Enter a valid First Name'}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                name="lastName"
-                type="text"
-                label="Last Name"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.lastName}
-                helperText={errors.lastName && 'Enter a valid Last Name'}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                name="phone"
-                type="text"
-                label="Phone"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.phone}
-                helperText={errors.phone && 'Enter a valid phone number'}
-              />
-            </Grid>
+          <Grid item xs={6}>
+            <TextField
+              name="confirmPassword"
+              type="text"
+              label="Confirm Password"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword && 'Passwords must match'}
+            />
           </Grid>
-        );
-      case 3:
-        return (
-          <Grid container spacing={1} direction="row">
-            <Grid item xs={6}>
-              <TextField
-                name="address1"
-                type="text"
-                label="Address"
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                inputRef={register}
-                error={!!errors.address1}
-                helperText={errors.address1 && 'Enter a valid street address'}
-              />
-            </Grid>
+        </Grid>
+        <Grid
+          style={{ display: step === 2 ? 'block' : 'none' }}
+          container
+          spacing={1}
+          direction="row">
+          <Grid item xs={6}>
+            <TextField
+              name="firstName"
+              type="text"
+              label="First Name"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.firstName}
+              helperText={errors.firstName && 'Enter a valid First Name'}
+            />
           </Grid>
-        );
-      default:
-        return '';
-    }
+          <Grid item xs={6}>
+            <TextField
+              name="lastName"
+              type="text"
+              label="Last Name"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.lastName}
+              helperText={errors.lastName && 'Enter a valid Last Name'}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              name="phone"
+              type="text"
+              label="Phone"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.phone}
+              helperText={errors.phone && 'Enter a valid phone number'}
+            />
+          </Grid>
+        </Grid>
+        <Grid
+          style={{ display: step === 3 ? 'block' : 'none' }}
+          container
+          spacing={1}
+          direction="row">
+          <Grid item xs={6}>
+            <TextField
+              name="address1"
+              type="text"
+              label="Address"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={register}
+              error={!!errors.address1}
+              helperText={errors.address1 && 'Enter a valid street address'}
+            />
+          </Grid>
+        </Grid>
+      </div>
+    );
   }
 
   return (
@@ -351,23 +355,31 @@ function UserProfile() {
             </Stepper>
           </Container>
           <Container>
-            <div>{renderFields(activeStep)}</div>
+            {renderFields(activeStep)}
             <div>
               <Button disabled={activeStep === 0} onClick={handleBack}>
                 Back
               </Button>
-              {activeStep === steps.length - 1 ? (
-                <Button variant="contained" color="primary" type="submit">
-                  Finish
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}>
-                  Next
-                </Button>
-              )}
+              <Button
+                style={{
+                  display:
+                    activeStep === steps.length - 1 ? 'inline-flex' : 'none',
+                }}
+                variant="contained"
+                color="primary"
+                type="submit">
+                Finish
+              </Button>
+              <Button
+                style={{
+                  display:
+                    activeStep !== steps.length - 1 ? 'inline-flex' : 'none',
+                }}
+                variant="contained"
+                color="primary"
+                onClick={handleNext}>
+                Next
+              </Button>
             </div>
 
             <Typography className={classes.warrantyInfo}>
