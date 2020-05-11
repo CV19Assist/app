@@ -22,7 +22,7 @@
     "emulators": "firebase emulators:start --only database,firestore,pubsub",
     "test": "npm --prefix ../ run functions:test",
     "test:cov": "npm --prefix ../ run functions:test:cov",
-    "test:base": "cross-env GCLOUD_PROJECT=unit-test-project FIRESTORE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.pubsub.port') mocha ./src/**/*.spec.js",
+    "test:base": "cross-env GCLOUD_PROJECT=unit-test-project PUBSUB_PROJECT_ID=$GCLOUD_PROJECT FIRESTORE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.firestore.port') FIREBASE_DATABASE_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.database.port') PUBSUB_EMULATOR_HOST=localhost:$(cat ../firebase.json | jq '.emulators.pubsub.port') mocha ./src/**/*.spec.js",
     "test:cov:base": "rimraf coverage && nyc --reporter=lcov npm run test:base",
     "test:watch": "npm test -- --watch"
   },

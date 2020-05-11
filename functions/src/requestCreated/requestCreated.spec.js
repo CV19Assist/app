@@ -211,7 +211,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   });
 
   // Skipped since Firestore Emulator doesn't currently support Geopoints
-  it.only('sends emails to users with role "super-admin"', async () => {
+  it('sends emails to users with role "super-admin"', async () => {
     // TODO: Switch to a Geopoint once it is supported for Firebase testing
     // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
     const requestObj = {
