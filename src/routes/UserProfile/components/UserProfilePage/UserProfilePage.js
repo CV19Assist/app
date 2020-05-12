@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Typography,
   TextField,
@@ -14,12 +14,15 @@ import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import * as Yup from 'yup';
-import { useFirestore, useUser } from 'reactfire';
-import { USERS_PRIVILEGED_COLLECTION } from 'constants/collections';
+import { useAuth, useFirestore, useUser } from 'reactfire';
+import useNotifications from 'modules/notification/useNotifications';
+import {
+  USERS_COLLECTION,
+  USERS_PRIVILEGED_COLLECTION,
+} from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import GoogleSignIn from 'components/GoogleSignIn';
 import { useForm } from 'react-hook-form';
-import { validateEmail } from 'utils/form';
 import { SEARCH_PATH } from 'constants/paths';
 import styles from './UserProfilePage.styles';
 
@@ -32,6 +35,11 @@ const userProfileSchema = Yup.object().shape({
     .email('Please enter a valid email address')
     .required('Required'),
   phone: Yup.string().required('Required'),
+  password: Yup.string().required('Password is required'),
+  confirmPassword: Yup.string().oneOf(
+    [Yup.ref('password'), null],
+    'Passwords must match',
+  ),
   address1: Yup.string(),
   address2: Yup.string(),
   city: Yup.string(),
@@ -45,22 +53,23 @@ function getSteps() {
 }
 
 function hasAccount(userData) {
-  return userData && !!userData.email;
+  return !!userData && !!userData.email;
 }
 
 function isLoggedIn(user) {
-  return user && !!user.uid;
+  return !!user && !!user.uid;
 }
 
 function isGoogleLoggedIn(user) {
-  return user && user.providerId === 'google';
+  return !!user && user.providerId === 'google';
 }
 
 function UserProfile() {
   const classes = useStyles();
   const firestore = useFirestore();
-  const history = useHistory();
   const user = useUser();
+  const auth = useAuth();
+  const { showError } = useNotifications();
   // const defaultValues = {};
 
   const [retries, setRetries] = useState(0);
@@ -86,9 +95,10 @@ function UserProfile() {
   // we use this effect to monitor for permission-denied until the change has propagated, at which
   // point, we do the actual doc subscription (next useEffect);
   useEffect(() => {
+    console.log(userData, user);
     async function getData() {
-      if (isLoggedIn(user)) {
-        // Already authenticated. See if account data exists
+      if (isLoggedIn(user) && userData == null) {
+        // Already authenticated and haven't loaded data previously
         console.log('User', user.uid);
         const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
         let data = {};
@@ -100,7 +110,7 @@ function UserProfile() {
           setUserData(data);
           setUserRef(ref);
           console.log('Got data', data, ref);
-          if (Object.keys(data).length) {
+          if (!!data && Object.keys(data).length) {
             userFields.forEach(function getDefaults(key) {
               setValue(key, data[key]);
             });
@@ -121,6 +131,8 @@ function UserProfile() {
     getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retries]);
+
+  // Do step-dependent
 
   const handleNext = () => {
     console.log('Data from this form (Next)', { ...getValues() });
@@ -157,7 +169,9 @@ function UserProfile() {
     }
   }
 
-  function handleGoogleSignIn() {}
+  const handleGoogleSignIn = useCallback((authState) => {
+    console.log(authState);
+  }, []);
 
   function handleSetUserLocationInfo(locationInfo) {
     setUserLocationInfo(locationInfo);
@@ -195,25 +209,41 @@ function UserProfile() {
 
   async function handleFormSubmit(values) {
     const newValues = values;
-    console.log('In submit', userData, userRef);
-    // if (!userLocationInfo) {
-    //   alert('Please select a location above.'); // eslint-disable-line no-alert
-    //   return;
-    // }
+    console.log('In submit', values, userData, userRef);
 
-    //     delete userLocationInfo.lookedUpAddress;
-
-    // Default the displayName if it isn't already set (e.g., when signing up using email).
-    if (!userData.displayName) {
-      newValues.displayName = `${values.firstName} ${values.lastName}`;
+    // New user created with email/password
+    if (!isLoggedIn(user)) {
+      try {
+        // Try creating new user
+        const authState = await auth.createUserWithEmailAndPassword(
+          getValues('email'),
+          getValues('password'),
+        );
+        // Write USERS profile
+        const userSnap = await firestore
+          .doc(`${USERS_COLLECTION}/${authState.user.uid}`)
+          .get();
+        newValues.displayName = `${values.firstName} ${values.lastName}`;
+        let newProfile = {
+          firstName: newValues.firstName,
+          lastName: newValues.lastName,
+          email: newValues.email,
+          displayName: newValues.displayName,
+        };
+        await userSnap.ref.set(newProfile, { merge: true });
+        // Write the USERS_PRIVILEGED profile
+        newProfile = { ...newValues };
+        const userPrivSnap = await firestore
+          .doc(`${USERS_PRIVILEGED_COLLECTION}/${authState.user.uid}`)
+          .get();
+        console.log('Updating with', newProfile);
+        await userPrivSnap.ref.set(newProfile, { merge: true });
+        console.log('Updated');
+      } catch (err) {
+        showError(err.message);
+        setActiveStep(0);
+      }
     }
-
-    //    const userUpdates = { ...newValues, ...userLocationInfo };
-    const userUpdates = { ...newValues };
-    console.log('Updating with', userUpdates);
-    await userRef.set(userUpdates, { merge: true });
-    console.log('Updated');
-    history.replace(SEARCH_PATH);
   }
 
   function renderFields(step) {
@@ -240,7 +270,9 @@ function UserProfile() {
           {!hasAccount(userData) ? (
             <GoogleSignIn
               label="Sign up with Google"
-              handleGoogleSignIn={handleGoogleSignIn}
+              handleClick={(authState) => {
+                handleGoogleSignIn(authState);
+              }}
             />
           ) : null}
         </Grid>

@@ -23,9 +23,10 @@ function GoogleSignIn({ label, handleClick }) {
     try {
       const authState = await auth[signInMethod](provider);
       // Write user profile if it doesn't exist, otherwise redirect to search page
-      await handleSignIn(authState);
+      handleSignIn(authState);
     } catch (err) {
       showError(err.message);
+      throw err;
     }
   }
 
@@ -35,9 +36,7 @@ function GoogleSignIn({ label, handleClick }) {
       <div className={classes.providers}>
         <GoogleButton
           label={label}
-          onClick={() => {
-            googleLogin(handleClick);
-          }}
+          onClick={() => {googleLogin(handleClick)}}
           data-test="google-auth-button"
         />
       </div>
