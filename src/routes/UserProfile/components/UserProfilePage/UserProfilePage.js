@@ -3,7 +3,6 @@ import {
   Typography,
   TextField,
   Paper,
-  Divider,
   Button,
   Container,
   Grid,
@@ -18,6 +17,7 @@ import * as Yup from 'yup';
 import { useFirestore, useUser } from 'reactfire';
 import { USERS_PRIVILEGED_COLLECTION } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
+import GoogleSignIn from 'components/GoogleSignIn';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from 'utils/form';
 import { SEARCH_PATH } from 'constants/paths';
@@ -44,8 +44,12 @@ function getSteps() {
   return ['Email', 'Password', 'Contact Info', 'Location'];
 }
 
+function hasAccount(userData) {
+  return userData && !!userData.email;
+}
+
 function isLoggedIn(user) {
-  return user && user.uid;
+  return user && !!user.uid;
 }
 
 function isGoogleLoggedIn(user) {
@@ -57,7 +61,7 @@ function UserProfile() {
   const firestore = useFirestore();
   const history = useHistory();
   const user = useUser();
-  const defaultValues = {};
+  // const defaultValues = {};
 
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
@@ -75,7 +79,6 @@ function UserProfile() {
     setValue,
   } = useForm({
     validationSchema: userProfileSchema,
-    defaultValues,
   });
 
   // Because of timing issues, this component will likely get run before the server has applied
@@ -83,34 +86,36 @@ function UserProfile() {
   // we use this effect to monitor for permission-denied until the change has propagated, at which
   // point, we do the actual doc subscription (next useEffect);
   useEffect(() => {
-    console.log('User', user.uid);
-    const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
-    let data = {};
     async function getData() {
-      try {
-        console.log('ref', ref);
-        // Call it once because this will throw the permission exception.
-        const snap = await ref.get();
-        data = snap.data();
-        setUserData(data);
-        setUserRef(ref);
-        console.log('Got data', data, ref);
-        if (Object.keys(data).length) {
-          userFields.forEach(function getDefaults(key) {
-            defaultValues[key] = data[key];
-            setValue(key, data[key]);
-          });
-          console.log('Loaded data into defaults', defaultValues);
+      if (isLoggedIn(user)) {
+        // Already authenticated. See if account data exists
+        console.log('User', user.uid);
+        const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
+        let data = {};
+        try {
+          console.log('ref', ref);
+          // Call it once because this will throw the permission exception.
+          const snap = await ref.get();
+          data = snap.data();
+          setUserData(data);
+          setUserRef(ref);
+          console.log('Got data', data, ref);
+          if (Object.keys(data).length) {
+            userFields.forEach(function getDefaults(key) {
+              setValue(key, data[key]);
+            });
+            console.log('Loaded data into defaults');
+          }
+        } catch (err) {
+          // We only try reloading if insufficient permissions.
+          if (err.code !== 'permission-denied') {
+            console.log('permission denied');
+            throw err;
+          }
+          window.setTimeout(() => {
+            setRetries(retries + 1);
+          }, 1000);
         }
-      } catch (err) {
-        // We only try reloading if insufficient permissions.
-        if (err.code !== 'permission-denied') {
-          console.log('permission denied');
-          throw err;
-        }
-        window.setTimeout(() => {
-          setRetries(retries + 1);
-        }, 1000);
       }
     }
     getData();
@@ -151,6 +156,8 @@ function UserProfile() {
       setValue(fieldName, googleResultComponent[addressTypeFormat]);
     }
   }
+
+  function handleGoogleSignIn() {}
 
   function handleSetUserLocationInfo(locationInfo) {
     setUserLocationInfo(locationInfo);
@@ -216,7 +223,7 @@ function UserProfile() {
           style={{ display: step === 0 ? 'block' : 'none' }}
           container
           spacing={1}
-          direction="row">
+          direction="column">
           <Grid item xs={6}>
             <TextField
               name="email"
@@ -230,6 +237,12 @@ function UserProfile() {
               helperText={errors.email && 'Enter a valid email address'}
             />
           </Grid>
+          {!hasAccount(userData) ? (
+            <GoogleSignIn
+              label="Sign up with Google"
+              handleGoogleSignIn={handleGoogleSignIn}
+            />
+          ) : null}
         </Grid>
         <Grid
           style={{ display: step === 1 ? 'block' : 'none' }}
@@ -334,10 +347,10 @@ function UserProfile() {
   return (
     <Container maxWidth="md">
       <Helmet>
-        <title>{isLoggedIn(user) ? 'My Profile' : ' I Want To Help'}</title>
+        <title>{hasAccount(userData) ? 'My Profile' : ' I Want To Help'}</title>
       </Helmet>
       <Typography variant="h4" gutterBottom>
-        {isLoggedIn(user) ? 'My Profile' : ' I Want To Help'}
+        {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
       </Typography>
       <Paper className={classes.paper}>
         <form onSubmit={handleSubmit(handleFormSubmit)}>
