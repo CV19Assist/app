@@ -5,8 +5,8 @@ import { useAuth, useFirestore } from 'reactfire';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import GoogleButton from 'react-google-button';
-import { NEW_USER_PATH, SEARCH_PATH } from 'constants/paths';
-import { USERS_COLLECTION } from 'constants/collections';
+import { USER_PROFILE_PATH, SEARCH_PATH } from 'constants/paths';
+import { USERS_PUBLIC_COLLECTION } from 'constants/collections';
 import useNotifications from 'modules/notification/useNotifications';
 import LoadingSpinner from 'components/LoadingSpinner';
 import LoginForm from '../LoginForm';
@@ -20,33 +20,18 @@ function LoginPage() {
   const history = useHistory();
   const firestore = useFirestore();
   const [isLoading, setLoadingState] = useState(false);
-  const { showError } = useNotifications();
+  const { showError, showMessage } = useNotifications();
 
-  async function updateUserAndRedirect(authState) {
-    try {
-      // Write user profile if it doesn't exist, otherwise redirect to search page
-      const userSnap = await firestore
-        .doc(`${USERS_COLLECTION}/${authState.user.uid}`)
-        .get();
-      // Redirect to search page if user exists
-      if (userSnap.get('preciseLocation')) {
-        history.replace(SEARCH_PATH);
-      } else {
-        // Write user object then redirect to new user page
-        const { email, displayName, photoURL, providerData } = authState.user;
-        const newProfile = { email, displayName, photoURL };
-        if (providerData && providerData.length) {
-          newProfile.providerData = [{ ...providerData[0] }];
-        }
-        await userSnap.ref.set(newProfile, { merge: true });
-        window.setTimeout(() => {
-          history.replace(NEW_USER_PATH);
-        }, 1000);
-      }
-    } catch (err) {
-      setLoadingState(false);
-      showError(err.message);
+  async function hasAccount(user) {
+    const userSnap = await firestore
+      .doc(`${USERS_PUBLIC_COLLECTION}/${user.uid}`)
+      .get();
+      const data = await userSnap.data();
+      console.log("Checking account", data);
+      if (!!data && !!data.d && !!data.d.hasAccount) {
+          return true;
     }
+  return false;
   }
 
   async function googleLogin() {
@@ -58,8 +43,12 @@ function LoginPage() {
     const signInMethod = isMobile ? 'signInWithRedirect' : 'signInWithPopup';
     try {
       const authState = await auth[signInMethod](provider);
-      // Write user profile if it doesn't exist, otherwise redirect to search page
-      await updateUserAndRedirect(authState);
+      if (await hasAccount(authState.user)) {
+        history.replace(SEARCH_PATH);
+        return;
+      }
+      showMessage('You need to finish filling out your profile.');
+      history.replace(USER_PROFILE_PATH);
     } catch (err) {
       setLoadingState(false);
       showError(err.message);
@@ -72,26 +61,14 @@ function LoginPage() {
         creds.email,
         creds.password,
       );
-      // Write user profile if it doesn't exist, otherwise redirect to search page
-      await updateUserAndRedirect(authState);
-    } catch (err) {
-      try {
-        // Create user if they do not exist
-        if (err.code === 'auth/user-not-found') {
-          const authState = await auth.createUserWithEmailAndPassword(
-            creds.email,
-            creds.password,
-          );
-          // Write user profile if it doesn't exist, otherwise redirect to search page
-          await updateUserAndRedirect(authState);
-        }
-      } catch (err2) {
-        if (err2.message === 'auth/user-exists') {
-          showError(err.message);
-        } else {
-          showError(err2.message);
-        }
+      if (await hasAccount(authState.user)) {
+        history.replace(SEARCH_PATH);
+        return;
       }
+      showMessage('You need to finish filling out your profile.');
+      history.replace(USER_PROFILE_PATH);
+    } catch (err) {
+      showError(err.message);
     }
   }
 

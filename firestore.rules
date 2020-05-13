@@ -43,7 +43,7 @@ service cloud.firestore {
     // Public user profiles
     match /users_public/{userId} {
       allow read;
-      allow write: if false; // only written to by indexUser cloud function
+      allow write: if isThisUser(userId);
     }
 
     // Private request data

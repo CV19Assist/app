@@ -3,7 +3,6 @@ import {
   Typography,
   TextField,
   Paper,
-  Divider,
   Card,
   Button,
   Container,
@@ -21,6 +20,7 @@ import useNotifications from 'modules/notification/useNotifications';
 import {
   USERS_COLLECTION,
   USERS_PRIVILEGED_COLLECTION,
+  USERS_PUBLIC_COLLECTION,
 } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import LoadingSpinner from 'components/LoadingSpinner';
@@ -38,9 +38,7 @@ function isGoogleLoggedIn(user) {
 const userProfileSchema = Yup.object().shape({
   firstName: Yup.string().min(2, 'Too Short').required('Required'),
   lastName: Yup.string().min(2, 'Too Short').required('Required'),
-  email: Yup.string()
-    .email('Please enter a valid email address')
-    .required('Required'),
+  email: Yup.string(),
   phone: Yup.string().required('Required'),
   password: Yup.string(),
   confirmPassword: Yup.string().oneOf(
@@ -72,6 +70,7 @@ function UserProfile() {
   const firestore = useFirestore();
   const user = useUser();
   const auth = useAuth();
+  const history = useHistory();
   const { showError, showMessage } = useNotifications();
   const [isLoading, setLoadingState] = useState(true);
 
@@ -232,6 +231,11 @@ function UserProfile() {
       uid = user.uid;
     }
     try {
+      // Get email if we came in through Google. Wouldn't be in the form
+      if (isGoogleLoggedIn(user)) {
+        console.log(user, user.email);
+        newValues.email = user.email;
+      }
       // Write USERS profile
       const userSnap = await firestore.doc(`${USERS_COLLECTION}/${uid}`).get();
       newValues.displayName = `${values.firstName} ${values.lastName}`;
@@ -249,8 +253,16 @@ function UserProfile() {
         .get();
       console.log('Updating with', newProfile);
       await userPrivSnap.ref.set(newProfile, { merge: true });
+      // Write USERS_PUBLIC profile
+      newProfile = { d: { hasAccount: true } };
+      const userPubSnap = await firestore
+        .doc(`${USERS_PUBLIC_COLLECTION}/${uid}`)
+        .get();
+      console.log('Updating with', newProfile);
+      await userPubSnap.ref.set(newProfile, { merge: true });
       console.log('Updated');
       showMessage(newUser ? 'Account created' : 'Profile updated');
+      history.replace(SEARCH_PATH);
     } catch (err) {
       showError(err.message);
       setActiveStep(0);
