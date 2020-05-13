@@ -21,6 +21,7 @@ import {
   USERS_PRIVILEGED_COLLECTION,
 } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
+import LoadingSpinner from 'components/LoadingSpinner';
 import GoogleSignIn from 'components/GoogleSignIn';
 import { useForm } from 'react-hook-form';
 import { SEARCH_PATH } from 'constants/paths';
@@ -70,12 +71,11 @@ function UserProfile() {
   const user = useUser();
   const auth = useAuth();
   const { showError, showMessage } = useNotifications();
-  // const defaultValues = {};
+  const [isLoading, setLoadingState] = useState(true);
 
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
   const [userData, setUserData] = useState(null);
-  // const [formValues, setFormValues] = useState(null);
 
   const [activeStep, setActiveStep] = useState(isGoogleLoggedIn(user) ? 2 : 0);
   const steps = getSteps();
@@ -99,7 +99,7 @@ function UserProfile() {
     async function getData() {
       if (isLoggedIn(user) && userData == null) {
         // Already authenticated and haven't loaded data previously
-        console.log('User', user.uid);
+        setLoadingState(true);
         const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
         let data = {};
         try {
@@ -129,6 +129,7 @@ function UserProfile() {
           }, 1000);
         }
       }
+      setLoadingState(false);
     }
     getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -399,77 +400,84 @@ function UserProfile() {
 
   return (
     <Container maxWidth="md">
-      <Helmet>
-        <title>{hasAccount(userData) ? 'My Profile' : ' I Want To Help'}</title>
-      </Helmet>
-      <Typography variant="h4" gutterBottom>
-        {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
-      </Typography>
-      <Paper className={classes.paper}>
-        <form
-          className={classes.root}
-          onSubmit={handleSubmit(handleFormSubmit)}>
-          <Container>
-            <Stepper activeStep={activeStep}>
-              {steps.map((label) => {
-                const stepProps = {};
-                const labelProps = {};
-                return (
-                  <Step key={label} {...stepProps}>
-                    <StepLabel {...labelProps}>{label}</StepLabel>
-                  </Step>
-                );
-              })}
-            </Stepper>
-          </Container>
-          <Container>
-            {renderFields(activeStep)}
-            <div className={classes.centerDiv}>
-              <Button
-                disabled={
-                  activeStep === 0 ||
-                  (activeStep === 2 && isGoogleLoggedIn(user))
-                }
-                onClick={handleBack}>
-                Back
-              </Button>
-              <Button
-                style={{
-                  display:
-                    activeStep === steps.length - 1 ? 'inline-flex' : 'none',
-                }}
-                variant="contained"
-                color="primary"
-                type="submit">
-                Finish
-              </Button>
-              <Button
-                style={{
-                  display:
-                    activeStep !== steps.length - 1 ? 'inline-flex' : 'none',
-                }}
-                variant="contained"
-                color="primary"
-                onClick={handleNext}>
-                Next
-              </Button>
-            </div>
+      <div style={{ display: isLoading ? 'block' : 'none' }}>
+        <LoadingSpinner />
+      </div>
+      <div style={{ display: isLoading ? 'none' : 'block' }}>
+        <Helmet>
+          <title>
+            {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
+          </title>
+        </Helmet>
+        <Typography variant="h4" gutterBottom>
+          {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
+        </Typography>
+        <Paper className={classes.paper}>
+          <form
+            className={classes.root}
+            onSubmit={handleSubmit(handleFormSubmit)}>
+            <Container>
+              <Stepper activeStep={activeStep}>
+                {steps.map((label) => {
+                  const stepProps = {};
+                  const labelProps = {};
+                  return (
+                    <Step key={label} {...stepProps}>
+                      <StepLabel {...labelProps}>{label}</StepLabel>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+            </Container>
+            <Container>
+              {renderFields(activeStep)}
+              <div className={classes.centerDiv}>
+                <Button
+                  disabled={
+                    activeStep === 0 ||
+                    (activeStep === 2 && isGoogleLoggedIn(user))
+                  }
+                  onClick={handleBack}>
+                  Back
+                </Button>
+                <Button
+                  style={{
+                    display:
+                      activeStep === steps.length - 1 ? 'inline-flex' : 'none',
+                  }}
+                  variant="contained"
+                  color="primary"
+                  type="submit">
+                  Finish
+                </Button>
+                <Button
+                  style={{
+                    display:
+                      activeStep !== steps.length - 1 ? 'inline-flex' : 'none',
+                  }}
+                  variant="contained"
+                  color="primary"
+                  onClick={handleNext}>
+                  Next
+                </Button>
+              </div>
 
-            <Typography className={classes.warrantyInfo}>
-              Note: This website and all related work products are provided
-              &quot;AS IS&quot;. The provider of this service makes no other
-              warranties, express or implied, and hereby disclaims all implied
-              warranties, including any warranty of merchantability and warranty
-              of fitness for a particular purpose.
-            </Typography>
-            {dirty && errors && !!Object.keys(errors).length && !isValid && (
-              <Typography variant="body2" className={classes.errorText}>
-                Please fix the errors above.
+              <Typography className={classes.warrantyInfo}>
+                Note: This website and all related work products are provided
+                &quot;AS IS&quot;. The provider of this service makes no other
+                warranties, express or implied, and hereby disclaims all implied
+                warranties, including any warranty of merchantability and
+                warranty of fitness for a particular purpose.
               </Typography>
-            )}
-          </Container>
-        </form>
-      </Paper>
+              {dirty && errors && !!Object.keys(errors).length && !isValid && (
+                <Typography variant="body2" className={classes.errorText}>
+                  Please fix the errors above.
+                </Typography>
+              )}
+            </Container>
+          </form>
+        </Paper>
+      </div>
     </Container>
   );
 }
