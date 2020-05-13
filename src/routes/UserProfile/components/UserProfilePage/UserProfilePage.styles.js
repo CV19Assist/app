@@ -1,4 +1,17 @@
 export default (theme) => ({
+  root: {
+    ...theme.flexColumnCenter,
+    justifyContent: 'flex-start',
+    flexGrow: 1,
+    height: '100%',
+    width: '100%',
+    margin: '.2rem',
+  },
+  centerDiv: {
+    justifyContent: 'center',
+    display: 'flex',
+    alignItems: 'center',
+  },
   buttons: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -9,6 +22,7 @@ export default (theme) => ({
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4),
   },
+
   errorText: {
     color: 'red',
     fontWeight: 'bold',

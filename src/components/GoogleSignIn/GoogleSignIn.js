@@ -31,16 +31,15 @@ function GoogleSignIn({ label, handleClick }) {
   }
 
   return (
-    <>
-      <div className={classes.orLabel}>or</div>
-      <div className={classes.providers}>
-        <GoogleButton
-          label={label}
-          onClick={() => {googleLogin(handleClick)}}
-          data-test="google-auth-button"
-        />
-      </div>
-    </>
+    <div className={classes.providers}>
+      <GoogleButton
+        label={label}
+        onClick={() => {
+          googleLogin(handleClick);
+        }}
+        data-test="google-auth-button"
+      />
+    </div>
   );
 }
 

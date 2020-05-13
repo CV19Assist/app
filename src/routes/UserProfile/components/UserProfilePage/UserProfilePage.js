@@ -28,6 +28,10 @@ import styles from './UserProfilePage.styles';
 
 const useStyles = makeStyles(styles);
 
+function isGoogleLoggedIn(user) {
+  return !!user && user.providerData[0].providerId === 'google.com';
+}
+
 const userProfileSchema = Yup.object().shape({
   firstName: Yup.string().min(2, 'Too Short').required('Required'),
   lastName: Yup.string().min(2, 'Too Short').required('Required'),
@@ -35,7 +39,7 @@ const userProfileSchema = Yup.object().shape({
     .email('Please enter a valid email address')
     .required('Required'),
   phone: Yup.string().required('Required'),
-  password: Yup.string().required('Password is required'),
+  password: Yup.string(),
   confirmPassword: Yup.string().oneOf(
     [Yup.ref('password'), null],
     'Passwords must match',
@@ -60,16 +64,12 @@ function isLoggedIn(user) {
   return !!user && !!user.uid;
 }
 
-function isGoogleLoggedIn(user) {
-  return !!user && user.providerId === 'google';
-}
-
 function UserProfile() {
   const classes = useStyles();
   const firestore = useFirestore();
   const user = useUser();
   const auth = useAuth();
-  const { showError } = useNotifications();
+  const { showError, showMessage } = useNotifications();
   // const defaultValues = {};
 
   const [retries, setRetries] = useState(0);
@@ -77,7 +77,7 @@ function UserProfile() {
   const [userData, setUserData] = useState(null);
   // const [formValues, setFormValues] = useState(null);
 
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(isGoogleLoggedIn(user) ? 2 : 0);
   const steps = getSteps();
   const {
     handleSubmit,
@@ -114,6 +114,8 @@ function UserProfile() {
             userFields.forEach(function getDefaults(key) {
               setValue(key, data[key]);
             });
+            if (retries > 999)
+              showMessage('Looks like you already have an account.'); // HACK: retries > 999 means we hit the Sign Up with Google button
             console.log('Loaded data into defaults');
           }
         } catch (err) {
@@ -170,7 +172,9 @@ function UserProfile() {
   }
 
   const handleGoogleSignIn = useCallback((authState) => {
-    console.log(authState);
+    setActiveStep(2);
+    setRetries(1000); // Force a re-run of the data load
+    console.log('Google handler', authState);
   }, []);
 
   function handleSetUserLocationInfo(locationInfo) {
@@ -209,6 +213,8 @@ function UserProfile() {
 
   async function handleFormSubmit(values) {
     const newValues = values;
+    let uid = null;
+    let newUser = false;
     console.log('In submit', values, userData, userRef);
 
     // New user created with email/password
@@ -219,41 +225,51 @@ function UserProfile() {
           getValues('email'),
           getValues('password'),
         );
-        // Write USERS profile
-        const userSnap = await firestore
-          .doc(`${USERS_COLLECTION}/${authState.user.uid}`)
-          .get();
-        newValues.displayName = `${values.firstName} ${values.lastName}`;
-        let newProfile = {
-          firstName: newValues.firstName,
-          lastName: newValues.lastName,
-          email: newValues.email,
-          displayName: newValues.displayName,
-        };
-        await userSnap.ref.set(newProfile, { merge: true });
-        // Write the USERS_PRIVILEGED profile
-        newProfile = { ...newValues };
-        const userPrivSnap = await firestore
-          .doc(`${USERS_PRIVILEGED_COLLECTION}/${authState.user.uid}`)
-          .get();
-        console.log('Updating with', newProfile);
-        await userPrivSnap.ref.set(newProfile, { merge: true });
-        console.log('Updated');
+        newUser = true;
+        uid = authState.user.uid;
       } catch (err) {
         showError(err.message);
         setActiveStep(0);
+        return;
       }
+    } else {
+      uid = user.uid;
+    }
+    try {
+      // Write USERS profile
+      const userSnap = await firestore.doc(`${USERS_COLLECTION}/${uid}`).get();
+      newValues.displayName = `${values.firstName} ${values.lastName}`;
+      let newProfile = {
+        firstName: newValues.firstName,
+        lastName: newValues.lastName,
+        email: newValues.email,
+        displayName: newValues.displayName,
+      };
+      await userSnap.ref.set(newProfile, { merge: true });
+      // Write USERS_PRIVILEGED profile
+      newProfile = { ...newValues };
+      const userPrivSnap = await firestore
+        .doc(`${USERS_PRIVILEGED_COLLECTION}/${uid}`)
+        .get();
+      console.log('Updating with', newProfile);
+      await userPrivSnap.ref.set(newProfile, { merge: true });
+      console.log('Updated');
+      showMessage(newUser ? 'Account created' : 'Profile updated');
+    } catch (err) {
+      showError(err.message);
+      setActiveStep(0);
+      // TODO: If a new user, remove their Firebase account if profile didn't save?
     }
   }
 
   function renderFields(step) {
     return (
-      <div>
+      <div className={classes.centerDiv}>
         <Grid
-          style={{ display: step === 0 ? 'block' : 'none' }}
+          style={{ display: step === 0 ? 'flex' : 'none' }}
           container
-          spacing={1}
-          direction="column">
+          justify="center"
+          spacing={1}>
           <Grid item xs={6}>
             <TextField
               name="email"
@@ -268,23 +284,28 @@ function UserProfile() {
             />
           </Grid>
           {!hasAccount(userData) ? (
-            <GoogleSignIn
-              label="Sign up with Google"
-              handleClick={(authState) => {
-                handleGoogleSignIn(authState);
-              }}
-            />
+            <Grid
+              item
+              xs={6}
+              style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+              <GoogleSignIn
+                label="Sign up with Google"
+                handleClick={(authState) => {
+                  handleGoogleSignIn(authState);
+                }}
+              />
+            </Grid>
           ) : null}
         </Grid>
         <Grid
-          style={{ display: step === 1 ? 'block' : 'none' }}
+          style={{ display: step === 1 ? 'flex' : 'none' }}
           container
-          spacing={1}
-          direction="row">
+          justify="center"
+          spacing={1}>
           <Grid item xs={6}>
             <TextField
               name="password"
-              type="text"
+              type="password"
               label="Password"
               variant="outlined"
               margin="normal"
@@ -297,7 +318,7 @@ function UserProfile() {
           <Grid item xs={6}>
             <TextField
               name="confirmPassword"
-              type="text"
+              type="password"
               label="Confirm Password"
               variant="outlined"
               margin="normal"
@@ -309,10 +330,10 @@ function UserProfile() {
           </Grid>
         </Grid>
         <Grid
-          style={{ display: step === 2 ? 'block' : 'none' }}
+          style={{ display: step === 2 ? 'flex' : 'none' }}
           container
-          spacing={1}
-          direction="row">
+          justify="center"
+          spacing={1}>
           <Grid item xs={6}>
             <TextField
               name="firstName"
@@ -354,10 +375,10 @@ function UserProfile() {
           </Grid>
         </Grid>
         <Grid
-          style={{ display: step === 3 ? 'block' : 'none' }}
+          style={{ display: step === 3 ? 'flex' : 'none' }}
           container
-          spacing={1}
-          direction="row">
+          justify="center"
+          spacing={1}>
           <Grid item xs={6}>
             <TextField
               name="address1"
@@ -385,7 +406,9 @@ function UserProfile() {
         {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
       </Typography>
       <Paper className={classes.paper}>
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <form
+          className={classes.root}
+          onSubmit={handleSubmit(handleFormSubmit)}>
           <Container>
             <Stepper activeStep={activeStep}>
               {steps.map((label) => {
@@ -401,8 +424,13 @@ function UserProfile() {
           </Container>
           <Container>
             {renderFields(activeStep)}
-            <div>
-              <Button disabled={activeStep === 0} onClick={handleBack}>
+            <div className={classes.centerDiv}>
+              <Button
+                disabled={
+                  activeStep === 0 ||
+                  (activeStep === 2 && isGoogleLoggedIn(user))
+                }
+                onClick={handleBack}>
                 Back
               </Button>
               <Button
