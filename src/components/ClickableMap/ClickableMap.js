@@ -281,7 +281,7 @@ function ClickableMap({ onLocationChange, locationInfo }) {
                     data-test="address-entry"
                     {...getInputProps({
                       ...params,
-                      placeholder: 'Enter Address',
+                      placeholder: 'Address Search',
                     })}
                     InputProps={{
                       ...params.InputProps,

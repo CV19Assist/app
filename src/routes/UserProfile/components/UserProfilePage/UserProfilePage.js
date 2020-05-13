@@ -3,6 +3,8 @@ import {
   Typography,
   TextField,
   Paper,
+  Divider,
+  Card,
   Button,
   Container,
   Grid,
@@ -135,8 +137,6 @@ function UserProfile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retries]);
 
-  // Do step-dependent
-
   const handleNext = () => {
     console.log('Data from this form (Next)', { ...getValues() });
     setActiveStep(activeStep + 1);
@@ -157,17 +157,13 @@ function UserProfile() {
    * @param {object} addressType type of address component to lookup
    * @param {string} addressTypeFormat short_name or long_name
    */
-  function setValueIfNotAlreadySet(
+  function setAddress(
     fieldName,
-    allFieldValues,
     googleResultComponent,
     addressType,
     addressTypeFormat = 'long_name',
   ) {
-    if (
-      googleResultComponent.types.includes(addressType) &&
-      !allFieldValues[fieldName]
-    ) {
+    if (googleResultComponent.types.includes(addressType)) {
       setValue(fieldName, googleResultComponent[addressTypeFormat]);
     }
   }
@@ -182,19 +178,18 @@ function UserProfile() {
     setUserLocationInfo(locationInfo);
     const result = locationInfo.lookedUpAddress;
     if (result) {
-      const values = getValues();
       let streetNumber = '';
       let streetAddress = '';
       result.address_components.forEach((component) => {
-        setValueIfNotAlreadySet('city', values, component, 'locality');
-        setValueIfNotAlreadySet(
+        setAddress('city', component, 'locality');
+        setAddress(
           'state',
-          values,
+
           component,
           'administrative_area_level_1',
           'short_name',
         );
-        setValueIfNotAlreadySet('zipcode', values, component, 'postal_code');
+        setAddress('zipcode', component, 'postal_code');
         if (component.types.includes('street_number')) {
           streetNumber = component.short_name;
         }
@@ -202,7 +197,7 @@ function UserProfile() {
           streetAddress = component.short_name;
         }
       });
-      if (streetNumber && streetAddress && !values.address1) {
+      if (streetNumber && streetAddress) {
         setValue('address1', `${streetNumber} ${streetAddress}`);
       }
     }
@@ -380,18 +375,89 @@ function UserProfile() {
           container
           justify="center"
           spacing={1}>
-          <Grid item xs={6}>
-            <TextField
-              name="address1"
-              type="text"
-              label="Address"
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              inputRef={register}
-              error={!!errors.address1}
-              helperText={errors.address1 && 'Enter a valid street address'}
+          <Typography variant="h6" gutterBottom>
+            Your Location
+          </Typography>
+          <Typography gutterBottom>
+            A rough location is needed to allow us to efficiently and quickly
+            find a match. Enter address in the address search, click the
+            &quot;Detect Location&quot; button, or click on the map. You can
+            also enter your full address in the fields at the bottom.{' '}
+          </Typography>
+          <Card>
+            <ClickableMap
+              onLocationChange={handleSetUserLocationInfo}
+              locationInfo={userLocationInfo}
             />
+          </Card>
+          <Grid container>
+            <Grid item sm={12}>
+              <TextField
+                name="address1"
+                label="Street 1"
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                inputRef={register}
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.address1}
+                helperText={errors.address1 && 'address1 must be valid'}
+              />
+            </Grid>
+            <Grid item sm={12}>
+              <TextField
+                name="address2"
+                label="Street 2"
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                inputRef={register}
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.address2}
+                helperText={errors.address2 && 'Address 2 must be valid'}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <TextField
+                name="city"
+                label="City"
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                inputRef={register}
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.city}
+                helperText={errors.city && 'City must be valid'}
+              />
+            </Grid>
+            <Grid item xs>
+              <TextField
+                name="state"
+                label="State"
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                inputRef={register}
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.state}
+                helperText={errors.state && 'State must be valid'}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                name="zipcode"
+                label="Zip"
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                inputRef={register}
+                InputLabelProps={{ shrink: true }}
+                error={!!errors.zipcode}
+                helperText={errors.zipcode && 'Zip code must be valid'}
+              />
+            </Grid>
           </Grid>
         </Grid>
       </div>
