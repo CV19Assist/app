@@ -9,7 +9,7 @@ import {
   Grid,
   makeStyles,
 } from '@material-ui/core';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
@@ -96,7 +96,7 @@ function UserProfile() {
   // we use this effect to monitor for permission-denied until the change has propagated, at which
   // point, we do the actual doc subscription (next useEffect);
   useEffect(() => {
-    console.log(userData, user);
+    console.log(userData, user); // eslint-disable-line no-console
     async function getData() {
       if (isLoggedIn(user) && userData == null) {
         // Already authenticated and haven't loaded data previously
@@ -104,25 +104,25 @@ function UserProfile() {
         const ref = firestore.doc(`${USERS_PRIVILEGED_COLLECTION}/${user.uid}`);
         let data = {};
         try {
-          console.log('ref', ref);
+          console.log('ref', ref); // eslint-disable-line no-console
           // Call it once because this will throw the permission exception.
           const snap = await ref.get();
           data = snap.data();
           setUserData(data);
           setUserRef(ref);
-          console.log('Got data', data, ref);
+          console.log('Got data', data, ref); // eslint-disable-line no-console
           if (!!data && Object.keys(data).length) {
             userFields.forEach(function getDefaults(key) {
               setValue(key, data[key]);
             });
             if (retries > 999)
               showMessage('Looks like you already have an account.'); // HACK: retries > 999 means we hit the Sign Up with Google button
-            console.log('Loaded data into defaults');
+            console.log('Loaded data into defaults'); // eslint-disable-line no-console
           }
         } catch (err) {
           // We only try reloading if insufficient permissions.
           if (err.code !== 'permission-denied') {
-            console.log('permission denied');
+            console.log('permission denied'); // eslint-disable-line no-console
             throw err;
           }
           window.setTimeout(() => {
@@ -137,12 +137,12 @@ function UserProfile() {
   }, [retries]);
 
   const handleNext = () => {
-    console.log('Data from this form (Next)', { ...getValues() });
+    console.log('Data from this form (Next)', { ...getValues() }); // eslint-disable-line no-console
     setActiveStep(activeStep + 1);
   };
 
   const handleBack = () => {
-    console.log('Data from this form (Back)', { ...getValues() });
+    console.log('Data from this form (Back)', { ...getValues() }); // eslint-disable-line no-console
     setActiveStep(activeStep - 1);
   };
 
@@ -170,7 +170,7 @@ function UserProfile() {
   const handleGoogleSignIn = useCallback((authState) => {
     setActiveStep(2);
     setRetries(1000); // Force a re-run of the data load
-    console.log('Google handler', authState);
+    console.log('Google handler', authState); // eslint-disable-line no-console
   }, []);
 
   function handleSetUserLocationInfo(locationInfo) {
@@ -210,7 +210,7 @@ function UserProfile() {
     const newValues = values;
     let uid = null;
     let newUser = false;
-    console.log('In submit', values, userData, userRef);
+    console.log('In submit', values, userData, userRef); // eslint-disable-line no-console
 
     // New user created with email/password
     if (!isLoggedIn(user)) {
@@ -233,7 +233,7 @@ function UserProfile() {
     try {
       // Get email if we came in through Google. Wouldn't be in the form
       if (isGoogleLoggedIn(user)) {
-        console.log(user, user.email);
+        console.log(user, user.email); // eslint-disable-line no-console
         newValues.email = user.email;
       }
       // Write USERS profile
@@ -251,16 +251,16 @@ function UserProfile() {
       const userPrivSnap = await firestore
         .doc(`${USERS_PRIVILEGED_COLLECTION}/${uid}`)
         .get();
-      console.log('Updating with', newProfile);
+      console.log('Updating with', newProfile); // eslint-disable-line no-console
       await userPrivSnap.ref.set(newProfile, { merge: true });
       // Write USERS_PUBLIC profile
       newProfile = { d: { hasAccount: true } };
       const userPubSnap = await firestore
         .doc(`${USERS_PUBLIC_COLLECTION}/${uid}`)
         .get();
-      console.log('Updating with', newProfile);
+      console.log('Updating with', newProfile); // eslint-disable-line no-console
       await userPubSnap.ref.set(newProfile, { merge: true });
-      console.log('Updated');
+      console.log('Updated'); // eslint-disable-line no-console
       showMessage(newUser ? 'Account created' : 'Profile updated');
       history.replace(SEARCH_PATH);
     } catch (err) {

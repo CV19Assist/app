@@ -54,7 +54,10 @@ function AccountMenu() {
           onClick={closeAccountMenu}>
           My Requests
         </MenuItem>
-        <MenuItem component={Link} to={USER_PROFILE_PATH} onClick={closeAccountMenu}>
+        <MenuItem
+          component={Link}
+          to={USER_PROFILE_PATH}
+          onClick={closeAccountMenu}>
           Profile
         </MenuItem>
         <MenuItem onClick={handleLogout}>Sign Out</MenuItem>

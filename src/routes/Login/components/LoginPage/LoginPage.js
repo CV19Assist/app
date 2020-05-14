@@ -26,12 +26,12 @@ function LoginPage() {
     const userSnap = await firestore
       .doc(`${USERS_PUBLIC_COLLECTION}/${user.uid}`)
       .get();
-      const data = await userSnap.data();
-      console.log("Checking account", data);
-      if (!!data && !!data.d && !!data.d.hasAccount) {
-          return true;
+    const data = await userSnap.data();
+    console.log('Checking account', data); // eslint-disable-line no-console
+    if (!!data && !!data.d && !!data.d.hasAccount) {
+      return true;
     }
-  return false;
+    return false;
   }
 
   async function googleLogin() {
