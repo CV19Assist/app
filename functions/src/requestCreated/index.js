@@ -17,10 +17,15 @@ const pubSubClient = new PubSub();
 /**
  * Send FCM message to user about request being created
  * @param {string} userId - Id of user to send FCM message
+ * @param {Array} messageSettings - Settings for the message
  * @returns {Promise} Resolves with message id
  */
-async function sendFcmToUser(userId) {
-  const messageObject = { userId, message: 'Request Created' };
+async function sendFcmToUser(userId, messageSettings = {}) {
+  const messageObject = {
+    userId,
+    message: 'Request Created',
+    ...messageSettings,
+  };
   const messageBuffer = Buffer.from(JSON.stringify(messageObject));
   try {
     const messageId = await pubSubClient
@@ -41,10 +46,15 @@ async function sendFcmToUser(userId) {
 /**
  * Send FCM messages to users by calling sendFcm cloud function
  * @param {Array} userUids - Uids of users for which to send messages
+ * @param {Array} messageSettings - Settings for the message
  * @returns {Promise} Resolves with array of results from sending fcms
  */
-async function sendFcms(userUids) {
-  const [writeErr] = await to(Promise.all(userUids.map(sendFcmToUser)));
+async function sendFcmsToUsers(userUids, messageSettings) {
+  const [writeErr] = await to(
+    Promise.all(
+      userUids.map((userId) => sendFcmToUser(userId, messageSettings)),
+    ),
+  );
   // Handle errors writing messages to send notifications
   if (writeErr) {
     console.error(`Error requesting FCMs: ${writeErr.message || ''}`, writeErr);
@@ -67,7 +77,7 @@ async function requestCreatedEvent(snap, context) {
   const requestData = snap.data();
   const { requestId } = context.params;
   console.log('requestCreated onCreate event:', requestData, { requestId });
-  const { preciseLocation } = requestData;
+  const { preciseLocation, generalLocationName = 'Madison' } = requestData;
 
   // Exit if precise location is not on request object
   if (!preciseLocation) {
@@ -158,12 +168,15 @@ async function requestCreatedEvent(snap, context) {
     return null;
   }
 
-  // Send FCMs to all of the nearby users with browser notification setting enabled
-  await sendFcms(browserNotifUids);
-
   const projectId = getFirebaseConfig('projectId');
   // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
   const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
+  // Send FCMs to all of the nearby users with browser notification setting enabled
+  await sendFcmsToUsers(browserNotifUids, {
+    message: `Request created near ${generalLocationName}`,
+    click_action: `https://${projectDomain}/requests/${requestId}`,
+  });
+
   // Send emails to users with email enabled
   const [sendMailRequestsErr] = await to(
     admin

@@ -40,7 +40,6 @@ jobs:
 
       - name: Install Dependencies
         env:
-          CI: 1
           CYPRESS_INSTALL_BINARY: 0 # Skip install of Cypress (handled in its own job)
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |

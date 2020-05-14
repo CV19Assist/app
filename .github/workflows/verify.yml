@@ -42,7 +42,6 @@ jobs:
 
       - name: Install Dependencies
         env:
-          CI: 1
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           yarn install --frozen-lockfile
@@ -142,7 +141,6 @@ jobs:
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
         env:
-          CI: true
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_KEY }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}

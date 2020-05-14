@@ -79,6 +79,7 @@ async function morningEmailCentralEvent(context) {
       .firestore()
       .collection(MAIL_COLLECTION)
       .add({
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         toUids,
         template: {
           name: 'morning-unclaimed',

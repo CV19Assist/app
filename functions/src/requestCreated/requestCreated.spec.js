@@ -2,7 +2,7 @@ import * as firebaseTesting from '@firebase/testing';
 import functionsTestSetup from 'firebase-functions-test';
 // import { GeoFirestore } from 'geofirestore';
 import { PubSub } from '@google-cloud/pubsub';
-import { requestCreated as requestCreatedOriginal } from '../../index';
+import requestCreatedOriginal from './index';
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
@@ -58,11 +58,27 @@ async function createSubscription() {
   }
   console.log(`Subscription ${subscriptionName} created.`);
 }
+const originalConsole = console;
 
 describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   beforeEach(async () => {
-    // Clean database before each test
-    await firebaseTesting.clearFirestoreData({ projectId });
+    const mailCollectionSnap = await adminApp
+      .firestore()
+      .collection('mail')
+      .where('template.name', '==', 'new-request')
+      .get();
+    await Promise.all(
+      mailCollectionSnap.docs.map((docSnap) => docSnap.ref.delete()),
+    );
+    // Mock console to prevent function logs in test logs
+    global.console = {
+      log: sinon.spy(),
+      error: sinon.spy(),
+    };
+  });
+
+  after(() => {
+    global.console = originalConsole;
   });
 
   it('exits if general location does not exist', async () => {
@@ -148,11 +164,13 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
   it('sends message to users within range with browserNotifications: true', async () => {
     // TODO: Switch to a Geopoint once it is supported for Firebase testing
     // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
+    const generalLocationName = 'Test Place';
     const requestObj = {
       preciseLocation: {
         latitude: 43.074586,
         longitude: DEFAULT_LONGITUDE,
       },
+      generalLocationName,
     };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
@@ -201,7 +219,10 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     const messageHandler = (pubsubMessage) => {
       const message = JSON.parse(pubsubMessage.data.toString());
       expect(message).to.have.property('userId', userId);
-      expect(message).to.have.property('message', 'Request Created');
+      expect(message).to.have.property(
+        'message',
+        `Request created near ${generalLocationName}`,
+      );
       // Detach message subscriber
       topic.off('message', messageHandler);
     };
@@ -240,10 +261,11 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
       },
     };
     await adminApp.firestore().doc(`users_public/${userId}`).set(userObject);
-    await adminApp
-      .firestore()
-      .doc(`users/${userId}`)
-      .set({ role: 'super-admin' });
+    await adminApp.firestore().doc(`users/${userId}`).set({
+      role: 'super-admin',
+      emailNotifications: true,
+      browserNotifications: false,
+    });
 
     // TODO: Switch to this when geopoint is supported in emulator
     // const userObject = {
@@ -263,16 +285,17 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     // Trigger function with fake request data and context (expectations in message handler)
     await requestCreated(snap, context);
 
-    const mailSnaps = await adminApp.firestore().collection('mail').get();
+    const mailSnaps = await adminApp
+      .firestore()
+      .collection('mail')
+      .where('template.name', '==', 'new-request')
+      .limit(1)
+      .get();
     const mailDocs = mailSnaps.docs.map((mailDoc) => ({
       id: mailDoc.id,
       ...mailDoc.data(),
     }));
     const [firstMailDoc] = mailDocs;
-    expect(firstMailDoc).to.have.nested.property(
-      'template.name',
-      'new-request',
-    );
     expect(firstMailDoc).to.have.nested.property(
       'template.data.projectDomain',
       `${process.env.GCLOUD_PROJECT}.web.app`,

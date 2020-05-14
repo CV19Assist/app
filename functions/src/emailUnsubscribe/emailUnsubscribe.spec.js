@@ -1,47 +1,87 @@
-describe.skip('emailUnsubscribe HTTPS Cloud Function', () => {
-  let myFunctions;
-  let configStub;
-  let adminInitStub;
-  let functions;
-  let admin;
+import * as firebaseTesting from '@firebase/testing';
+import emailUnsubscribe from './index';
 
-  before(() => {
-    /* eslint-disable global-require */
-    admin = require('firebase-admin');
-    // Stub Firebase's admin.initializeApp
-    adminInitStub = sinon.stub(admin, 'initializeApp');
-    // Stub Firebase's functions.config()
-    functions = require('firebase-functions');
-    configStub = sinon.stub(functions, 'config').returns({
-      firebase: {
-        databaseURL: 'https://not-a-project.firebaseio.com',
-        storageBucket: 'not-a-project.appspot.com',
-        projectId: 'not-a-project.appspot',
-        messagingSenderId: '823357791673',
-      },
-      // Stub any other config values needed by your functions here
-    });
-    myFunctions = require(`../../index`);
-    /* eslint-enable global-require */
+const adminApp = firebaseTesting.initializeAdminApp({
+  projectId,
+  databaseName: projectId,
+});
+const USER_UID = '123ABC';
+const USER_EMAIL = 'test@test.com';
+const userRef = adminApp.firestore().doc(`users/${USER_UID}`);
+const originalConsole = console;
+
+describe('emailUnsubscribe HTTPS Cloud Function', () => {
+  beforeEach(() => {
+    // Mock console to prevent function logs in test logs
+    global.console = {
+      log: sinon.spy(),
+      error: sinon.spy(),
+    };
   });
 
   after(() => {
-    // Restoring our stubs to the original methods.
-    configStub.restore();
-    adminInitStub.restore();
+    global.console = originalConsole;
   });
 
-  it('responds with hello message when sent an empty request', (done) => {
+  it('Returns error if no query params are included', async () => {
     const req = {};
-    // A fake response object, with a stubbed end function which asserts that
-    // it is called with a hello message
+    const statusSendSpy = sinon.spy();
+    // A fake response object
     const res = {
-      end: (msg) => {
-        expect(msg).to.equal('Hello from emailUnsubscribe');
-        done();
-      },
+      status: sinon.spy(() => ({
+        send: statusSendSpy,
+      })),
     };
     // Invoke https function with fake request + response objects
-    myFunctions.emailUnsubscribe(req, res);
+    await emailUnsubscribe(req, res);
+    expect(res.status).to.have.been.calledWith(500);
+    expect(statusSendSpy).to.have.been.calledWith('Error');
+  });
+
+  it('exits if passed email does not match a user', async () => {
+    const req = {
+      query: {
+        email: USER_EMAIL,
+      },
+    };
+    // Remove user to confirm they do not exist
+    await userRef.delete();
+    // A fake response object
+    const statusSendSpy = sinon.spy();
+    const res = {
+      status: sinon.spy(() => ({
+        send: statusSendSpy,
+      })),
+      send: sinon.spy(),
+      end: sinon.spy(),
+    };
+    // Invoke https function with fake request + response objects
+    await emailUnsubscribe(req, res);
+    expect(res.status).to.have.been.calledWith(500);
+    expect(statusSendSpy).to.have.been.calledWith('Error');
+  });
+
+  it('updates user object when passed a valid email', async () => {
+    // Add user account with email (so it can be found)
+    await userRef.set({ email: USER_EMAIL });
+    // A fake request object
+    const req = {
+      query: {
+        email: USER_EMAIL,
+      },
+    };
+    // A fake response object
+    const res = {
+      writeHead: sinon.spy(),
+      end: sinon.spy(),
+    };
+    // Invoke https function with fake request + response objects
+    await emailUnsubscribe(req, res);
+    const userSnap = await userRef.get();
+    const userData = userSnap.data();
+    expect(userData).to.have.property('emailNotifications', false);
+    expect(res.end).to.have.been.calledWith(
+      'You have been successfully unsubscribed, thank you!',
+    );
   });
 });
