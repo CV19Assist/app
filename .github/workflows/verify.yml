@@ -112,7 +112,10 @@ jobs:
         run: |
           yarn functions:build
           yarn functions:test:cov --project ${{ env.GCLOUD_PROJECT }}
-          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
+
+      - name: Upload Functions Test Coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info || 'Test Coverage Upload Failed, continuing'
 
       - name: Verify App
         run: |
@@ -124,6 +127,9 @@ jobs:
       # This stage tests a version of the app which is running locally in the
       # container on port 3000.
       - name: Cypress Run
+        # Skipped for PRs
+        # TODO: Look into removing this logic once UI tests no longer require secrets such as SERVICE_ACCOUNT
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: cypress-io/github-action@v1
         with:
           record: true

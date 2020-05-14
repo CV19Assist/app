@@ -2,7 +2,7 @@ import * as firebaseTesting from '@firebase/testing';
 import functionsTestSetup from 'firebase-functions-test';
 // import { GeoFirestore } from 'geofirestore';
 import { PubSub } from '@google-cloud/pubsub';
-import requestCreatedOriginal from './index';
+import { requestCreated as requestCreatedOriginal } from '../../index';
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();

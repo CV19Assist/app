@@ -1,6 +1,6 @@
 import * as firebaseTesting from '@firebase/testing';
 import { NOTIFICATIONS_SETTINGS_DOC } from 'constants/firestorePaths';
-import indexUserOriginal from './index';
+import { indexUser as indexUserOriginal } from '../../index';
 
 const USER_UID = '123ABC';
 const USERS_COLLECTION = 'users';

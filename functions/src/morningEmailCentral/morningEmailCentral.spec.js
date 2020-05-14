@@ -1,5 +1,5 @@
 import * as firebaseTesting from '@firebase/testing';
-import morningCentralOriginal from './index';
+import { morningEmailCentral as morningCentralOriginal } from '../../index';
 
 const context = { timestamp: Date.now() };
 

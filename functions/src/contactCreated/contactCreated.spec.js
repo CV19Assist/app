@@ -1,5 +1,5 @@
 import * as firebaseTesting from '@firebase/testing';
-import contactCreatedOriginal from './index';
+import { contactCreated as contactCreatedOriginal } from '../../index';
 
 const adminApp = firebaseTesting.initializeAdminApp({
   projectId: process.env.GCLOUD_PROJECT,

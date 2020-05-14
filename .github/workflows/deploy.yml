@@ -54,6 +54,10 @@ jobs:
           yarn functions:build
           yarn functions:test:cov --project cv19assist-dev
 
+      - name: Upload Functions Test Coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info || 'Test Coverage Upload Failed, continuing'
+  
       - name: Verify App
         env:
           GITHUB_REF: ${{ github.ref }}
