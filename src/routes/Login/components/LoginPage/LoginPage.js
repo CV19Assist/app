@@ -22,13 +22,13 @@ function LoginPage() {
   const [isLoading, setLoadingState] = useState(false);
   const { showError, showMessage } = useNotifications();
 
-  async function hasAccount(user) {
+  async function hasProfile(user) {
     const userSnap = await firestore
       .doc(`${USERS_PUBLIC_COLLECTION}/${user.uid}`)
       .get();
     const data = await userSnap.data();
     console.log('Checking account', data); // eslint-disable-line no-console
-    if (!!data && !!data.d && !!data.d.hasAccount) {
+    if (!!data && !!data.d && !!data.d.hasProfile) {
       return true;
     }
     return false;
@@ -43,7 +43,7 @@ function LoginPage() {
     const signInMethod = isMobile ? 'signInWithRedirect' : 'signInWithPopup';
     try {
       const authState = await auth[signInMethod](provider);
-      if (await hasAccount(authState.user)) {
+      if (await hasProfile(authState.user)) {
         history.replace(SEARCH_PATH);
         return;
       }
@@ -61,7 +61,7 @@ function LoginPage() {
         creds.email,
         creds.password,
       );
-      if (await hasAccount(authState.user)) {
+      if (await hasProfile(authState.user)) {
         history.replace(SEARCH_PATH);
         return;
       }

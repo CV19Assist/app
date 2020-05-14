@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Typography,
   TextField,
@@ -24,8 +24,7 @@ import {
 } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
 import LoadingSpinner from 'components/LoadingSpinner';
-import GoogleSignIn from 'components/GoogleSignIn';
-import { useForm } from 'react-hook-form';
+import { useForm, FormContext, useFormContext } from 'react-hook-form';
 import { SEARCH_PATH } from 'constants/paths';
 import styles from './UserProfilePage.styles';
 
@@ -35,29 +34,7 @@ function isGoogleLoggedIn(user) {
   return !!user && user.providerData[0].providerId === 'google.com';
 }
 
-const userProfileSchema = Yup.object().shape({
-  firstName: Yup.string().min(2, 'Too Short').required('Required'),
-  lastName: Yup.string().min(2, 'Too Short').required('Required'),
-  email: Yup.string(),
-  phone: Yup.string().required('Required'),
-  password: Yup.string(),
-  confirmPassword: Yup.string().oneOf(
-    [Yup.ref('password'), null],
-    'Passwords must match',
-  ),
-  address1: Yup.string(),
-  address2: Yup.string(),
-  city: Yup.string(),
-  state: Yup.string(),
-  zipcode: Yup.string(),
-});
-const userFields = Object.keys(userProfileSchema.describe().fields);
-
-function getSteps() {
-  return ['Email', 'Password', 'Contact Info', 'Location'];
-}
-
-function hasAccount(userData) {
+function hasProfile(userData) {
   return !!userData && !!userData.email;
 }
 
@@ -73,22 +50,102 @@ function UserProfile() {
   const history = useHistory();
   const { showError, showMessage } = useNotifications();
   const [isLoading, setLoadingState] = useState(true);
-
+  const [userLocationInfo, setUserLocationInfo] = useState(null);
   const [retries, setRetries] = useState(0);
   const [userRef, setUserRef] = useState(null);
   const [userData, setUserData] = useState(null);
-
   const [activeStep, setActiveStep] = useState(isGoogleLoggedIn(user) ? 2 : 0);
-  const steps = getSteps();
-  const {
-    handleSubmit,
-    errors,
-    register,
-    formState: { isValid, dirty },
-    getValues,
-    setValue,
-  } = useForm({
-    validationSchema: userProfileSchema,
+
+  const userProfileSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        firstName: Yup.string().min(2, 'Too Short').required('Required'),
+        lastName: Yup.string().min(2, 'Too Short').required('Required'),
+        email: Yup.string(),
+        phone: Yup.string().required('Required'),
+        password: Yup.string(),
+        confirmPassword: Yup.string().oneOf(
+          [Yup.ref('password'), null],
+          'Passwords must match',
+        ),
+        address1: Yup.string(),
+        address2: Yup.string(),
+        city: Yup.string(),
+        state: Yup.string(),
+        zipcode: Yup.string(),
+      }),
+    [],
+  );
+
+  const steps = ['Email', 'Password', 'Contact Info', 'Location'];
+
+  const userFieldsStepMap = {
+    email: 0,
+    password: 1,
+    confirmPassword: 1,
+    firstName: 2,
+    lastName: 2,
+    phone: 2,
+    address1: 3,
+    address2: 3,
+    city: 3,
+    state: 3,
+    zipcode: 3,
+  };
+
+  const formContext = useFormContext();
+
+  const useYupValidationResolver = (validationSchema) =>
+    useCallback(
+      async (data) => {
+        try {
+          const values = await validationSchema.validate(data, {
+            abortEarly: false,
+          });
+
+          return {
+            values,
+            errors: {},
+          };
+        } catch (errors) {
+          const errs = errors.inner.reduce(
+            (allErrors, currentError) => ({
+              ...allErrors,
+              [currentError.path]: {
+                type: currentError.type ?? 'validation',
+                message: currentError.message,
+              },
+            }),
+            {},
+          );
+          console.log('Errors: ', errs, 'Form State: ', formContext); // eslint-disable-line no-console
+          let step = 3;
+          Object.keys(errs).forEach((field) => {
+            const errStep = userFieldsStepMap[field];
+            step = errStep < step ? errStep : step;
+          });
+          setActiveStep(step);
+          return {
+            values: {},
+            errors: errs,
+          };
+        }
+      },
+      [validationSchema],
+    );
+
+  const validationResolver = useYupValidationResolver(userProfileSchema);
+
+  // const {
+  //   handleSubmit,
+  //   errors,
+  //   register,
+  //   formState: { isValid, dirty },
+  //   getValues,
+  //   setValue,
+  // } = useForm({
+  const methods = useForm({
+    validationResolver,
   });
 
   // Because of timing issues, this component will likely get run before the server has applied
@@ -112,11 +169,9 @@ function UserProfile() {
           setUserRef(ref);
           console.log('Got data', data, ref); // eslint-disable-line no-console
           if (!!data && Object.keys(data).length) {
-            userFields.forEach(function getDefaults(key) {
-              setValue(key, data[key]);
+            Object.keys(userFieldsStepMap).forEach(function getDefaults(key) {
+              methods.setValue(key, data[key]);
             });
-            if (retries > 999)
-              showMessage('Looks like you already have an account.'); // HACK: retries > 999 means we hit the Sign Up with Google button
             console.log('Loaded data into defaults'); // eslint-disable-line no-console
           }
         } catch (err) {
@@ -137,16 +192,14 @@ function UserProfile() {
   }, [retries]);
 
   const handleNext = () => {
-    console.log('Data from this form (Next)', { ...getValues() }); // eslint-disable-line no-console
+    console.log('Data from this form (Next)', { ...methods.getValues() }); // eslint-disable-line no-console
     setActiveStep(activeStep + 1);
   };
 
   const handleBack = () => {
-    console.log('Data from this form (Back)', { ...getValues() }); // eslint-disable-line no-console
+    console.log('Data from this form (Back)', { ...methods.getValues() }); // eslint-disable-line no-console
     setActiveStep(activeStep - 1);
   };
-
-  const [userLocationInfo, setUserLocationInfo] = useState(null);
 
   /**
    * Sets the value for the given field if it isn't already populated.
@@ -163,15 +216,9 @@ function UserProfile() {
     addressTypeFormat = 'long_name',
   ) {
     if (googleResultComponent.types.includes(addressType)) {
-      setValue(fieldName, googleResultComponent[addressTypeFormat]);
+      methods.setValue(fieldName, googleResultComponent[addressTypeFormat]);
     }
   }
-
-  const handleGoogleSignIn = useCallback((authState) => {
-    setActiveStep(2);
-    setRetries(1000); // Force a re-run of the data load
-    console.log('Google handler', authState); // eslint-disable-line no-console
-  }, []);
 
   function handleSetUserLocationInfo(locationInfo) {
     setUserLocationInfo(locationInfo);
@@ -197,7 +244,7 @@ function UserProfile() {
         }
       });
       if (streetNumber && streetAddress) {
-        setValue('address1', `${streetNumber} ${streetAddress}`);
+        methods.setValue('address1', `${streetNumber} ${streetAddress}`);
       }
     }
   }
@@ -217,14 +264,18 @@ function UserProfile() {
       try {
         // Try creating new user
         const authState = await auth.createUserWithEmailAndPassword(
-          getValues('email'),
-          getValues('password'),
+          methods.getValues('email'),
+          methods.getValues('password'),
         );
         newUser = true;
         uid = authState.user.uid;
       } catch (err) {
         showError(err.message);
-        setActiveStep(0);
+        if (err.code === 'auth/weak-password') {
+          setActiveStep(1);
+        } else {
+          setActiveStep(0);
+        }
         return;
       }
     } else {
@@ -235,6 +286,14 @@ function UserProfile() {
       if (isGoogleLoggedIn(user)) {
         console.log(user, user.email); // eslint-disable-line no-console
         newValues.email = user.email;
+      } else if (isLoggedIn(user)) {
+        // Check for email/password changes
+        if (newValues.email !== user.email) {
+          await user.updateEmail(newValues.email);
+        }
+        if (newValues.password) {
+          await user.updatePassword(newValues.password);
+        }
       }
       // Write USERS profile
       const userSnap = await firestore.doc(`${USERS_COLLECTION}/${uid}`).get();
@@ -254,7 +313,7 @@ function UserProfile() {
       console.log('Updating with', newProfile); // eslint-disable-line no-console
       await userPrivSnap.ref.set(newProfile, { merge: true });
       // Write USERS_PUBLIC profile
-      newProfile = { d: { hasAccount: true } };
+      newProfile = { d: { hasProfile: true } };
       const userPubSnap = await firestore
         .doc(`${USERS_PUBLIC_COLLECTION}/${uid}`)
         .get();
@@ -286,24 +345,11 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.email}
-              helperText={errors.email && 'Enter a valid email address'}
+              inputRef={methods.register}
+              error={!!methods.errors.email}
+              helperText={methods.errors.email && 'Enter a valid email address'}
             />
           </Grid>
-          {!hasAccount(userData) ? (
-            <Grid
-              item
-              xs={6}
-              style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-              <GoogleSignIn
-                label="Sign up with Google"
-                handleClick={(authState) => {
-                  handleGoogleSignIn(authState);
-                }}
-              />
-            </Grid>
-          ) : null}
         </Grid>
         <Grid
           style={{ display: step === 1 ? 'flex' : 'none' }}
@@ -318,9 +364,9 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.password}
-              helperText={errors.password && 'Password must be...'}
+              inputRef={methods.register}
+              error={!!methods.errors.password}
+              helperText={methods.errors.password && 'Password must be...'}
             />
           </Grid>
           <Grid item xs={6}>
@@ -331,9 +377,11 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword && 'Passwords must match'}
+              inputRef={methods.register}
+              error={!!methods.errors.confirmPassword}
+              helperText={
+                methods.errors.confirmPassword && 'Passwords must match'
+              }
             />
           </Grid>
         </Grid>
@@ -350,9 +398,11 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.firstName}
-              helperText={errors.firstName && 'Enter a valid First Name'}
+              inputRef={methods.register}
+              error={!!methods.errors.firstName}
+              helperText={
+                methods.errors.firstName && 'Enter a valid First Name'
+              }
             />
           </Grid>
           <Grid item xs={6}>
@@ -363,9 +413,9 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.lastName}
-              helperText={errors.lastName && 'Enter a valid Last Name'}
+              inputRef={methods.register}
+              error={!!methods.errors.lastName}
+              helperText={methods.errors.lastName && 'Enter a valid Last Name'}
             />
           </Grid>
           <Grid item xs={6}>
@@ -376,9 +426,9 @@ function UserProfile() {
               variant="outlined"
               margin="normal"
               fullWidth
-              inputRef={register}
-              error={!!errors.phone}
-              helperText={errors.phone && 'Enter a valid phone number'}
+              inputRef={methods.register}
+              error={!!methods.errors.phone}
+              helperText={methods.errors.phone && 'Enter a valid phone number'}
             />
           </Grid>
         </Grid>
@@ -410,10 +460,10 @@ function UserProfile() {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                inputRef={register}
+                inputRef={methods.register}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.address1}
-                helperText={errors.address1 && 'address1 must be valid'}
+                error={!!methods.errors.address1}
+                helperText={methods.errors.address1 && 'address1 must be valid'}
               />
             </Grid>
             <Grid item sm={12}>
@@ -423,10 +473,12 @@ function UserProfile() {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                inputRef={register}
+                inputRef={methods.register}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.address2}
-                helperText={errors.address2 && 'Address 2 must be valid'}
+                error={!!methods.errors.address2}
+                helperText={
+                  methods.errors.address2 && 'Address 2 must be valid'
+                }
               />
             </Grid>
           </Grid>
@@ -438,10 +490,10 @@ function UserProfile() {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                inputRef={register}
+                inputRef={methods.register}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.city}
-                helperText={errors.city && 'City must be valid'}
+                error={!!methods.errors.city}
+                helperText={methods.errors.city && 'City must be valid'}
               />
             </Grid>
             <Grid item xs>
@@ -451,10 +503,10 @@ function UserProfile() {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                inputRef={register}
+                inputRef={methods.register}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.state}
-                helperText={errors.state && 'State must be valid'}
+                error={!!methods.errors.state}
+                helperText={methods.errors.state && 'State must be valid'}
               />
             </Grid>
             <Grid item xs={4}>
@@ -464,10 +516,10 @@ function UserProfile() {
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                inputRef={register}
+                inputRef={methods.register}
                 InputLabelProps={{ shrink: true }}
-                error={!!errors.zipcode}
-                helperText={errors.zipcode && 'Zip code must be valid'}
+                error={!!methods.errors.zipcode}
+                helperText={methods.errors.zipcode && 'Zip code must be valid'}
               />
             </Grid>
           </Grid>
@@ -484,76 +536,77 @@ function UserProfile() {
       <div style={{ display: isLoading ? 'none' : 'block' }}>
         <Helmet>
           <title>
-            {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
+            {hasProfile(userData) ? 'My Profile' : ' I Want To Help'}
           </title>
         </Helmet>
         <Typography variant="h4" gutterBottom>
-          {hasAccount(userData) ? 'My Profile' : ' I Want To Help'}
+          {hasProfile(userData) ? 'My Profile' : ' I Want To Help'}
         </Typography>
         <Paper className={classes.paper}>
-          <form
-            className={classes.root}
-            onSubmit={handleSubmit(handleFormSubmit)}>
-            <Container>
-              <Stepper activeStep={activeStep}>
-                {steps.map((label) => {
-                  const stepProps = {};
-                  const labelProps = {};
-                  return (
-                    <Step key={label} {...stepProps}>
-                      <StepLabel {...labelProps}>{label}</StepLabel>
-                    </Step>
-                  );
-                })}
-              </Stepper>
-            </Container>
-            <Container>
-              {renderFields(activeStep)}
-              <div className={classes.centerDiv}>
-                <Button
-                  disabled={
-                    activeStep === 0 ||
-                    (activeStep === 2 && isGoogleLoggedIn(user))
-                  }
-                  onClick={handleBack}>
-                  Back
-                </Button>
-                <Button
-                  style={{
-                    display:
-                      activeStep === steps.length - 1 ? 'inline-flex' : 'none',
-                  }}
-                  variant="contained"
-                  color="primary"
-                  type="submit">
-                  Finish
-                </Button>
-                <Button
-                  style={{
-                    display:
-                      activeStep !== steps.length - 1 ? 'inline-flex' : 'none',
-                  }}
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}>
-                  Next
-                </Button>
-              </div>
+          <FormContext {...methods}>
+            <form
+              className={classes.root}
+              onSubmit={methods.handleSubmit(handleFormSubmit)}>
+              <Container>
+                <Stepper activeStep={activeStep}>
+                  {steps.map((label) => {
+                    const stepProps = {};
+                    const labelProps = {};
+                    return (
+                      <Step key={label} {...stepProps}>
+                        <StepLabel {...labelProps}>{label}</StepLabel>
+                      </Step>
+                    );
+                  })}
+                </Stepper>
+              </Container>
+              <Container>
+                {renderFields(activeStep)}
+                <div className={classes.centerDiv}>
+                  <Button
+                    disabled={
+                      activeStep === 0 ||
+                      (activeStep === 2 && isGoogleLoggedIn(user))
+                    }
+                    onClick={handleBack}>
+                    Back
+                  </Button>
+                  <Button
+                    style={{
+                      display:
+                        activeStep === steps.length - 1
+                          ? 'inline-flex'
+                          : 'none',
+                    }}
+                    variant="contained"
+                    color="primary"
+                    type="submit">
+                    Finish
+                  </Button>
+                  <Button
+                    style={{
+                      display:
+                        activeStep !== steps.length - 1
+                          ? 'inline-flex'
+                          : 'none',
+                    }}
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}>
+                    Next
+                  </Button>
+                </div>
 
-              <Typography className={classes.warrantyInfo}>
-                Note: This website and all related work products are provided
-                &quot;AS IS&quot;. The provider of this service makes no other
-                warranties, express or implied, and hereby disclaims all implied
-                warranties, including any warranty of merchantability and
-                warranty of fitness for a particular purpose.
-              </Typography>
-              {dirty && errors && !!Object.keys(errors).length && !isValid && (
-                <Typography variant="body2" className={classes.errorText}>
-                  Please fix the errors above.
+                <Typography className={classes.warrantyInfo}>
+                  Note: This website and all related work products are provided
+                  &quot;AS IS&quot;. The provider of this service makes no other
+                  warranties, express or implied, and hereby disclaims all
+                  implied warranties, including any warranty of merchantability
+                  and warranty of fitness for a particular purpose.
                 </Typography>
-              )}
-            </Container>
-          </form>
+              </Container>
+            </form>
+          </FormContext>
         </Paper>
       </div>
     </Container>
