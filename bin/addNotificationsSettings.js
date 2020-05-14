@@ -41,9 +41,9 @@ function loadServiceAccount() {
     const usersSnap = await usersRef.get();
     // eslint-disable-next-line no-await-in-loop, no-restricted-syntax
     for (const userSnap of usersSnap.docs) {
-      console.log('updating user', userSnap.id);
+      console.log('Updating user', userSnap.id);
       // eslint-disable-next-line no-await-in-loop
-      await userSnap.update({ browserNotifications: true });
+      await userSnap.ref.update({ browserNotifications: true });
     }
     process.exit(0);
   } catch (err) {
