@@ -75,21 +75,25 @@ async function morningEmailCentralEvent(context) {
 
   // Write request to mail collection of Firestore
   const [sendMailRequestsErr] = await to(
-    admin
-      .firestore()
-      .collection(MAIL_COLLECTION)
-      .add({
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        toUids,
-        template: {
-          name: 'morning-unclaimed',
-          data: {
-            requests,
-            projectDomain,
-            timestamp,
-          },
-        },
-      }),
+    Promise.all(
+      toUids.map((toUid) =>
+        admin
+          .firestore()
+          .collection(MAIL_COLLECTION)
+          .add({
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            toUids: [toUid],
+            template: {
+              name: 'morning-unclaimed',
+              data: {
+                requests,
+                projectDomain,
+                timestamp,
+              },
+            },
+          }),
+      ),
+    ),
   );
 
   // Handle errors writing requests to send mail

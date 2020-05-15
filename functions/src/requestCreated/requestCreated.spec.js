@@ -165,12 +165,14 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
     // TODO: Switch to a Geopoint once it is supported for Firebase testing
     // const requestObj = { generalLocation: new admin.firestore.GeoPoint(0, 0) };
     const generalLocationName = 'Test Place';
+    const firstName = 'test user';
     const requestObj = {
       preciseLocation: {
         latitude: 43.074586,
         longitude: DEFAULT_LONGITUDE,
       },
       generalLocationName,
+      firstName,
     };
     const snap = functionsTest.firestore.makeDocumentSnapshot(
       requestObj,
@@ -221,7 +223,7 @@ describe('requestCreated PubSub Cloud Function (pubsub:onPublish)', () => {
       expect(message).to.have.property('userId', userId);
       expect(message).to.have.property(
         'message',
-        `Request created near ${generalLocationName}`,
+        `Request created by ${firstName} near ${generalLocationName}`,
       );
       // Detach message subscriber
       topic.off('message', messageHandler);

@@ -77,7 +77,11 @@ async function requestCreatedEvent(snap, context) {
   const requestData = snap.data();
   const { requestId } = context.params;
   console.log('requestCreated onCreate event:', requestData, { requestId });
-  const { preciseLocation, generalLocationName = 'Madison' } = requestData;
+  const {
+    preciseLocation,
+    generalLocationName = 'Madison',
+    firstName,
+  } = requestData;
 
   // Exit if precise location is not on request object
   if (!preciseLocation) {
@@ -173,28 +177,32 @@ async function requestCreatedEvent(snap, context) {
   const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
   // Send FCMs to all of the nearby users with browser notification setting enabled
   await sendFcmsToUsers(browserNotifUids, {
-    message: `Request created near ${generalLocationName}`,
+    message: `Request created by ${firstName} near ${generalLocationName}`,
     click_action: `https://${projectDomain}/requests/${requestId}`,
   });
 
   // Send emails to users with email enabled
   const [sendMailRequestsErr] = await to(
-    admin
-      .firestore()
-      .collection(MAIL_COLLECTION)
-      .add({
-        toUids: emailNotifUids,
-        template: {
-          name: 'new-request',
-          data: {
-            requestData: {
-              ...requestData,
-              id: requestId,
+    Promise.all(
+      emailNotifUids.map((toUid) =>
+        admin
+          .firestore()
+          .collection(MAIL_COLLECTION)
+          .add({
+            toUids: [toUid],
+            template: {
+              name: 'new-request',
+              data: {
+                requestData: {
+                  ...requestData,
+                  id: requestId,
+                },
+                projectDomain,
+              },
             },
-            projectDomain,
-          },
-        },
-      }),
+          }),
+      ),
+    ),
   );
 
   // Handle errors writing requests to send mail
