@@ -23,6 +23,7 @@ import {
   USERS_PUBLIC_COLLECTION,
 } from 'constants/collections';
 import ClickableMap from 'components/ClickableMap';
+import { geocode } from 'utils/geo';
 import LoadingSpinner from 'components/LoadingSpinner';
 import { useForm, FormContext, useFormContext } from 'react-hook-form';
 import { SEARCH_PATH } from 'constants/paths';
@@ -281,6 +282,56 @@ function UserProfile() {
     } else {
       uid = user.uid;
     }
+    // Get the user's precise location
+    try {
+      const address = `${values.address1} ${values.address2} ${values.city}, ${values.state} ${values.zipcode}`;
+      const locationResult = await geocode(address);
+      console.log(address, 'Geocode result', locationResult); // eslint-disable-line no-console
+      const latitude = locationResult.results[0].geometry.location.lat();
+      const longitude = locationResult.results[0].geometry.location.lng();
+      newValues.preciseLocation = { latitude, longitude };
+      newValues.generalLocation = { latitude, longitude };
+      let city = null;
+      let state = null;
+      for (
+        let i = 0;
+        i < locationResult.results[0].address_components.length &&
+        (!city || !state);
+        i += 1
+      ) {
+        for (
+          let b = 0;
+          b < locationResult.results[0].address_components[i].types.length &&
+          (!city || !state);
+          b += 1
+        ) {
+          if (
+            locationResult.results[0].address_components[i].types[b] ===
+            'administrative_area_level_1'
+          ) {
+            state = locationResult.results[0].address_components[i].short_name;
+          }
+          if (
+            locationResult.results[0].address_components[i].types[b] ===
+            'locality'
+          ) {
+            city = locationResult.results[0].address_components[i].long_name;
+          }
+        }
+      }
+
+      newValues.generalLocationName = `${city}, ${state}`;
+      console.log('After address lookup', newValues); // eslint-disable-line no-console
+    } catch (err) {
+      if (err === 'ZERO_RESULTS') {
+        showError('Could not find your address. Please try again');
+      } else {
+        console.log('Address Error', err); // eslint-disable-line no-console
+        showError('Address Lookup Error', err);
+      }
+      setActiveStep(3);
+      return;
+    }
     try {
       // Get email if we came in through Google. Wouldn't be in the form
       if (isGoogleLoggedIn(user)) {
@@ -303,6 +354,9 @@ function UserProfile() {
         lastName: newValues.lastName,
         email: newValues.email,
         displayName: newValues.displayName,
+        preciseLocation: newValues.preciseLocation,
+        generalLocation: newValues.generalLocation,
+        generalLocationName: newValues.generalLocationName,
       };
       await userSnap.ref.set(newProfile, { merge: true });
       // Write USERS_PRIVILEGED profile

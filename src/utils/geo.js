@@ -107,3 +107,23 @@ export async function reverseGeocode(latitude, longitude) {
     );
   });
 }
+
+export async function geocode(address) {
+  if (!window.google?.maps?.Geocoder) {
+    // eslint-disable-next-line no-console
+    console.error('Google Maps API not found.');
+    Sentry.captureMessage('Google Maps API not found', Sentry.Severity.Error);
+    return null;
+  }
+
+  return new Promise((resolve, reject) => {
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address }, (results, status) => {
+      if (status !== window.google.maps.GeocoderStatus.OK) {
+        reject(status);
+      } else {
+        resolve({ status, results });
+      }
+    });
+  });
+}
