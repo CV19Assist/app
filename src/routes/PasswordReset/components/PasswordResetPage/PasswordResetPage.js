@@ -59,8 +59,8 @@ function PasswordReset() {
             onSubmit={handleSubmit(handleLinkSend)}>
             <Grid container justify="center" spacing={1}>
               <Typography gutterBottom>
-                Enter your email address, and if you have an account you will
-                get emailed a link to reset your password.
+                Enter your email address, and if you have an account you will be
+                emailed a link to reset your password.
               </Typography>
               <Grid container justify="center" spacing={1}>
                 <Grid item sm={6}>

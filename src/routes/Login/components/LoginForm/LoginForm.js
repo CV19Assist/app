@@ -51,9 +51,6 @@ function LoginForm({ onSubmit }) {
         helperText={errors.password && 'Password is required'}
       />
       <Link to={PASSWORD_RESET_PATH}>Forgot Password</Link>{' '}
-      {
-        // TODO: Need Forgot Password flow
-      }
       <div className={classes.submit}>
         <Button
           color="primary"
