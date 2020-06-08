@@ -1,11 +1,13 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { PubSub } from '@google-cloud/pubsub';
+import { GeoFirestore } from 'geofirestore';
 import { to } from 'utils/async';
 import {
   REQUESTS_COLLECTION,
-  NOTIFICATIONS_SETTINGS_DOC,
   MAIL_COLLECTION,
+  USERS_PUBLIC_COLLECTION,
+  USERS_COLLECTION,
 } from 'constants/firestorePaths';
 import { getFirebaseConfig, getEnvConfig } from 'utils/firebaseFunctions';
 
@@ -15,9 +17,15 @@ const pubSubClient = new PubSub();
 /**
  * Send FCM message to user about request being created
  * @param {string} userId - Id of user to send FCM message
+ * @param {Array} messageSettings - Settings for the message
+ * @returns {Promise} Resolves with message id
  */
-async function sendFcmToUser(userId) {
-  const messageObject = { userId, message: 'Request Created' };
+async function sendFcmToUser(userId, messageSettings = {}) {
+  const messageObject = {
+    userId,
+    message: 'Request Created',
+    ...messageSettings,
+  };
   const messageBuffer = Buffer.from(JSON.stringify(messageObject));
   try {
     const messageId = await pubSubClient
@@ -38,15 +46,23 @@ async function sendFcmToUser(userId) {
 /**
  * Send FCM messages to users by calling sendFcm cloud function
  * @param {Array} userUids - Uids of users for which to send messages
+ * @param {Array} messageSettings - Settings for the message
+ * @returns {Promise} Resolves with array of results from sending fcms
  */
-async function sendFcms(userUids) {
-  const [writeErr] = await to(Promise.all(userUids.map(sendFcmToUser)));
+async function sendFcmsToUsers(userUids, messageSettings) {
+  const [writeErr] = await to(
+    Promise.all(
+      userUids.map((userId) => sendFcmToUser(userId, messageSettings)),
+    ),
+  );
   // Handle errors writing messages to send notifications
   if (writeErr) {
     console.error(`Error requesting FCMs: ${writeErr.message || ''}`, writeErr);
     throw writeErr;
   }
 }
+
+const KM_TO_MILES = 1.609344;
 
 /**
  * Send messages for every new request that is created based on settings
@@ -58,48 +74,135 @@ async function sendFcms(userUids) {
  * @returns {Promise} Results of request event create
  */
 async function requestCreatedEvent(snap, context) {
-  const { params } = context;
   const requestData = snap.data();
-  requestData.id = snap.id;
-  console.log('requestCreated onCreate event:', requestData, { params });
+  const { requestId } = context.params;
+  console.log('requestCreated onCreate event:', requestData, { requestId });
+  const {
+    preciseLocation,
+    generalLocationName = 'Madison',
+    firstName,
+  } = requestData;
 
-  // Load settings doc
-  const settingsRef = admin.firestore().doc(NOTIFICATIONS_SETTINGS_DOC);
-  const [settingsDocErr, settingsDocSnap] = await to(settingsRef.get());
-
-  // Handle errors loading settings docs
-  if (settingsDocErr) {
-    console.error(
-      `Error loading settings doc: ${settingsDocErr.message || ''}`,
-      settingsDocErr,
-    );
+  // Exit if precise location is not on request object
+  if (!preciseLocation) {
+    console.error(`Precise location not found on request with id ${requestId}`);
+    return null;
   }
 
-  // Notify all users in newRequests parameter of system_settings/notification document
-  const { newRequests: userUids } = settingsDocSnap.data() || {};
-  await sendFcms(userUids);
+  console.log('Precise location of request', preciseLocation);
+
+  // Query user public accounts within 60 miles of the request
+  const searchDistance = 60;
+  const geofirestore = new GeoFirestore(admin.firestore());
+  const [nearbyUsersErr, nearbyUsersSnaps] = await to(
+    geofirestore
+      .collection(USERS_PUBLIC_COLLECTION)
+      .near({
+        /* eslint-disable no-underscore-dangle */
+        center: new admin.firestore.GeoPoint(
+          preciseLocation.latitude,
+          preciseLocation.longitude,
+        ),
+        /* eslint-enable no-underscore-dangle */
+        radius: KM_TO_MILES * searchDistance,
+      })
+      // Limit was causing issue
+      // .limit(50)
+      .get(),
+  );
+
+  if (nearbyUsersErr) {
+    console.error(
+      `Error querying for nearby users for request "${requestId}":`,
+      nearbyUsersErr.message,
+    );
+    throw nearbyUsersErr;
+  }
+
+  console.log(
+    `Nearby user results for request "${requestId}":`,
+    nearbyUsersSnaps.docs.map((nearbyUserDoc) => nearbyUserDoc.id),
+  );
+
+  // Exit if no users found nearby
+  // TODO: Discuss switching this searching again within a bigger radius
+  if (!nearbyUsersSnaps.docs.length) {
+    console.log('No nearby users found, exiting');
+    return null;
+  }
+
+  // Load user accounts of nearby users (to check notification settings)
+  // TODO: Look into if a where with ids and notification settings performs better
+  const nearbyUsersAccountSnaps = await Promise.all(
+    nearbyUsersSnaps.docs.map((userSnap) =>
+      admin.firestore().doc(`${USERS_COLLECTION}/${userSnap.id}`).get(),
+    ),
+  );
+  console.log('Nearby users accounts loaded:', nearbyUsersAccountSnaps.length);
+  console.log(
+    `Nearby user accounts for request "${requestId}":`,
+    nearbyUsersAccountSnaps.map((nearbyUserDoc) => nearbyUserDoc.data()),
+  );
+  // Filter nearby users into ids of users with emails or browser notifications enabled
+  const { browserNotifUids, emailNotifUids } = nearbyUsersAccountSnaps.reduce(
+    (acc, userDocSnap) => {
+      // Browser notifications to users which have browser notifications enabled
+      if (userDocSnap.get('browserNotifications')) {
+        acc.browserNotifUids.push(userDocSnap.id);
+      }
+      // Email notifications to users which have super-admin role
+      if (userDocSnap.get('role') === 'super-admin') {
+        acc.emailNotifUids.push(userDocSnap.id);
+      }
+      return acc;
+    },
+    {
+      browserNotifUids: [],
+      emailNotifUids: [],
+    },
+  );
+  console.log('Notification settings:', {
+    browserNotifUids,
+    emailNotifUids,
+  });
+
+  // Exit if none of the users within range have notifications enabled
+  if (!browserNotifUids.length && !emailNotifUids.length) {
+    console.log('No users have browser notifications enabled. Exiting...');
+    return null;
+  }
 
   const projectId = getFirebaseConfig('projectId');
   // Set domain as frontend url if set, otherwise fallback to Firebase Hosting URL
   const projectDomain = getEnvConfig('frontend.url', `${projectId}.web.app`);
+  // Send FCMs to all of the nearby users with browser notification setting enabled
+  await sendFcmsToUsers(browserNotifUids, {
+    message: `Request created by ${firstName} near ${generalLocationName}`,
+    click_action: `https://${projectDomain}/requests/${requestId}`,
+  });
 
-  // Get list of UIDs to email based on notifications settings doc
-  const toUids = settingsDocSnap.get('newRequests');
-
+  // Send emails to users with email enabled
   const [sendMailRequestsErr] = await to(
-    admin
-      .firestore()
-      .collection(MAIL_COLLECTION)
-      .add({
-        toUids,
-        template: {
-          name: 'new-request',
-          data: {
-            requestData,
-            projectDomain,
-          },
-        },
-      }),
+    Promise.all(
+      emailNotifUids.map((toUid) =>
+        admin
+          .firestore()
+          .collection(MAIL_COLLECTION)
+          .add({
+            toUids: [toUid],
+            template: {
+              name: 'new-request',
+              data: {
+                requestData: {
+                  ...requestData,
+                  id: requestId,
+                },
+                projectDomain,
+              },
+            },
+          }),
+      ),
+    ),
   );
 
   // Handle errors writing requests to send mail
@@ -120,5 +223,5 @@ async function requestCreatedEvent(snap, context) {
  * @type {functions.CloudFunction}
  */
 export default functions.firestore
-  .document(`${REQUESTS_COLLECTION}/{docId}`)
+  .document(`${REQUESTS_COLLECTION}/{requestId}`)
   .onCreate(requestCreatedEvent);

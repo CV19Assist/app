@@ -36,6 +36,14 @@ async function morningEmailCentralEvent(context) {
     throw requestsErr;
   }
 
+  // Exit if there are no open requests
+  if (!unclaimedRequestsSnap.size) {
+    console.log(
+      'There are currently no unclaimed requests, great work volunteers! Exiting...',
+    );
+    return null;
+  }
+
   // Map doc snaps into an array of doc values
   const requests = unclaimedRequestsSnap.docs.map((docSnap) => {
     return {
@@ -67,20 +75,25 @@ async function morningEmailCentralEvent(context) {
 
   // Write request to mail collection of Firestore
   const [sendMailRequestsErr] = await to(
-    admin
-      .firestore()
-      .collection(MAIL_COLLECTION)
-      .add({
-        toUids,
-        template: {
-          name: 'morning-unclaimed',
-          data: {
-            requests,
-            projectDomain,
-            timestamp,
-          },
-        },
-      }),
+    Promise.all(
+      toUids.map((toUid) =>
+        admin
+          .firestore()
+          .collection(MAIL_COLLECTION)
+          .add({
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            toUids: [toUid],
+            template: {
+              name: 'morning-unclaimed',
+              data: {
+                requests,
+                projectDomain,
+                timestamp,
+              },
+            },
+          }),
+      ),
+    ),
   );
 
   // Handle errors writing requests to send mail

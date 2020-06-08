@@ -2,7 +2,7 @@ import * as firebaseTesting from '@firebase/testing';
 import { NOTIFICATIONS_SETTINGS_DOC } from 'constants/firestorePaths';
 import indexUserOriginal from './index';
 
-const USER_UID = '123ABC';
+const USER_UID = '234BCD';
 const USERS_COLLECTION = 'users';
 const USER_PATH = `${USERS_COLLECTION}/${USER_UID}`;
 const USER_PUBLIC_PATH = `users_public/${USER_UID}`;
@@ -39,18 +39,36 @@ const notificationSettings = {
   newRequest: ['someId'],
 };
 
+const originalConsole = console;
+
 describe('indexUser Firestore Cloud Function (firestore:onWrite)', () => {
   beforeEach(async () => {
-    // Clean database before each test
-    await firebaseTesting.clearFirestoreData({ projectId });
+    // Set notifications settings
     await adminApp
       .firestore()
       .doc(NOTIFICATIONS_SETTINGS_DOC)
-      .set(notificationSettings, { merge: true });
+      .set(notificationSettings);
+    // Clear all mail requests with new-user template
+    const mailCollectionSnap = await adminApp
+      .firestore()
+      .collection('mail')
+      .where('template.name', '==', 'new-user')
+      .get();
+    await Promise.all(
+      mailCollectionSnap.docs.map((docSnap) => docSnap.ref.delete()),
+    );
+    // Mock console to prevent function logs in test logs
+    global.console = {
+      log: sinon.spy(),
+      error: sinon.spy(),
+    };
   });
 
-  it('adds user to users_public on create event', async function () {
-    this.retries(3);
+  after(() => {
+    global.console = originalConsole;
+  });
+
+  it('adds user to users_public on create event', async () => {
     // Build a Firestore create event object on users path
     const beforeSnap = functionsTest.firestore.makeDocumentSnapshot(
       null,

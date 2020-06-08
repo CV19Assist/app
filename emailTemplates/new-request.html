@@ -187,8 +187,10 @@
                                                   <tr>
                                                     <td valign="top" class="mcnTextContent">
                                                       <h4>First Name: {{requestData.firstName}}</h4><br>
+                                                      <h4>Last Name: {{requestData.lastName}}</h4><br>
+                                                      <h4>Location: {{requestData.generalLocationName}}</h4><br>
                                                       <p>
-                                                        <a href="https://cv19assist.com/requests/{{requestData.id}}" target="_blank">View Request &gt;</a>
+                                                        <a href="https://{{projectDomain}}/requests/{{requestData.id}}" target="_blank">View Request &gt;</a>
                                                       </p>
                                                     </td>
                                                   </tr>
@@ -242,6 +244,58 @@
                     </tr>
                   </table>
                   <![endif]-->                                 
+                </td>
+              </tr>
+              <tr>
+                <td align="center" valign="top" id="templateFooter" data-template-container>
+                  <!--[if (gte mso 9)|(IE)]>
+                  <table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;">
+                    <tr>
+                      <td align="center" valign="top" width="600" style="width:600px;">
+                        <![endif]-->
+                        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="templateContainer">
+                          <tr>
+                            <td valign="top" class="footerContainer">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnTextBlock" style="min-width:100%;">
+                                <tbody class="mcnTextBlockOuter">
+                                  <tr>
+                                    <td valign="top" class="mcnTextBlockInner" style="padding-top:9px;">
+                                      <!--[if mso]>
+                                      <table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
+                                        <tr>
+                                          <![endif]-->
+                                          <!--[if mso]>
+                                          <td valign="top" width="600" style="width:600px;">
+                                            <![endif]-->
+                                            <table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width:100%; min-width:100%;" width="100%" class="mcnTextContentContainer">
+                                              <tbody>
+                                                <tr>
+                                                  <td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
+                                                    <em>Copyright © 2020 CV19 Assist, All rights reserved.</em><br>
+                                                    <u>&nbsp;<a href="https://{{projectDomain}}/emailUnsubscribe?type=new-request&email={{to}}">unsubscribe from this list</a>.</u>
+                                                  </td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                            <!--[if mso]>
+                                          </td>
+                                          <![endif]-->
+                                          <!--[if mso]>
+                                        </tr>
+                                      </table>
+                                      <![endif]-->
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                        <!--[if (gte mso 9)|(IE)]>
+                      </td>
+                    </tr>
+                  </table>
+                  <![endif]-->
                 </td>
               </tr>
             </table>

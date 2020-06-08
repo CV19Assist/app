@@ -1,19 +1,10 @@
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   <head>
-    <!-- NAME: EDUCATE -->
-    <!--[if gte mso 15]>
-    <xml>
-      <o:OfficeDocumentSettings>
-        <o:AllowPNG/>
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>*|MC:SUBJECT|*</title>
+    <title>{{#> title}}Unclaimed Requests{{/title}}</title>
     <style type="text/css">
       p{
       margin:10px 0;
@@ -465,9 +456,6 @@
     </style>
   </head>
   <body>
-    <!--*|IF:MC_PREVIEW_TEXT|*-->
-    <!--[if !gte mso 9]><!----><span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">*|MC_PREVIEW_TEXT|*</span><!--<![endif]-->
-    <!--*|END:IF|*-->
     <center>
       <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
         <tr>
@@ -588,10 +576,10 @@
                                               <tbody>
                                                 <tr>
                                                   <td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
-                                                    <h2 style="text-align: left;">We Need Help Filling&nbsp;Urgent Requests</h2>
-                                                    <p class="null" style="text-align: left;"><span>This is Saad, one of the many developers behind <a href="http://www.{{projectDomain}}" target="_blank">{{projectDomain}}</a>.</span><br>
-                                                      <br>
-                                                      <span>I am reaching out to you because we have <span style="color:#000000"><strong>{{ requests.length }}</strong></span> urgent delivery requests&nbsp;and we need your help to meet this need in our community.&nbsp;</span>
+                                                    <!-- <h2 style="text-align: left;">We Need Help Filling Requests</h2> -->
+                                                    <p class="null" style="text-align: left;">
+                                                      Hello!<br /><br />
+                                                      We need your help fulfilling the following requests.
                                                     </p>
                                                   </td>
                                                 </tr>
@@ -673,7 +661,7 @@
                                                   <tr>
                                                     <td valign="top" class="mcnTextContent">
                                                       <h3>{{#> this.createdByInfo.firstName}}User{{/this.createdByInfo.firstName}} in {{this.generalLocationName}}</h3>
-                                                      <p>Grocery pickup request submitted on&nbsp;{{this.date}}<br>
+                                                      <p>Request submitted on&nbsp;{{this.date}}<br>
                                                         <a href="https://{{projectDomain}}/requests/{{this.id}}" target="_blank">More Details &gt;</a>
                                                       </p>
                                                     </td>
@@ -730,7 +718,7 @@
                                                       <td valign="top" class="mcnTextContent" style="padding: 18px;color: #707070;text-align: center;">
                                                         <h3 style="text-align:center;">THANK YOU!</h3>
                                                         <p style="text-align:center !important;">Thank you for helping&nbsp;your neighbors. You brighten our world in these unpredictable times.&nbsp;We are very blessed to have you on our team. &nbsp;<br>
-                                                          If you have any questions please <a href="mailto:info@{{projectDomain}}?subject=Question%20from%20Volunteer" style="text-decoration:underline !important;" target="_blank">contact us</a>.
+                                                          If you have any questions, please <a href="mailto:info@{{projectDomain}}?subject=Question%20from%20Volunteer" style="text-decoration:underline !important;" target="_blank">contact us</a>.
                                                         </p>
                                                       </td>
                                                     </tr>
@@ -808,7 +796,7 @@
                                                 <tr>
                                                   <td valign="top" class="mcnTextContent" style="padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;">
                                                     <em>Copyright © 2020 CV19 Assist, All rights reserved.</em><br>
-                                                    <u>&nbsp;<a href="*|UNSUB|*">unsubscribe from this list</a>.</u>
+                                                    <u><a href="https://{{projectDomain}}/emailUnsubscribe?type=morning-unclaimed&email={{to}}">Unsubscribe from this list</a></u>
                                                   </td>
                                                 </tr>
                                               </tbody>

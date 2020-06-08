@@ -25,6 +25,9 @@ export default (theme) => ({
   mobileImageContainer: {
     textAlign: 'center',
   },
+  map: {
+    maxHeight: '280px',
+  },
   basicInfo: {
     flexGrow: 1,
   },

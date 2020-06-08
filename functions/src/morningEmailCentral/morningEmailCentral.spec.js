@@ -8,15 +8,33 @@ const adminApp = firebaseTesting.initializeAdminApp({
   projectId,
   databaseName: projectId,
 });
+const originalConsole = console;
 
 describe('morningEmailCentral Schedule Cloud Function (schedule:onRun)', () => {
   beforeEach(async () => {
-    // Clean database before each test
-    await firebaseTesting.clearFirestoreData({ projectId });
+    // Clear any existing mail templates for morning-unclaimed
+    // NOTE: Done instead of full Firestore clear to prevent collisions with other tests
+    const mailCollectionSnap = await adminApp
+      .firestore()
+      .collection('mail')
+      .where('template.name', '==', 'morning-unclaimed')
+      .get();
+    await Promise.all(
+      mailCollectionSnap.docs.map((docSnap) => docSnap.ref.delete()),
+    );
+    // Mock console to prevent function logs in test logs
+    global.console = {
+      log: sinon.spy(),
+      error: sinon.spy(),
+    };
+  });
+
+  after(() => {
+    global.console = originalConsole;
   });
 
   it('requests send of mail for UIDs in notification settings', async () => {
-    const userUid = '123ABC';
+    const userUid = '432ACB';
     const firstName = 'some';
     const requestData = {
       createdBy: userUid,
@@ -28,7 +46,7 @@ describe('morningEmailCentral Schedule Cloud Function (schedule:onRun)', () => {
     await adminApp
       .firestore()
       .doc('system_settings/notifications')
-      .set({ morningEmail: [userUid] }, { merge: true });
+      .set({ morningEmail: [userUid] });
     // Add request to public collection
     await adminApp.firestore().collection('requests').add(requestData);
     // Calling wrapped function with fake context
@@ -38,15 +56,13 @@ describe('morningEmailCentral Schedule Cloud Function (schedule:onRun)', () => {
     const mailCollectionSnap = await adminApp
       .firestore()
       .collection('mail')
+      .where('template.name', '==', 'morning-unclaimed')
+      .limit(1)
       .get();
     // Confirm that doc was added to the mail collection
-    expect(mailCollectionSnap.docs).to.have.length(1);
+    expect(mailCollectionSnap.size).to.be.gte(1);
     // Confirm correct template is used
     const mailRequestData = mailCollectionSnap.docs[0].data();
-    expect(mailRequestData).to.have.nested.property(
-      'template.name',
-      'morning-unclaimed',
-    );
     // Confirm that uids from system_settings/notifications morningEmail param are set to toUids
     expect(mailRequestData).to.have.property('toUids');
     expect(mailRequestData).to.have.nested.property('toUids.0', userUid);

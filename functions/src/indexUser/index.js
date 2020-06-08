@@ -41,6 +41,7 @@ async function sendNewUserEmail(userId, userData) {
       .firestore()
       .collection(MAIL_COLLECTION)
       .add({
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         toUids,
         template: {
           name: 'new-user',
