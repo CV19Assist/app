@@ -209,7 +209,11 @@ function NewUser() {
       newValues.displayName = `${values.firstName} ${values.lastName}`;
     }
 
-    const userUpdates = { ...newValues, ...userLocationInfo };
+    const userUpdates = {
+      ...newValues,
+      ...userLocationInfo,
+      browserNotifications: true,
+    };
     await userRef.set(userUpdates, { merge: true });
     history.replace(SEARCH_PATH);
   }

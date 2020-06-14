@@ -42,7 +42,6 @@ jobs:
 
       - name: Install Dependencies
         env:
-          CI: true
           HUSKY_SKIP_INSTALL: 1 # Skip install of Husky
         run: |
           yarn install --frozen-lockfile
@@ -108,22 +107,28 @@ jobs:
           echo Available ENV vars:
           env | sort
 
+      - name: Verify Functions
+        run: |
+          yarn functions:build
+          yarn functions:test:cov --project ${{ env.GCLOUD_PROJECT }}
+
+      - name: Upload Functions Test Coverage
+        run: |
+          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info || 'Test Coverage Upload Failed, continuing'
+
       - name: Verify App
         run: |
           yarn lint # Check for lint in app code
           buildCommand=$(if [ "$gitBranch" == "production" ]; then echo build:prod; elif [ "$gitBranch" == "next" ]; then echo build:next; else echo build:staging; fi)
           yarn $buildCommand
 
-      - name: Verify Functions
-        run: |
-          yarn functions:build
-          yarn functions:test:cov
-          bash <(curl -s https://codecov.io/bash) -f functions/coverage/lcov.info
-
       # Cypress action manages installing/caching npm dependencies and Cypress binary.
       # This stage tests a version of the app which is running locally in the
       # container on port 3000.
       - name: Cypress Run
+        # Skipped for PRs
+        # TODO: Look into removing this logic once UI tests no longer require secrets such as SERVICE_ACCOUNT
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: cypress-io/github-action@v1
         with:
           record: true
@@ -131,12 +136,11 @@ jobs:
           install: false
           browser: chrome
           group: 'UI Tests'
-          start: yarn emulators:all --project ${{ env.GCLOUD_PROJECT }}
+          start: yarn emulators:serve --project ${{ env.GCLOUD_PROJECT }}
           wait-on: ${{ env.CYPRESS_BASE_URL }}
           # wait for 3 minutes for the server to respond
           wait-on-timeout: 180
         env:
-          CI: true
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_KEY }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}

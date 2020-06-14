@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import { get } from 'lodash';
 
 /**
- * Get config variable from environment. Throws clear message for non existant variables.
+ * Get config variable from environment. Throws clear message for non existent variables.
  * @param {string} getPath - Path of config var to get from environment
  * @param {string} defaultVal - Default value to fallback to if environment config is not defined
  * @example <caption>Basic</caption>

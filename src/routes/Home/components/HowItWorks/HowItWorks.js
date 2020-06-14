@@ -167,7 +167,7 @@ function HowItWorks() {
           <Typography variant="body2" gutterBottom>
             We want to help everyone in need but in general, CV19-Assist is for
             those who: Are over the age of 60, have a comprimised immune system,
-            or otherwise meet the CDC&apo;s
+            or otherwise meet the CDC&apos;s{' '}
             <a
               href="https://www.cdc.gov/coronavirus/2019-ncov/specific-groups/people-at-higher-risk.html"
               target="_blank"
