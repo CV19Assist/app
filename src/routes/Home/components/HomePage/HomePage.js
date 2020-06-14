@@ -154,6 +154,14 @@ function Homepage() {
                     with people in need of help
                   </a>
                 </li>
+                <li>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="http://www.unifiednewsgroup.com/verona_press/community/new-website-seeks-to-stop-the-spread/article_4974261c-7d1e-523b-8bbe-14f3c16c0ea8.html">
+                    The Verona Press: New website seeks to stop the spread
+                  </a>
+                </li>
               </ul>
               <Typography variant="body2" gutterBottom>
                 Please <Link to="/contact">contact us</Link> if you represent a

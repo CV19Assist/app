@@ -60,6 +60,7 @@ function RequestPage() {
 
   const mapImage = (
     <img
+      className={classes.map}
       alt={requestPublicSnap.get('d.generalLocationName')}
       title={requestPublicSnap.get('d.generalLocationName')}
       src={`https://maps.googleapis.com/maps/api/staticmap?key=${process.env.REACT_APP_FIREBASE_API_KEY}&center=${latitude},${longitude}&markers=${latitude},${longitude}&size=280x280&zoom=10`}
