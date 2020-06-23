@@ -13,6 +13,8 @@ import AboutRoute from './About';
 import DonateRoute from './Donate';
 import AccountRoute from './Account';
 import NewUserRoute from './NewUser';
+import UserProfileRoute from './UserProfile';
+import PasswordResetRoute from './PasswordReset';
 import SearchRoute from './Search';
 import NotFoundRoute from './NotFound';
 import PrivacyPolicyRoute from './PrivacyPolicy';
@@ -39,6 +41,8 @@ export default function createRoutes() {
               ContactRoute,
               SearchRoute,
               NewUserRoute,
+              UserProfileRoute,
+              PasswordResetRoute,
               AboutRoute,
               LoginRoute,
               TermsOfServiceRoute,

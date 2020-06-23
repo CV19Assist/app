@@ -214,6 +214,10 @@
                     "generalLocationName": {
                       "type": "string",
                       "description": "A name for the location, generally 'City, State'."
+                    },
+                    "hasProfile": {
+                      "type": "boolean",
+                      "description": "True if this user has set up a profile"
                     }
                   },
                   "required": ["generalLocation", "generalLocationName"]

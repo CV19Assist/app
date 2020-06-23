@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
-import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import { TextField, makeStyles, Button } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import { validateEmail } from 'utils/form';
+import { USER_PROFILE_PATH, PASSWORD_RESET_PATH } from 'constants/paths';
 import styles from './LoginForm.styles';
 
 const useStyles = makeStyles(styles);
@@ -50,6 +50,7 @@ function LoginForm({ onSubmit }) {
         error={!!errors.password}
         helperText={errors.password && 'Password is required'}
       />
+      <Link to={PASSWORD_RESET_PATH}>Forgot Password</Link>{' '}
       <div className={classes.submit}>
         <Button
           color="primary"
@@ -59,6 +60,7 @@ function LoginForm({ onSubmit }) {
           {isSubmitting ? 'Loading' : 'Login'}
         </Button>
       </div>
+      <Link to={USER_PROFILE_PATH}>I&apos;m new, sign me up!</Link>{' '}
     </form>
   );
 }

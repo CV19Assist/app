@@ -6,7 +6,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import { makeStyles } from '@material-ui/core/styles';
-import { ACCOUNT_PATH, MY_REQUESTS_PATH } from 'constants/paths';
+import { USER_PROFILE_PATH, MY_REQUESTS_PATH } from 'constants/paths';
 
 const useStyles = makeStyles(() => ({
   buttonRoot: {
@@ -54,8 +54,11 @@ function AccountMenu() {
           onClick={closeAccountMenu}>
           My Requests
         </MenuItem>
-        <MenuItem component={Link} to={ACCOUNT_PATH} onClick={closeAccountMenu}>
-          Account
+        <MenuItem
+          component={Link}
+          to={USER_PROFILE_PATH}
+          onClick={closeAccountMenu}>
+          Profile
         </MenuItem>
         <MenuItem onClick={handleLogout}>Sign Out</MenuItem>
       </Menu>
